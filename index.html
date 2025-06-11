@@ -436,7 +436,7 @@
     </div>
 
     <!-- 小軟提醒區塊 -->
-    <div class="cat-reminder">
+    <div class="cat-reminder" id="catReminder">
         🐱 今天小軟提醒你：<br>
         🌸 放輕鬆一下，記得喝水喔～<br>
         🌞 早睡早起，身體才會棒棒的！
@@ -704,11 +704,28 @@
                 }
             });
             
-            // 小軟走完一圈後停幾秒再繼續走
+            // 小軟走完一圈後停幾秒再繼續走，並更換提醒訊息
             const cat = document.querySelector('.cat-walking');
-            if (cat) {
+            const reminder = document.getElementById('catReminder');
+            const messages = [
+                '🌸 放輕鬆一下，記得喝水喔～',
+                '😺 記得伸展一下筋骨～',
+                '🍎 吃點水果補充維他命！',
+                '🧘‍♀️ 深呼吸一下，讓心情更平靜',
+                '☕ 不要喝太多咖啡，小軟擔心你睡不著～',
+                '🌙 記得要早點睡覺喔～',
+                '💝 今天有什麼開心的事嗎？',
+                '🌈 心情不好的時候看看彩虹吧！',
+                '🎵 聽點輕鬆的音樂放鬆一下～',
+                '🥰 小軟覺得你今天很棒呢！'
+            ];
+            
+            if (cat && reminder) {
                 cat.addEventListener('animationiteration', () => {
                     cat.style.animationPlayState = 'paused';
+                    const msg1 = '🐱 小軟提醒你：';
+                    const msg2 = messages[Math.floor(Math.random() * messages.length)];
+                    reminder.innerHTML = `${msg1}<br>${msg2}`;
                     setTimeout(() => {
                         cat.style.animationPlayState = 'running';
                     }, 3000); // 停 3 秒再繼續走
