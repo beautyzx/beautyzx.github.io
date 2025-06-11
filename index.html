@@ -382,6 +382,7 @@
             color: #8e44ad;
             max-width: 200px;
             z-index: 999;
+            cursor: pointer;
         }
         
         .cat-walking {
@@ -392,6 +393,27 @@
             height: auto;
             z-index: 1001;
             pointer-events: none;
+        }
+        
+        .bubble {
+            position: fixed;
+            bottom: 140px;
+            right: 120px;
+            background-color: #fff;
+            border: 1px solid #d63384;
+            border-radius: 15px;
+            padding: 10px 15px;
+            font-size: 0.9rem;
+            color: #d63384;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+            z-index: 1001;
+            display: none;
+            animation: fadeIn 0.3s ease;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: scale(0.95); }
+            to { opacity: 1; transform: scale(1); }
         }
         
         @keyframes walk-right {
@@ -443,6 +465,9 @@
     
     <!-- 小軟走來走去動畫 -->
     <img src="images/xiaoruan.png" alt="小軟" class="cat-walking" />
+    
+    <!-- 對話泡泡 -->
+    <div class="bubble" id="catBubble"></div>
 
     <!-- 記事編輯模態框 -->
     <div id="noteModal" class="modal">
@@ -705,6 +730,7 @@
             
             // 小軟定期更換提醒訊息（不走路版本）
             const reminder = document.getElementById('catReminder');
+            const bubble = document.getElementById('catBubble');
             const messages = [
                 '🌸 放輕鬆一下，記得喝水喔～',
                 '😺 記得伸展一下筋骨～',
@@ -725,6 +751,16 @@
                     const msg2 = messages[Math.floor(Math.random() * messages.length)];
                     reminder.innerHTML = `${msg1}<br>${msg2}`;
                 }, 30000); // 30秒更換一次
+                
+                // 點擊提醒區塊冒出泡泡
+                reminder.addEventListener('click', () => {
+                    const msg = messages[Math.floor(Math.random() * messages.length)];
+                    bubble.textContent = msg;
+                    bubble.style.display = 'block';
+                    setTimeout(() => {
+                        bubble.style.display = 'none';
+                    }, 3500); // 3.5秒後消失
+                });
             }
         });
     </script>
