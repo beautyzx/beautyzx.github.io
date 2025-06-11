@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>2025年台灣行事曆</title>
+    <title>🐾 小軟的萌萌行事曆 2025 年版 🐾</title>
     <style>
         * {
             margin: 0;
@@ -153,7 +153,19 @@
             box-shadow: 0 0 15px rgba(102, 126, 234, 0.5);
         }
         
-        .holiday-name {
+        .day.has-note {
+            position: relative;
+        }
+        
+        .day.has-note::after {
+            content: '📝';
+            position: absolute;
+            top: 2px;
+            right: 2px;
+            font-size: 0.6rem;
+        }
+        
+        .holiday-name, .note-preview {
             position: absolute;
             bottom: -18px;
             left: 50%;
@@ -167,9 +179,17 @@
             z-index: 10;
             opacity: 0;
             transition: opacity 0.3s ease;
+            max-width: 120px;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
         
-        .day.holiday:hover .holiday-name {
+        .note-preview {
+            background: rgba(142, 68, 173, 0.9);
+        }
+        
+        .day.holiday:hover .holiday-name,
+        .day.has-note:hover .note-preview {
             opacity: 1;
         }
         
@@ -232,12 +252,125 @@
                 align-items: center;
             }
         }
+        
+        /* 記事編輯模態框 */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+            backdrop-filter: blur(5px);
+        }
+        
+        .modal-content {
+            background: linear-gradient(135deg, #ffeef0 0%, #fff5f5 50%, #fef0f8 100%);
+            margin: 10% auto;
+            padding: 30px;
+            border-radius: 20px;
+            width: 90%;
+            max-width: 500px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            position: relative;
+        }
+        
+        .close {
+            color: #d63384;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+            position: absolute;
+            right: 20px;
+            top: 15px;
+        }
+        
+        .close:hover {
+            color: #ad1457;
+        }
+        
+        .modal-header {
+            color: #d63384;
+            font-size: 1.5rem;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        
+        .note-textarea {
+            width: 100%;
+            height: 150px;
+            padding: 15px;
+            border: 2px solid #fce4ec;
+            border-radius: 15px;
+            font-size: 1rem;
+            font-family: inherit;
+            resize: vertical;
+            background: rgba(255, 255, 255, 0.8);
+            color: #333;
+        }
+        
+        .note-textarea:focus {
+            outline: none;
+            border-color: #ff6b9d;
+            box-shadow: 0 0 10px rgba(255, 107, 157, 0.3);
+        }
+        
+        .modal-buttons {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin-top: 20px;
+        }
+        
+        .btn {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 25px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: bold;
+        }
+        
+        .btn-save {
+            background: linear-gradient(135deg, #ff6b9d, #ff8fab);
+            color: white;
+        }
+        
+        .btn-save:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(255, 107, 157, 0.4);
+        }
+        
+        .btn-delete {
+            background: linear-gradient(135deg, #ffb3ba, #ffdfba);
+            color: #8e44ad;
+        }
+        
+        .btn-delete:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(255, 179, 186, 0.4);
+        }
+        
+        .btn-cancel {
+            background: rgba(255, 255, 255, 0.8);
+            color: #666;
+            border: 2px solid #ddd;
+        }
+        
+        .btn-cancel:hover {
+            background: rgba(255, 255, 255, 1);
+            transform: translateY(-2px);
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="header">
-            <h1>🐾 小軟的萌萌行事曆 2025 年版 🐾 </h1>
+            <h1>🐾 小軟的萌萌行事曆 2025 年版 🐾</h1>
             <p>Taiwan Calendar 2025 - 包含國定假日與傳統節慶</p>
         </div>
         
@@ -260,6 +393,24 @@
                     <div class="legend-color today"></div>
                     <span>今日</span>
                 </div>
+                <div class="legend-item">
+                    <span>📝</span>
+                    <span>有記事</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 記事編輯模態框 -->
+    <div id="noteModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <div class="modal-header" id="modalDate">編輯記事</div>
+            <textarea id="noteTextarea" class="note-textarea" placeholder="在這裡寫下你的記事... 🌸"></textarea>
+            <div class="modal-buttons">
+                <button class="btn btn-save" onclick="saveNote()">💾 儲存</button>
+                <button class="btn btn-delete" onclick="deleteNote()">🗑️ 刪除</button>
+                <button class="btn btn-cancel" onclick="closeModal()">❌ 取消</button>
             </div>
         </div>
     </div>
@@ -282,6 +433,22 @@
             '2025-10-10': '國慶日',
             '2025-10-11': '國慶日補假'
         };
+
+        // 儲存記事的物件
+        let notes = {};
+        let currentEditingDate = '';
+
+        // 從記憶體載入記事（在此環境中使用記憶體儲存）
+        function loadNotes() {
+            // 記事儲存在記憶體中，頁面重新整理時會重置
+            // 在正常的網頁環境中可以使用localStorage
+        }
+
+        // 儲存記事到記憶體
+        function saveNotesToStorage() {
+            // 記事已經儲存在notes物件中
+            // 在正常的網頁環境中可以使用localStorage儲存
+        }
 
         const monthNames = [
             { zh: '一月', en: 'January' },
@@ -311,9 +478,74 @@
                    day === today.getDate();
         }
 
+        function openNoteModal(dateStr, dayElement) {
+            currentEditingDate = dateStr;
+            const modal = document.getElementById('noteModal');
+            const textarea = document.getElementById('noteTextarea');
+            const modalDate = document.getElementById('modalDate');
+            
+            const date = new Date(dateStr);
+            const formattedDate = `${date.getFullYear()}年${date.getMonth() + 1}月${date.getDate()}日`;
+            modalDate.textContent = `${formattedDate} 記事`;
+            
+            textarea.value = notes[dateStr] || '';
+            modal.style.display = 'block';
+            setTimeout(() => textarea.focus(), 100);
+        }
+
+        function closeModal() {
+            document.getElementById('noteModal').style.display = 'none';
+        }
+
+        function saveNote() {
+            const textarea = document.getElementById('noteTextarea');
+            const noteText = textarea.value.trim();
+            
+            if (noteText) {
+                notes[currentEditingDate] = noteText;
+            } else {
+                delete notes[currentEditingDate];
+            }
+            
+            saveNotesToStorage();
+            updateDayDisplay(currentEditingDate);
+            closeModal();
+        }
+
+        function deleteNote() {
+            delete notes[currentEditingDate];
+            saveNotesToStorage();
+            updateDayDisplay(currentEditingDate);
+            closeModal();
+        }
+
+        function updateDayDisplay(dateStr) {
+            const dayElement = document.querySelector(`[data-date="${dateStr}"]`);
+            if (dayElement) {
+                // 移除現有的記事相關元素
+                dayElement.classList.remove('has-note');
+                const existingPreview = dayElement.querySelector('.note-preview');
+                if (existingPreview) {
+                    existingPreview.remove();
+                }
+                
+                // 如果有記事，添加記事標記和預覽
+                if (notes[dateStr]) {
+                    dayElement.classList.add('has-note');
+                    const notePreview = document.createElement('div');
+                    notePreview.className = 'note-preview';
+                    notePreview.textContent = notes[dateStr];
+                    dayElement.appendChild(notePreview);
+                }
+            }
+        }
+
         function generateCalendar() {
             const calendarContainer = document.getElementById('calendar');
             const year = 2025;
+            
+            // 載入記事
+            loadNotes();
 
             for (let month = 1; month <= 12; month++) {
                 const monthDiv = document.createElement('div');
@@ -358,11 +590,17 @@
                     const isCurrentMonth = currentDate.getMonth() === month - 1;
                     const dateStr = formatDate(currentDate.getFullYear(), currentDate.getMonth() + 1, currentDate.getDate());
                     
+                    // 設置 data-date 屬性
+                    dayDiv.setAttribute('data-date', dateStr);
+                    
                     if (isCurrentMonth) {
                         dayDiv.classList.add('current-month');
                     } else {
                         dayDiv.classList.add('other-month');
                     }
+
+                    // 添加點擊事件
+                    dayDiv.addEventListener('click', () => openNoteModal(dateStr, dayDiv));
 
                     // Check if it's a holiday
                     if (holidays[dateStr]) {
@@ -383,6 +621,15 @@
                         dayDiv.classList.add('today');
                     }
 
+                    // 檢查是否有記事
+                    if (notes[dateStr]) {
+                        dayDiv.classList.add('has-note');
+                        const notePreview = document.createElement('div');
+                        notePreview.className = 'note-preview';
+                        notePreview.textContent = notes[dateStr];
+                        dayDiv.appendChild(notePreview);
+                    }
+
                     dayDiv.textContent = currentDate.getDate();
                     daysDiv.appendChild(dayDiv);
                 }
@@ -392,8 +639,27 @@
             }
         }
 
-        // Initialize calendar when page loads
-        document.addEventListener('DOMContentLoaded', generateCalendar);
+        // 模態框事件處理
+        document.addEventListener('DOMContentLoaded', function() {
+            generateCalendar();
+            
+            // 點擊關閉按鈕
+            document.querySelector('.close').addEventListener('click', closeModal);
+            
+            // 點擊模態框外部關閉
+            document.getElementById('noteModal').addEventListener('click', function(e) {
+                if (e.target === this) {
+                    closeModal();
+                }
+            });
+            
+            // ESC鍵關閉模態框
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape') {
+                    closeModal();
+                }
+            });
+        });
     </script>
 </body>
 </html>
