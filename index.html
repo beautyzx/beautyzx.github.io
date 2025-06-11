@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="zh">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -72,14 +72,20 @@
       box-shadow: 0 2px 5px rgba(0,0,0,0.1);
       font-size: 0.9rem;
     }
+    .month-title {
+      text-align: center;
+      font-weight: bold;
+      font-size: 1.2rem;
+      margin: 1rem 0 0.2rem 0;
+      color: #5e3c58;
+    }
   </style>
 </head>
 <body>
   <header>
-    🐾 小軟的萌萌行事曆 🐾
+    🐾 小軟的萌萌行事曆 2025 年版 🐾
   </header>
-
-  <div class="calendar" id="calendar"></div>
+  <div id="calendar-container"></div>
 
   <div id="overlay"></div>
   <div id="event-modal">
@@ -95,34 +101,42 @@
   </div>
 
   <script>
-    const calendar = document.getElementById("calendar");
+    const calendarContainer = document.getElementById("calendar-container");
     const modal = document.getElementById("event-modal");
     const overlay = document.getElementById("overlay");
     let selectedDay = null;
 
-    function renderCalendar() {
-      const today = new Date();
-      const year = today.getFullYear();
-      const month = today.getMonth();
-      const firstDay = new Date(year, month, 1).getDay();
-      const daysInMonth = new Date(year, month + 1, 0).getDate();
+    function renderFullYear(year) {
+      for (let month = 0; month < 12; month++) {
+        const wrapper = document.createElement("div");
+        const title = document.createElement("div");
+        const calendar = document.createElement("div");
+        title.className = "month-title";
+        title.textContent = `${year} 年 ${month + 1} 月`;
+        calendar.className = "calendar";
 
-      calendar.innerHTML = "";
-      for (let i = 0; i < firstDay; i++) {
-        const empty = document.createElement("div");
-        calendar.appendChild(empty);
-      }
-      for (let i = 1; i <= daysInMonth; i++) {
-        const day = document.createElement("div");
-        day.className = "day";
-        day.textContent = i;
-        day.onclick = () => openModal(i);
-        calendar.appendChild(day);
+        const firstDay = new Date(year, month, 1).getDay();
+        const daysInMonth = new Date(year, month + 1, 0).getDate();
+
+        for (let i = 0; i < firstDay; i++) {
+          const empty = document.createElement("div");
+          calendar.appendChild(empty);
+        }
+        for (let i = 1; i <= daysInMonth; i++) {
+          const day = document.createElement("div");
+          day.className = "day";
+          day.textContent = i;
+          day.onclick = () => openModal(`${year}-${month + 1}-${i}`);
+          calendar.appendChild(day);
+        }
+        wrapper.appendChild(title);
+        wrapper.appendChild(calendar);
+        calendarContainer.appendChild(wrapper);
       }
     }
 
-    function openModal(day) {
-      selectedDay = day;
+    function openModal(date) {
+      selectedDay = date;
       overlay.style.display = "block";
       modal.style.display = "block";
     }
@@ -138,12 +152,12 @@
       const title = document.getElementById("event-title").value;
       const desc = document.getElementById("event-desc").value;
       if (!title) return alert("請輸入標題");
-      console.log(`儲存事件：${selectedDay} 日 ${title} - ${desc}`);
+      console.log(`儲存事件：${selectedDay} - ${title} - ${desc}`);
       closeModal();
-      // TODO: 儲存到伺服器
     }
 
-    renderCalendar();
+    renderFullYear(2025);
   </script>
 </body>
 </html>
+
