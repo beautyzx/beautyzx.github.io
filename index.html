@@ -1,163 +1,399 @@
 <!DOCTYPE html>
-<html lang="zh">
+<html lang="zh-TW">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>小軟行事曆</title>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <style>
-    body {
-      font-family: 'Segoe UI', sans-serif;
-      background-color: #fff8f0;
-      margin: 0;
-      padding: 0;
-    }
-    header {
-      background-color: #ffd6d6;
-      color: #5e3c58;
-      text-align: center;
-      padding: 1rem;
-      font-size: 1.5rem;
-    }
-    .calendar {
-      display: grid;
-      grid-template-columns: repeat(7, 1fr);
-      gap: 5px;
-      padding: 10px;
-    }
-    .day {
-      background-color: #fff;
-      border-radius: 12px;
-      padding: 1rem;
-      min-height: 80px;
-      box-shadow: 0 0 5px rgba(0,0,0,0.1);
-      cursor: pointer;
-    }
-    .day:hover {
-      background-color: #ffe9e9;
-    }
-    #event-modal {
-      position: fixed;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      background-color: white;
-      border-radius: 12px;
-      padding: 1rem;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.2);
-      display: none;
-      z-index: 10;
-    }
-    #event-modal input, #event-modal textarea {
-      display: block;
-      width: 100%;
-      margin: 0.5rem 0;
-    }
-    #overlay {
-      position: fixed;
-      top: 0; left: 0;
-      width: 100%; height: 100%;
-      background: rgba(0,0,0,0.4);
-      display: none;
-      z-index: 5;
-    }
-    .cat-reminder {
-      position: fixed;
-      bottom: 10px;
-      right: 10px;
-      background-color: #fff2f9;
-      border: 2px dashed #ffa0d2;
-      padding: 1rem;
-      border-radius: 20px;
-      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-      font-size: 0.9rem;
-    }
-    .month-title {
-      text-align: center;
-      font-weight: bold;
-      font-size: 1.2rem;
-      margin: 1rem 0 0.2rem 0;
-      color: #5e3c58;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>2025年台灣行事曆</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Microsoft YaHei', 'PingFang TC', sans-serif;
+            background: linear-gradient(135deg, #ffeef0 0%, #fff5f5 50%, #fef0f8 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 20px;
+            backdrop-filter: blur(10px);
+        }
+        
+        .header h1 {
+            color: #d63384;
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            text-shadow: 0 2px 4px rgba(214, 51, 132, 0.2);
+        }
+        
+        .header p {
+            color: #8e44ad;
+            font-size: 1.1rem;
+        }
+        
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 25px;
+        }
+        
+        .month {
+            background: rgba(255, 255, 255, 0.4);
+            border-radius: 20px;
+            padding: 20px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            box-shadow: 0 8px 32px rgba(214, 51, 132, 0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        
+        .month:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 40px rgba(214, 51, 132, 0.15);
+        }
+        
+        .month-header {
+            text-align: center;
+            margin-bottom: 15px;
+            padding: 15px;
+            background: linear-gradient(135deg, #ff9a9e, #fecfef);
+            border-radius: 15px;
+            color: white;
+            text-shadow: 0 1px 3px rgba(0,0,0,0.3);
+        }
+        
+        .month-name {
+            font-size: 1.4rem;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        
+        .month-english {
+            font-size: 0.9rem;
+            opacity: 0.9;
+        }
+        
+        .weekdays {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 2px;
+            margin-bottom: 10px;
+        }
+        
+        .weekday {
+            text-align: center;
+            padding: 8px 4px;
+            font-weight: bold;
+            font-size: 0.9rem;
+            background: #fce4ec;
+            color: #ad1457;
+            border-radius: 8px;
+        }
+        
+        .days {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 2px;
+        }
+        
+        .day {
+            aspect-ratio: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            position: relative;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        
+        .day:hover {
+            transform: scale(1.1);
+        }
+        
+        .day.current-month {
+            background: rgba(255, 255, 255, 0.7);
+            color: #333;
+        }
+        
+        .day.other-month {
+            background: rgba(255, 255, 255, 0.3);
+            color: #999;
+        }
+        
+        .day.holiday {
+            background: linear-gradient(135deg, #ff6b9d, #ff8fab);
+            color: white;
+            font-weight: bold;
+        }
+        
+        .day.weekend {
+            background: linear-gradient(135deg, #ffb3ba, #ffdfba);
+            color: #8e44ad;
+        }
+        
+        .day.today {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            font-weight: bold;
+            box-shadow: 0 0 15px rgba(102, 126, 234, 0.5);
+        }
+        
+        .holiday-name {
+            position: absolute;
+            bottom: -18px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 0.7rem;
+            background: rgba(255, 107, 157, 0.9);
+            color: white;
+            padding: 2px 6px;
+            border-radius: 10px;
+            white-space: nowrap;
+            z-index: 10;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        
+        .day.holiday:hover .holiday-name {
+            opacity: 1;
+        }
+        
+        .legend {
+            margin-top: 30px;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.4);
+            border-radius: 20px;
+            backdrop-filter: blur(10px);
+        }
+        
+        .legend h3 {
+            color: #d63384;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+        
+        .legend-items {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 20px;
+        }
+        
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .legend-color {
+            width: 16px;
+            height: 16px;
+            border-radius: 4px;
+        }
+        
+        .legend-color.holiday {
+            background: linear-gradient(135deg, #ff6b9d, #ff8fab);
+        }
+        
+        .legend-color.weekend {
+            background: linear-gradient(135deg, #ffb3ba, #ffdfba);
+        }
+        
+        .legend-color.today {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+        }
+        
+        @media (max-width: 768px) {
+            .calendar-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .header h1 {
+                font-size: 2rem;
+            }
+            
+            .legend-items {
+                flex-direction: column;
+                align-items: center;
+            }
+        }
+    </style>
 </head>
 <body>
-  <header>
-    🐾 小軟的萌萌行事曆 2025 年版 🐾
-  </header>
-  <div id="calendar-container"></div>
+    <div class="container">
+        <div class="header">
+            <h1>🐾 小軟的萌萌行事曆 2025 年版 🐾 </h1>
+            <p>Taiwan Calendar 2025 - 包含國定假日與傳統節慶</p>
+        </div>
+        
+        <div class="calendar-grid" id="calendar">
+            <!-- JavaScript will generate calendar here -->
+        </div>
+        
+        <div class="legend">
+            <h3>圖例說明</h3>
+            <div class="legend-items">
+                <div class="legend-item">
+                    <div class="legend-color holiday"></div>
+                    <span>國定假日</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color weekend"></div>
+                    <span>週末</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color today"></div>
+                    <span>今日</span>
+                </div>
+            </div>
+        </div>
+    </div>
 
-  <div id="overlay"></div>
-  <div id="event-modal">
-    <h3>新增行程</h3>
-    <input type="text" id="event-title" placeholder="行程標題">
-    <textarea id="event-desc" rows="3" placeholder="描述..."></textarea>
-    <button onclick="saveEvent()">儲存</button>
-  </div>
+    <script>
+        // 2025年台灣國定假日
+        const holidays = {
+            '2025-01-01': '元旦',
+            '2025-01-25': '農曆除夕',
+            '2025-01-26': '春節',
+            '2025-01-27': '春節',
+            '2025-01-28': '春節',
+            '2025-01-29': '春節',
+            '2025-02-28': '和平紀念日',
+            '2025-04-04': '兒童節',
+            '2025-04-05': '清明節',
+            '2025-05-01': '勞動節',
+            '2025-05-31': '端午節',
+            '2025-10-06': '中秋節',
+            '2025-10-10': '國慶日',
+            '2025-10-11': '國慶日補假'
+        };
 
-  <div class="cat-reminder">
-    🐱 今天小軟提醒你：<br>
-    記得喝水、水壺要帶～
-  </div>
+        const monthNames = [
+            { zh: '一月', en: 'January' },
+            { zh: '二月', en: 'February' },
+            { zh: '三月', en: 'March' },
+            { zh: '四月', en: 'April' },
+            { zh: '五月', en: 'May' },
+            { zh: '六月', en: 'June' },
+            { zh: '七月', en: 'July' },
+            { zh: '八月', en: 'August' },
+            { zh: '九月', en: 'September' },
+            { zh: '十月', en: 'October' },
+            { zh: '十一月', en: 'November' },
+            { zh: '十二月', en: 'December' }
+        ];
 
-  <script>
-    const calendarContainer = document.getElementById("calendar-container");
-    const modal = document.getElementById("event-modal");
-    const overlay = document.getElementById("overlay");
-    let selectedDay = null;
+        const weekdays = ['日', '一', '二', '三', '四', '五', '六'];
 
-    function renderFullYear(year) {
-      for (let month = 0; month < 12; month++) {
-        const wrapper = document.createElement("div");
-        const title = document.createElement("div");
-        const calendar = document.createElement("div");
-        title.className = "month-title";
-        title.textContent = `${year} 年 ${month + 1} 月`;
-        calendar.className = "calendar";
-
-        const firstDay = new Date(year, month, 1).getDay();
-        const daysInMonth = new Date(year, month + 1, 0).getDate();
-
-        for (let i = 0; i < firstDay; i++) {
-          const empty = document.createElement("div");
-          calendar.appendChild(empty);
+        function formatDate(year, month, day) {
+            return `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
         }
-        for (let i = 1; i <= daysInMonth; i++) {
-          const day = document.createElement("div");
-          day.className = "day";
-          day.textContent = i;
-          day.onclick = () => openModal(`${year}-${month + 1}-${i}`);
-          calendar.appendChild(day);
+
+        function isToday(year, month, day) {
+            const today = new Date();
+            return year === today.getFullYear() && 
+                   month === today.getMonth() + 1 && 
+                   day === today.getDate();
         }
-        wrapper.appendChild(title);
-        wrapper.appendChild(calendar);
-        calendarContainer.appendChild(wrapper);
-      }
-    }
 
-    function openModal(date) {
-      selectedDay = date;
-      overlay.style.display = "block";
-      modal.style.display = "block";
-    }
+        function generateCalendar() {
+            const calendarContainer = document.getElementById('calendar');
+            const year = 2025;
 
-    function closeModal() {
-      overlay.style.display = "none";
-      modal.style.display = "none";
-    }
+            for (let month = 1; month <= 12; month++) {
+                const monthDiv = document.createElement('div');
+                monthDiv.className = 'month';
 
-    overlay.onclick = closeModal;
+                // Month header
+                const headerDiv = document.createElement('div');
+                headerDiv.className = 'month-header';
+                headerDiv.innerHTML = `
+                    <div class="month-name">${monthNames[month - 1].zh}</div>
+                    <div class="month-english">${monthNames[month - 1].en} ${year}</div>
+                `;
+                monthDiv.appendChild(headerDiv);
 
-    function saveEvent() {
-      const title = document.getElementById("event-title").value;
-      const desc = document.getElementById("event-desc").value;
-      if (!title) return alert("請輸入標題");
-      console.log(`儲存事件：${selectedDay} - ${title} - ${desc}`);
-      closeModal();
-    }
+                // Weekdays
+                const weekdaysDiv = document.createElement('div');
+                weekdaysDiv.className = 'weekdays';
+                weekdays.forEach(day => {
+                    const dayDiv = document.createElement('div');
+                    dayDiv.className = 'weekday';
+                    dayDiv.textContent = day;
+                    weekdaysDiv.appendChild(dayDiv);
+                });
+                monthDiv.appendChild(weekdaysDiv);
 
-    renderFullYear(2025);
-  </script>
+                // Days
+                const daysDiv = document.createElement('div');
+                daysDiv.className = 'days';
+
+                const firstDay = new Date(year, month - 1, 1);
+                const lastDay = new Date(year, month, 0);
+                const startDate = new Date(firstDay);
+                startDate.setDate(startDate.getDate() - firstDay.getDay());
+
+                for (let i = 0; i < 42; i++) {
+                    const currentDate = new Date(startDate);
+                    currentDate.setDate(startDate.getDate() + i);
+                    
+                    const dayDiv = document.createElement('div');
+                    dayDiv.className = 'day';
+                    
+                    const isCurrentMonth = currentDate.getMonth() === month - 1;
+                    const dateStr = formatDate(currentDate.getFullYear(), currentDate.getMonth() + 1, currentDate.getDate());
+                    
+                    if (isCurrentMonth) {
+                        dayDiv.classList.add('current-month');
+                    } else {
+                        dayDiv.classList.add('other-month');
+                    }
+
+                    // Check if it's a holiday
+                    if (holidays[dateStr]) {
+                        dayDiv.classList.add('holiday');
+                        const holidayName = document.createElement('div');
+                        holidayName.className = 'holiday-name';
+                        holidayName.textContent = holidays[dateStr];
+                        dayDiv.appendChild(holidayName);
+                    }
+
+                    // Check if it's weekend (but not holiday)
+                    if ((currentDate.getDay() === 0 || currentDate.getDay() === 6) && !holidays[dateStr]) {
+                        dayDiv.classList.add('weekend');
+                    }
+
+                    // Check if it's today
+                    if (isToday(currentDate.getFullYear(), currentDate.getMonth() + 1, currentDate.getDate())) {
+                        dayDiv.classList.add('today');
+                    }
+
+                    dayDiv.textContent = currentDate.getDate();
+                    daysDiv.appendChild(dayDiv);
+                }
+
+                monthDiv.appendChild(daysDiv);
+                calendarContainer.appendChild(monthDiv);
+            }
+        }
+
+        // Initialize calendar when page loads
+        document.addEventListener('DOMContentLoaded', generateCalendar);
+    </script>
 </body>
 </html>
-
