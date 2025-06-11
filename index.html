@@ -365,6 +365,22 @@
             background: rgba(255, 255, 255, 1);
             transform: translateY(-2px);
         }
+        
+        /* 小軟提醒樣式 */
+        .cat-reminder {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background-color: #fff2f9;
+            border: 2px dashed #ffa0d2;
+            padding: 1rem;
+            border-radius: 20px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            font-size: 0.9rem;
+            color: #8e44ad;
+            max-width: 200px;
+            z-index: 999;
+        }
     </style>
 </head>
 <body>
@@ -399,6 +415,13 @@
                 </div>
             </div>
         </div>
+    </div>
+
+    <!-- 小軟提醒區塊 -->
+    <div class="cat-reminder">
+        🐱 今天小軟提醒你：<br>
+        🌸 放輕鬆一下，記得喝水喔～<br>
+        🌞 早睡早起，身體才會棒棒的！
     </div>
 
     <!-- 記事編輯模態框 -->
