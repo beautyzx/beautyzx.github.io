@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>小軟行事曆</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background-color: #fff8f0;
+      margin: 0;
+      padding: 0;
+    }
+    header {
+      background-color: #ffd6d6;
+      color: #5e3c58;
+      text-align: center;
+      padding: 1rem;
+      font-size: 1.5rem;
+    }
+    .calendar {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 5px;
+      padding: 10px;
+    }
+    .day {
+      background-color: #fff;
+      border-radius: 12px;
+      padding: 1rem;
+      min-height: 80px;
+      box-shadow: 0 0 5px rgba(0,0,0,0.1);
+      cursor: pointer;
+    }
+    .day:hover {
+      background-color: #ffe9e9;
+    }
+    #event-modal {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background-color: white;
+      border-radius: 12px;
+      padding: 1rem;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+      display: none;
+      z-index: 10;
+    }
+    #event-modal input, #event-modal textarea {
+      display: block;
+      width: 100%;
+      margin: 0.5rem 0;
+    }
+    #overlay {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background: rgba(0,0,0,0.4);
+      display: none;
+      z-index: 5;
+    }
+    .cat-reminder {
+      position: fixed;
+      bottom: 10px;
+      right: 10px;
+      background-color: #fff2f9;
+      border: 2px dashed #ffa0d2;
+      padding: 1rem;
+      border-radius: 20px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+      font-size: 0.9rem;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    🐾 小軟的萌萌行事曆 🐾
+  </header>
+
+  <div class="calendar" id="calendar"></div>
+
+  <div id="overlay"></div>
+  <div id="event-modal">
+    <h3>新增行程</h3>
+    <input type="text" id="event-title" placeholder="行程標題">
+    <textarea id="event-desc" rows="3" placeholder="描述..."></textarea>
+    <button onclick="saveEvent()">儲存</button>
+  </div>
+
+  <div class="cat-reminder">
+    🐱 今天小軟提醒你：<br>
+    記得喝水、水壺要帶～
+  </div>
+
+  <script>
+    const calendar = document.getElementById("calendar");
+    const modal = document.getElementById("event-modal");
+    const overlay = document.getElementById("overlay");
+    let selectedDay = null;
+
+    function renderCalendar() {
+      const today = new Date();
+      const year = today.getFullYear();
+      const month = today.getMonth();
+      const firstDay = new Date(year, month, 1).getDay();
+      const daysInMonth = new Date(year, month + 1, 0).getDate();
+
+      calendar.innerHTML = "";
+      for (let i = 0; i < firstDay; i++) {
+        const empty = document.createElement("div");
+        calendar.appendChild(empty);
+      }
+      for (let i = 1; i <= daysInMonth; i++) {
+        const day = document.createElement("div");
+        day.className = "day";
+        day.textContent = i;
+        day.onclick = () => openModal(i);
+        calendar.appendChild(day);
+      }
+    }
+
+    function openModal(day) {
+      selectedDay = day;
+      overlay.style.display = "block";
+      modal.style.display = "block";
+    }
+
+    function closeModal() {
+      overlay.style.display = "none";
+      modal.style.display = "none";
+    }
+
+    overlay.onclick = closeModal;
+
+    function saveEvent() {
+      const title = document.getElementById("event-title").value;
+      const desc = document.getElementById("event-desc").value;
+      if (!title) return alert("請輸入標題");
+      console.log(`儲存事件：${selectedDay} 日 ${title} - ${desc}`);
+      closeModal();
+      // TODO: 儲存到伺服器
+    }
+
+    renderCalendar();
+  </script>
+</body>
+</html>
