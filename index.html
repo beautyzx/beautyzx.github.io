@@ -387,18 +387,16 @@
         .cat-walking {
             position: fixed;
             bottom: 0;
-            left: 0;
-            width: 80px;
-            height: 80px;
-            background-image: url('https://media.giphy.com/media/13borq7Zo2kulO/giphy.gif');
-            background-size: contain;
-            background-repeat: no-repeat;
-            animation: walk 20s linear infinite;
+            left: -120px;
+            width: 100px;
+            height: auto;
             z-index: 1000;
+            animation: walk-right 15s linear infinite;
+            pointer-events: none;
         }
         
-        @keyframes walk {
-            0% { left: -100px; }
+        @keyframes walk-right {
+            0% { left: -120px; }
             100% { left: 110%; }
         }
     </style>
@@ -445,7 +443,7 @@
     </div>
     
     <!-- 小軟走來走去動畫 -->
-    <div class="cat-walking"></div>
+    <img src="https://cdn.openai.com/chat-assets/user-uploads/file_00000000c750622fa439cd12556290b8.png" alt="小軟" class="cat-walking" />
 
     <!-- 記事編輯模態框 -->
     <div id="noteModal" class="modal">
