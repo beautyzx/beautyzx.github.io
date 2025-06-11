@@ -386,12 +386,11 @@
         
         .cat-walking {
             position: fixed;
-            bottom: 0;
-            left: -120px;
-            width: 100px;
+            bottom: 100px;
+            right: 30px;
+            width: 80px;
             height: auto;
-            z-index: 1000;
-            animation: walk-right 15s linear infinite;
+            z-index: 1001;
             pointer-events: none;
         }
         
@@ -704,8 +703,7 @@
                 }
             });
             
-            // 小軟走完一圈後停幾秒再繼續走，並更換提醒訊息
-            const cat = document.querySelector('.cat-walking');
+            // 小軟定期更換提醒訊息（不走路版本）
             const reminder = document.getElementById('catReminder');
             const messages = [
                 '🌸 放輕鬆一下，記得喝水喔～',
@@ -720,16 +718,13 @@
                 '🥰 小軟覺得你今天很棒呢！'
             ];
             
-            if (cat && reminder) {
-                cat.addEventListener('animationiteration', () => {
-                    cat.style.animationPlayState = 'paused';
+            // 每30秒更換一次提醒訊息
+            if (reminder) {
+                setInterval(() => {
                     const msg1 = '🐱 小軟提醒你：';
                     const msg2 = messages[Math.floor(Math.random() * messages.length)];
                     reminder.innerHTML = `${msg1}<br>${msg2}`;
-                    setTimeout(() => {
-                        cat.style.animationPlayState = 'running';
-                    }, 3000); // 停 3 秒再繼續走
-                });
+                }, 30000); // 30秒更換一次
             }
         });
     </script>
