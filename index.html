@@ -577,12 +577,12 @@
                 相片集
             </a>
 
-            <a href="xunxun-game.html" class="menu-item">
+            <a href="#" class="menu-item" data-page="xunxun">
                 <span class="icon icon-xunxun"></span>
                 勳勳的小世界 🎮
             </a>
 
-            <a href="linlin-drawing.html" class="menu-item">
+            <a href="#" class="menu-item" data-page="linlin">
                 <span class="icon icon-linlin"></span>
                 麟麟的小天地 🎨
             </a>
@@ -649,88 +649,12 @@
 
             <!-- 勳勳的小世界 -->
             <div id="xunxun-content" class="page-content" style="display: none;">
-                <header class="header">
-                    <h2>🎮 勳勳的小世界</h2>
-                    <p>歡迎來到勳勳的遊戲天堂！一起來玩有趣的遊戲吧！</p>
-                </header>
-
-                <div class="game-container">
-                    <div class="game-card">
-                        <h3>🧩 俄羅斯方塊</h3>
-                        <div id="tetris-game">
-                            <canvas id="tetrisCanvas" width="300" height="600"></canvas>
-                            <div class="game-controls">
-                                <div class="score-display">
-                                    <div>得分: <span id="score">0</span></div>
-                                    <div>等級: <span id="level">1</span></div>
-                                    <div>清除行數: <span id="lines">0</span></div>
-                                </div>
-                                <div class="game-buttons">
-                                    <button id="startBtn" class="game-btn">開始遊戲</button>
-                                    <button id="pauseBtn" class="game-btn">暫停</button>
-                                    <button id="resetBtn" class="game-btn">重新開始</button>
-                                </div>
-                                <div class="game-instructions">
-                                    <p><strong>操作說明：</strong></p>
-                                    <p>← → 移動</p>
-                                    <p>↓ 加速下降</p>
-                                    <p>↑ 旋轉</p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+                <iframe src="xunxun-game.html" style="width: 100%; height: 800px; border: none; border-radius: 15px;"></iframe>
             </div>
 
             <!-- 麟麟的小天地 -->
             <div id="linlin-content" class="page-content" style="display: none;">
-                <header class="header">
-                    <h2>🎨 麟麟的小天地</h2>
-                    <p>歡迎來到麟麟的創作世界！發揮你的想像力，畫出美麗的作品吧！</p>
-                </header>
-
-                <div class="drawing-container">
-                    <div class="drawing-tools">
-                        <div class="tool-section">
-                            <h4>🖌️ 畫筆顏色</h4>
-                            <div class="color-palette">
-                                <div class="color-btn" data-color="#ff6b6b" style="background: #ff6b6b;"></div>
-                                <div class="color-btn" data-color="#4ecdc4" style="background: #4ecdc4;"></div>
-                                <div class="color-btn" data-color="#45b7d1" style="background: #45b7d1;"></div>
-                                <div class="color-btn" data-color="#96ceb4" style="background: #96ceb4;"></div>
-                                <div class="color-btn" data-color="#ffeaa7" style="background: #ffeaa7;"></div>
-                                <div class="color-btn" data-color="#dda0dd" style="background: #dda0dd;"></div>
-                                <div class="color-btn" data-color="#98d8c8" style="background: #98d8c8;"></div>
-                                <div class="color-btn" data-color="#ffa07a" style="background: #ffa07a;"></div>
-                                <div class="color-btn" data-color="#f7dc6f" style="background: #f7dc6f;"></div>
-                                <div class="color-btn" data-color="#bb8fce" style="background: #bb8fce;"></div>
-                                <div class="color-btn" data-color="#85c1e9" style="background: #85c1e9;"></div>
-                                <div class="color-btn" data-color="#58d68d" style="background: #58d68d;"></div>
-                                <div class="color-btn active" data-color="#000000" style="background: #000000;"></div>
-                                <div class="color-btn" data-color="#ffffff" style="background: #ffffff; border: 2px solid #ddd;"></div>
-                            </div>
-                        </div>
-                        
-                        <div class="tool-section">
-                            <h4>📏 畫筆大小</h4>
-                            <input type="range" id="brushSize" min="1" max="50" value="5" class="brush-slider">
-                            <span id="brushSizeDisplay">5px</span>
-                        </div>
-
-                        <div class="tool-section">
-                            <h4>🛠️ 工具</h4>
-                            <div class="drawing-buttons">
-                                <button id="clearCanvas" class="draw-btn">🗑️ 清除畫布</button>
-                                <button id="saveDrawing" class="draw-btn">💾 儲存作品</button>
-                                <button id="eraserMode" class="draw-btn">🧽 橡皮擦</button>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="canvas-container">
-                        <canvas id="drawingCanvas" width="800" height="600"></canvas>
-                    </div>
-                </div>
+                <iframe src="linlin-drawing.html" style="width: 100%; height: 800px; border: none; border-radius: 15px;"></iframe>
             </div>
         </main>
     </div>
@@ -768,10 +692,8 @@
                     document.getElementById('calendar-content').style.display = 'block';
                 } else if (pageType === 'xunxun') {
                     document.getElementById('xunxun-content').style.display = 'block';
-                    setTimeout(() => initTetris(), 100); // 延遲初始化確保元素已顯示
                 } else if (pageType === 'linlin') {
                     document.getElementById('linlin-content').style.display = 'block';
-                    setTimeout(() => initDrawing(), 100); // 延遲初始化確保元素已顯示
                 } else {
                     document.getElementById('home-content').style.display = 'block';
                 }
