@@ -3,842 +3,392 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🐾 小軟的萌萌行事曆 2025 年版 🐾</title>
+    <title>小軟的馬卡龍部落格</title>
     <style>
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
         }
-        
+
         body {
-            font-family: 'Microsoft YaHei', 'PingFang TC', sans-serif;
-            background: linear-gradient(135deg, #ffeef0 0%, #fff5f5 50%, #fef0f8 100%);
+            font-family: 'Arial', '微軟正黑體', sans-serif;
+            background: linear-gradient(135deg, #ffeef8, #f0f8ff);
             min-height: 100vh;
-            padding: 20px;
-            margin: 0;
-            overflow-x: hidden;
         }
-        
+
         .container {
-            max-width: 1400px;
-            margin: 0 auto;
-        }
-        
-        .header {
-            text-align: center;
-            margin-bottom: 30px;
-            padding: 20px;
-            background: rgba(255, 255, 255, 0.3);
-            border-radius: 20px;
-            backdrop-filter: blur(10px);
-        }
-        
-        .header h1 {
-            color: #d63384;
-            font-size: 2.5rem;
-            margin-bottom: 10px;
-            text-shadow: 0 2px 4px rgba(214, 51, 132, 0.2);
-        }
-        
-        .header p {
-            color: #8e44ad;
-            font-size: 1.1rem;
-        }
-        
-        .api-status {
-            display: inline-block;
-            padding: 5px 15px;
-            background: linear-gradient(135deg, #28a745, #20c997);
-            color: white;
-            border-radius: 20px;
-            font-size: 0.9rem;
-            margin-top: 10px;
-        }
-        
-        .api-status.offline {
-            background: linear-gradient(135deg, #dc3545, #fd7e14);
-        }
-        
-        .calendar-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-            gap: 25px;
-        }
-        
-        .month {
-            background: rgba(255, 255, 255, 0.4);
-            border-radius: 20px;
-            padding: 20px;
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.3);
-            box-shadow: 0 8px 32px rgba(214, 51, 132, 0.1);
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
-        }
-        
-        .month:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 12px 40px rgba(214, 51, 132, 0.15);
-        }
-        
-        .month-header {
-            text-align: center;
-            margin-bottom: 15px;
-            padding: 15px;
-            background: linear-gradient(135deg, #ff9a9e, #fecfef);
-            border-radius: 15px;
-            color: white;
-            text-shadow: 0 1px 3px rgba(0,0,0,0.3);
-        }
-        
-        .month-name {
-            font-size: 1.4rem;
-            font-weight: bold;
-            margin-bottom: 5px;
-        }
-        
-        .month-english {
-            font-size: 0.9rem;
-            opacity: 0.9;
-        }
-        
-        .weekdays {
-            display: grid;
-            grid-template-columns: repeat(7, 1fr);
-            gap: 2px;
-            margin-bottom: 10px;
-        }
-        
-        .weekday {
-            text-align: center;
-            padding: 8px 4px;
-            font-weight: bold;
-            font-size: 0.9rem;
-            background: #fce4ec;
-            color: #ad1457;
-            border-radius: 8px;
-        }
-        
-        .days {
-            display: grid;
-            grid-template-columns: repeat(7, 1fr);
-            gap: 2px;
-        }
-        
-        .day {
-            aspect-ratio: 1;
             display: flex;
-            align-items: center;
-            justify-content: center;
-            border-radius: 8px;
-            font-size: 0.9rem;
-            position: relative;
-            cursor: pointer;
-            transition: all 0.2s ease;
+            min-height: 100vh;
         }
-        
-        .day:hover {
-            transform: scale(1.1);
-        }
-        
-        .day.current-month {
-            background: rgba(255, 255, 255, 0.7);
-            color: #333;
-        }
-        
-        .day.other-month {
-            background: rgba(255, 255, 255, 0.3);
-            color: #999;
-        }
-        
-        .day.holiday {
-            background: linear-gradient(135deg, #ff6b9d, #ff8fab);
-            color: white;
-            font-weight: bold;
-        }
-        
-        .day.weekend {
-            background: linear-gradient(135deg, #ffb3ba, #ffdfba);
-            color: #8e44ad;
-        }
-        
-        .day.today {
-            background: linear-gradient(135deg, #667eea, #764ba2);
-            color: white;
-            font-weight: bold;
-            box-shadow: 0 0 15px rgba(102, 126, 234, 0.5);
-        }
-        
-        .day.has-note {
-            position: relative;
-        }
-        
-        .day.has-note::after {
-            content: '📝';
-            position: absolute;
-            top: 2px;
-            right: 2px;
-            font-size: 0.6rem;
-        }
-        
-        .holiday-name, .note-preview {
-            position: absolute;
-            bottom: -18px;
-            left: 50%;
-            transform: translateX(-50%);
-            font-size: 0.7rem;
-            background: rgba(255, 107, 157, 0.9);
-            color: white;
-            padding: 2px 6px;
-            border-radius: 10px;
-            white-space: nowrap;
-            z-index: 10;
-            opacity: 0;
-            transition: opacity 0.3s ease;
-            max-width: 120px;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-        
-        .note-preview {
-            background: rgba(142, 68, 173, 0.9);
-        }
-        
-        .day.holiday:hover .holiday-name,
-        .day.has-note:hover .note-preview {
-            opacity: 1;
-        }
-        
-        /* 小軟AI助手區域 */
-        .ai-assistant {
+
+        /* 左側選單 */
+        .sidebar {
+            width: 280px;
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(10px);
+            box-shadow: 2px 0 20px rgba(0,0,0,0.1);
+            padding: 30px 0;
             position: fixed;
-            bottom: 20px;
-            right: 20px;
-            z-index: 1000;
+            height: 100vh;
+            overflow-y: auto;
         }
-        
-        .cat-reminder {
-            background-color: #fff2f9;
-            border: 2px dashed #ffa0d2;
-            padding: 1rem;
-            border-radius: 20px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-            font-size: 0.9rem;
-            color: #8e44ad;
-            max-width: 300px;
-            cursor: pointer;
-            transition: all 0.3s ease;
+
+        .logo {
+            text-align: center;
+            margin-bottom: 40px;
+            padding: 0 20px;
         }
-        
-        .cat-reminder:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 15px rgba(255, 160, 210, 0.3);
+
+        .logo h1 {
+            background: linear-gradient(45deg, #ff9a9e, #fecfef, #fecfef);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-size: 24px;
+            font-weight: bold;
         }
-        
-        .xiaoruan {
-            position: absolute;
-            top: -60px;
-            right: 10px;
-            width: 60px;
-            height: auto;
-            pointer-events: none;
-        }
-        
-        .ai-thinking {
-            display: none;
-            color: #667eea;
-            font-style: italic;
+
+        .logo .subtitle {
+            font-size: 12px;
+            color: #999;
             margin-top: 5px;
         }
-        
-        .bubble {
-            position: fixed;
-            bottom: 140px;
-            right: 120px;
-            background-color: #fff;
-            border: 1px solid #d63384;
-            border-radius: 15px;
-            padding: 10px 15px;
-            font-size: 0.9rem;
-            color: #d63384;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
-            z-index: 1001;
-            display: none;
-            animation: fadeIn 0.3s ease;
-            max-width: 250px;
-        }
-        
-        @keyframes fadeIn {
-            from { opacity: 0; transform: scale(0.95); }
-            to { opacity: 1; transform: scale(1); }
-        }
-        
-        /* AI功能按鈕 */
-        .ai-features {
-            display: flex;
-            gap: 10px;
-            justify-content: center;
-            margin: 20px 0;
-            flex-wrap: wrap;
-        }
-        
-        .ai-btn {
-            padding: 10px 20px;
-            background: linear-gradient(135deg, #667eea, #764ba2);
-            color: white;
-            border: none;
-            border-radius: 25px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            font-size: 0.9rem;
-        }
-        
-        .ai-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
-        }
-        
-        .ai-btn:disabled {
-            opacity: 0.6;
-            cursor: not-allowed;
-            transform: none;
-        }
-        
-        .loading {
-            display: inline-block;
-            width: 16px;
-            height: 16px;
-            border: 2px solid #f3f3f3;
-            border-top: 2px solid #ff6b9d;
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-            margin-right: 5px;
-        }
-        
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-        
-        /* 記事編輯模態框 */
-        .modal {
-            display: none;
-            position: fixed;
-            z-index: 1000;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0,0,0,0.5);
-            backdrop-filter: blur(5px);
-        }
-        
-        .modal-content {
-            background: linear-gradient(135deg, #ffeef0 0%, #fff5f5 50%, #fef0f8 100%);
-            margin: 10% auto;
-            padding: 30px;
-            border-radius: 20px;
-            width: 90%;
-            max-width: 500px;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
-            position: relative;
-        }
-        
-        .close {
-            color: #d63384;
-            float: right;
-            font-size: 28px;
-            font-weight: bold;
-            cursor: pointer;
-            position: absolute;
-            right: 20px;
-            top: 15px;
-        }
-        
-        .close:hover {
-            color: #ad1457;
-        }
-        
-        .modal-header {
-            color: #d63384;
-            font-size: 1.5rem;
-            margin-bottom: 20px;
-            text-align: center;
-        }
-        
-        .note-textarea {
-            width: 100%;
-            height: 150px;
-            padding: 15px;
-            border: 2px solid #fce4ec;
-            border-radius: 15px;
-            font-size: 1rem;
-            font-family: inherit;
-            resize: vertical;
-            background: rgba(255, 255, 255, 0.8);
-            color: #333;
-        }
-        
-        .note-textarea:focus {
-            outline: none;
-            border-color: #ff6b9d;
-            box-shadow: 0 0 10px rgba(255, 107, 157, 0.3);
-        }
-        
-        .modal-buttons {
-            display: flex;
-            gap: 15px;
-            justify-content: center;
-            margin-top: 20px;
-        }
-        
-        .btn {
-            padding: 12px 25px;
-            border: none;
-            border-radius: 25px;
-            font-size: 1rem;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            font-weight: bold;
-        }
-        
-        .btn-save {
-            background: linear-gradient(135deg, #ff6b9d, #ff8fab);
-            color: white;
-        }
-        
-        .btn-save:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(255, 107, 157, 0.4);
-        }
-        
-        .btn-delete {
-            background: linear-gradient(135deg, #ffb3ba, #ffdfba);
-            color: #8e44ad;
-        }
-        
-        .btn-delete:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(255, 179, 186, 0.4);
-        }
-        
-        .btn-cancel {
-            background: rgba(255, 255, 255, 0.8);
+
+        .menu-item {
+            display: block;
+            padding: 15px 25px;
+            text-decoration: none;
             color: #666;
-            border: 2px solid #ddd;
+            transition: all 0.3s ease;
+            border-left: 4px solid transparent;
+            margin: 5px 0;
         }
-        
-        .btn-cancel:hover {
-            background: rgba(255, 255, 255, 1);
-            transform: translateY(-2px);
+
+        .menu-item:hover {
+            background: rgba(255, 182, 193, 0.2);
+            border-left-color: #ffb6c1;
+            transform: translateX(5px);
         }
-        
-        .legend {
-            margin-top: 30px;
-            padding: 20px;
-            background: rgba(255, 255, 255, 0.4);
-            border-radius: 20px;
+
+        .menu-item.active {
+            background: linear-gradient(90deg, rgba(255, 182, 193, 0.3), transparent);
+            border-left-color: #ff9a9e;
+            color: #ff6b8a;
+        }
+
+        .menu-item .icon {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            margin-right: 10px;
+            border-radius: 50%;
+            vertical-align: middle;
+        }
+
+        .icon-home { background: linear-gradient(45deg, #ffb6c1, #ffc0cb); }
+        .icon-calendar { background: linear-gradient(45deg, #fff2b3, #ffe4b5); }
+        .icon-blog { background: linear-gradient(45deg, #b3d9ff, #c7ecff); }
+        .icon-gallery { background: linear-gradient(45deg, #e6b3ff, #f0c7ff); }
+        .icon-about { background: linear-gradient(45deg, #b3ffb3, #c7ffc7); }
+        .icon-contact { background: linear-gradient(45deg, #ffcc99, #ffd9b3); }
+
+        /* 主要內容區 */
+        .main-content {
+            margin-left: 280px;
+            flex: 1;
+            padding: 40px;
+        }
+
+        .header {
+            background: rgba(255, 255, 255, 0.8);
             backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.1);
         }
-        
-        .legend h3 {
-            color: #d63384;
-            margin-bottom: 15px;
-            text-align: center;
+
+        .header h2 {
+            color: #ff6b8a;
+            font-size: 28px;
+            margin-bottom: 10px;
         }
-        
-        .legend-items {
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: center;
-            gap: 20px;
+
+        .header p {
+            color: #666;
+            font-size: 16px;
         }
-        
-        .legend-item {
+
+        .content-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 25px;
+        }
+
+        .card {
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 25px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(0,0,0,0.15);
+        }
+
+        .card-header {
             display: flex;
             align-items: center;
-            gap: 8px;
+            margin-bottom: 15px;
         }
-        
-        .legend-color {
-            width: 16px;
-            height: 16px;
-            border-radius: 4px;
+
+        .card-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            margin-right: 15px;
         }
-        
-        .legend-color.holiday {
-            background: linear-gradient(135deg, #ff6b9d, #ff8fab);
+
+        .card h3 {
+            color: #555;
+            font-size: 18px;
         }
-        
-        .legend-color.weekend {
-            background: linear-gradient(135deg, #ffb3ba, #ffdfba);
+
+        .card p {
+            color: #777;
+            line-height: 1.6;
         }
-        
-        .legend-color.today {
-            background: linear-gradient(135deg, #667eea, #764ba2);
+
+        .calendar-highlight {
+            background: linear-gradient(135deg, #fff2b3, #ffe4b5);
+            border: 2px solid #ffd700;
         }
-        
+
+        .calendar-highlight h3 {
+            color: #cc9900;
+        }
+
+        /* 響應式設計 */
         @media (max-width: 768px) {
-            .calendar-grid {
-                grid-template-columns: 1fr;
+            .sidebar {
+                width: 100%;
+                height: auto;
+                position: relative;
             }
             
-            .header h1 {
-                font-size: 2rem;
+            .main-content {
+                margin-left: 0;
+                padding: 20px;
             }
             
-            .legend-items, .ai-features {
+            .container {
                 flex-direction: column;
-                align-items: center;
             }
+        }
+
+        /* 裝飾性元素 */
+        .floating-shapes {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        .shape {
+            position: absolute;
+            border-radius: 50%;
+            opacity: 0.1;
+            animation: float 6s ease-in-out infinite;
+        }
+
+        .shape1 {
+            width: 80px;
+            height: 80px;
+            background: #ffb6c1;
+            top: 20%;
+            left: 10%;
+            animation-delay: 0s;
+        }
+
+        .shape2 {
+            width: 60px;
+            height: 60px;
+            background: #b3d9ff;
+            top: 60%;
+            right: 15%;
+            animation-delay: 2s;
+        }
+
+        .shape3 {
+            width: 100px;
+            height: 100px;
+            background: #e6b3ff;
+            bottom: 20%;
+            left: 20%;
+            animation-delay: 4s;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-20px); }
         }
     </style>
 </head>
 <body>
+    <!-- 裝飾性浮動形狀 -->
+    <div class="floating-shapes">
+        <div class="shape shape1"></div>
+        <div class="shape shape2"></div>
+        <div class="shape shape3"></div>
+    </div>
+
     <div class="container">
-        <div class="header">
-            <h1>🐾 小軟的萌萌行事曆 2025 年版 🐾</h1>
-            <p>Taiwan Calendar 2025 - 包含國定假日與傳統節慶</p>
-            <div class="api-status" id="apiStatus">🔄 連接AI服務中...</div>
-        </div>
-        
-        <!-- AI功能按鈕 -->
-        <div class="ai-features">
-            <button class="ai-btn" onclick="getAIAdvice('schedule')" id="scheduleBtn">📅 今日行程建議</button>
-            <button class="ai-btn" onclick="getAIAdvice('weather')" id="weatherBtn">🌤️ 天氣穿搭</button>
-            <button class="ai-btn" onclick="getAIAdvice('motivation')" id="motivationBtn">💪 今日激勵</button>
-            <button class="ai-btn" onclick="getAIAdvice('health')" id="healthBtn">🏃‍♀️ 健康提醒</button>
-        </div>
-        
-        <div class="calendar-grid" id="calendar">
-            <!-- JavaScript will generate calendar here -->
-        </div>
-        
-        <div class="legend">
-            <h3>圖例說明</h3>
-            <div class="legend-items">
-                <div class="legend-item">
-                    <div class="legend-color holiday"></div>
-                    <span>國定假日</span>
+        <!-- 左側選單 -->
+        <nav class="sidebar">
+            <div class="logo">
+                <h1>🌸 Beauty部落格 🌸</h1>
+                <div class="subtitle">小軟貓咪的美麗世界</div>
+            </div>
+            
+            <a href="#" class="menu-item active">
+                <span class="icon icon-home"></span>
+                首頁
+            </a>
+            
+            <a href="#" class="menu-item">
+                <span class="icon icon-calendar"></span>
+                小軟2025行事曆 🐱
+            </a>
+            
+            <a href="#" class="menu-item">
+                <span class="icon icon-blog"></span>
+                部落格文章
+            </a>
+            
+            <a href="#" class="menu-item">
+                <span class="icon icon-gallery"></span>
+                相片集
+            </a>
+            
+            <a href="#" class="menu-item">
+                <span class="icon icon-about"></span>
+                關於我
+            </a>
+            
+            <a href="#" class="menu-item">
+                <span class="icon icon-contact"></span>
+                聯絡方式
+            </a>
+        </nav>
+
+        <!-- 主要內容 -->
+        <main class="main-content">
+            <header class="header">
+                <h2>歡迎來到Beauty的馬卡龍世界 🐱✨</h2>
+                <p>跟著小軟貓咪一起探索美麗生活，記錄每一個可愛的瞬間</p>
+            </header>
+
+            <div class="content-cards">
+                <div class="card calendar-highlight">
+                    <div class="card-header">
+                        <div class="card-icon" style="background: linear-gradient(45deg, #fff2b3, #ffe4b5);"></div>
+                        <h3>🗓️ 小軟2025行事曆</h3>
+                    </div>
+                    <p>記錄小軟貓咪2025年的重要日程！包含疫苗時間、美容預約、生日慶祝，還有那些值得紀念的可愛時光。</p>
                 </div>
-                <div class="legend-item">
-                    <div class="legend-color weekend"></div>
-                    <span>週末</span>
+
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-icon icon-blog"></div>
+                        <h3>📝 Beauty日記</h3>
+                    </div>
+                    <p>分享小軟的日常生活趣事，美容保養心得、可愛瞬間記錄，還有那些讓人融化的貓咪日常。</p>
                 </div>
-                <div class="legend-item">
-                    <div class="legend-color today"></div>
-                    <span>今日</span>
+
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-icon icon-gallery"></div>
+                        <h3>📸 小軟寫真集</h3>
+                    </div>
+                    <p>捕捉小軟最美的瞬間！從慵懶的午後時光到調皮的玩耍模樣，每一張照片都是珍貴的回憶。</p>
                 </div>
-                <div class="legend-item">
-                    <span>📝</span>
-                    <span>有記事</span>
+
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-icon icon-about"></div>
+                        <h3>💫 關於小軟</h3>
+                    </div>
+                    <p>認識我們家的小公主！小軟是一隻充滿魅力的貓咪，擁有獨特的個性和無窮的可愛魅力。</p>
                 </div>
             </div>
-        </div>
-    </div>
-
-    <!-- AI小軟助手 -->
-    <div class="ai-assistant">
-        <img src="images/xiaoruan.png" alt="AI小軟" class="xiaoruan" />
-        <div class="cat-reminder" id="aiReminder" onclick="askAIChat()">
-            🤖 AI小軟說：<br>
-            <span id="aiMessage">嗨！我是你的AI助手小軟，點我跟我聊天吧！</span><br>
-            <div class="ai-thinking" id="aiThinking">🤔 小軟正在思考中...</div>
-        </div>
-    </div>
-    
-    <!-- 對話泡泡 -->
-    <div class="bubble" id="catBubble"></div>
-
-    <!-- 記事編輯模態框 -->
-    <div id="noteModal" class="modal">
-        <div class="modal-content">
-            <span class="close">&times;</span>
-            <div class="modal-header" id="modalDate">編輯記事</div>
-            <textarea id="noteTextarea" class="note-textarea" placeholder="在這裡寫下你的記事... 🌸"></textarea>
-            <div class="modal-buttons">
-                <button class="btn btn-save" onclick="saveNote()">💾 儲存</button>
-                <button class="btn btn-delete" onclick="deleteNote()">🗑️ 刪除</button>
-                <button class="btn btn-cancel" onclick="closeModal()">❌ 取消</button>
-            </div>
-        </div>
+        </main>
     </div>
 
     <script>
-        // Replit API 設定
-        const REPLIT_API_URL = 'https://3b1eefd1-fd83-4a70-8fca-4205af98d759-00-1cxyzbc5g7szh.pike.replit.dev'; // 替換成你的Replit網址
-        
-        // 行事曆相關變數
-        const holidays = {
-            '2025-01-01': '元旦',
-            '2025-01-25': '農曆除夕',
-            '2025-01-26': '春節',
-            '2025-01-27': '春節',
-            '2025-01-28': '春節',
-            '2025-01-29': '春節',
-            '2025-02-28': '和平紀念日',
-            '2025-04-04': '兒童節',
-            '2025-04-05': '清明節',
-            '2025-05-01': '勞動節',
-            '2025-05-31': '端午節',
-            '2025-10-06': '中秋節',
-            '2025-10-10': '國慶日',
-            '2025-10-11': '國慶日補假'
-        };
-
-        let notes = {};
-        let currentEditingDate = '';
-        let isAPIConnected = false;
-
-        const monthNames = [
-            { zh: '一月', en: 'January' },
-            { zh: '二月', en: 'February' },
-            { zh: '三月', en: 'March' },
-            { zh: '四月', en: 'April' },
-            { zh: '五月', en: 'May' },
-            { zh: '六月', en: 'June' },
-            { zh: '七月', en: 'July' },
-            { zh: '八月', en: 'August' },
-            { zh: '九月', en: 'September' },
-            { zh: '十月', en: 'October' },
-            { zh: '十一月', en: 'November' },
-            { zh: '十二月', en: 'December' }
-        ];
-
-        const weekdays = ['日', '一', '二', '三', '四', '五', '六'];
-
-        // 測試API連接
-        async function testAPIConnection() {
-            try {
-                const response = await fetch(`${REPLIT_API_URL}/api/test`, {
-                    method: 'GET',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    }
+        // 選單互動效果
+        document.querySelectorAll('.menu-item').forEach(item => {
+            item.addEventListener('click', function(e) {
+                e.preventDefault();
+                
+                // 移除所有active狀態
+                document.querySelectorAll('.menu-item').forEach(link => {
+                    link.classList.remove('active');
                 });
                 
-                if (response.ok) {
-                    isAPIConnected = true;
-                    updateAPIStatus('🤖 AI小軟已就緒', false);
-                } else {
-                    throw new Error('API連接失敗');
+                // 添加active到點擊的項目
+                this.classList.add('active');
+                
+                // 更新主要內容標題
+                const itemText = this.textContent.trim();
+                const header = document.querySelector('.header h2');
+                const description = document.querySelector('.header p');
+                
+                switch(itemText) {
+                    case '首頁':
+                        header.textContent = '歡迎來到Beauty的馬卡龍世界 🐱✨';
+                        description.textContent = '跟著小軟貓咪一起探索美麗生活，記錄每一個可愛的瞬間';
+                        break;
+                    case '小軟2025行事曆 🐱':
+                        header.textContent = '🗓️ 小軟2025行事曆';
+                        description.textContent = '規劃小軟貓咪美好的2025年，記錄重要的日子和可愛的回憶';
+                        break;
+                    case '部落格文章':
+                        header.textContent = '📝 Beauty日記';
+                        description.textContent = '分享小軟的日常趣事和美麗生活點滴';
+                        break;
+                    case '相片集':
+                        header.textContent = '📸 小軟寫真集';
+                        description.textContent = '用鏡頭捕捉小軟貓咪最美的瞬間';
+                        break;
+                    case '關於我':
+                        header.textContent = '💫 關於小軟';
+                        description.textContent = '認識我們家的小公主，了解小軟貓咪的可愛故事';
+                        break;
+                    case '聯絡方式':
+                        header.textContent = '📧 聯絡方式';
+                        description.textContent = '歡迎與我們交流，一起分享關於貓咪的美好時光';
+                        break;
                 }
-            } catch (error) {
-                isAPIConnected = false;
-                updateAPIStatus('🔌 AI服務離線中', true);
-                console.log('API連接失敗，使用本地模式');
-            }
-        }
+            });
+        });
 
-        // 更新API狀態
-        function updateAPIStatus(status, isOffline = false) {
-            const statusElement = document.getElementById('apiStatus');
-            statusElement.textContent = status;
-            if (isOffline) {
-                statusElement.classList.add('offline');
-            } else {
-                statusElement.classList.remove('offline');
-            }
-        }
-
-        // 調用Replit API
-        async function callReplitAPI(endpoint, data) {
-            if (!isAPIConnected) {
-                // 本地模式的回應
-                const localResponses = {
-                    schedule: "🐱 今天建議早上處理重要工作，下午適合輕鬆活動喔～",
-                    weather: "😸 今天適合穿輕薄的衣服，記得帶外套預防變天！",
-                    motivation: "💪 你是最棒的！每一天都是新的開始，加油！",
-                    health: "🏃‍♀️ 記得多喝水、適度運動，身體健康最重要～",
-                    chat: "🐱 雖然小軟暫時離線，但還是想陪伴你～有什麼煩惱都可以說給小軟聽！"
-                };
-                
-                // 模擬延遲
-                await new Promise(resolve => setTimeout(resolve, 1000));
-                return { response: localResponses[data.type] || localResponses.chat };
-            }
-
-            try {
-                const response = await fetch(`${REPLIT_API_URL}/api/${endpoint}`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify(data)
-                });
-
-                if (!response.ok) {
-                    throw new Error('API請求失敗');
-                }
-
-                return await response.json();
-            } catch (error) {
-                console.error('API調用失敗:', error);
-                // 如果API失敗，切換到本地模式
-                isAPIConnected = false;
-                updateAPIStatus('🔌 AI服務離線中', true);
-                return await callReplitAPI(endpoint, data); // 遞歸調用本地模式
-            }
-        }
-
-        // 獲取AI建議
-        async function getAIAdvice(type) {
-            const buttons = {
-                schedule: 'scheduleBtn',
-                weather: 'weatherBtn', 
-                motivation: 'motivationBtn',
-                health: 'healthBtn'
-            };
+        // 卡片懸停效果
+        document.querySelectorAll('.card').forEach(card => {
+            card.addEventListener('mouseenter', function() {
+                this.style.transform = 'translateY(-5px) scale(1.02)';
+            });
             
-            const button = document.getElementById(buttons[type]);
-            const originalText = button.innerHTML;
-            
-            // 顯示載入狀態
-            button.innerHTML = '<div class="loading"></div>思考中...';
-            button.disabled = true;
-            
-            try {
-                const result = await callReplitAPI('advice', { 
-                    type: type,
-                    date: new Date().toISOString().split('T')[0],
-                    userNotes: notes
-                });
-                
-                // 更新小軟的訊息
-                document.getElementById('aiMessage').innerHTML = result.response;
-                
-                // 顯示泡泡
-                const bubble = document.getElementById('catBubble');
-                bubble.textContent = result.response;
-                bubble.style.display = 'block';
-                setTimeout(() => {
-                    bubble.style.display = 'none';
-                }, 4000);
-                
-            } catch (error) {
-                console.error('獲取AI建議失敗:', error);
-                document.getElementById('aiMessage').textContent = '🐱 小軟暫時累了，等等再試試吧～';
-            }
-            
-            // 恢復按鈕
-            button.innerHTML = originalText;
-            button.disabled = false;
-        }
-
-        // AI聊天
-        async function askAIChat() {
-            const thinking = document.getElementById('aiThinking');
-            thinking.style.display = 'block';
-            
-            try {
-                const result = await callReplitAPI('chat', {
-                    message: '給我一個溫馨的生活建議',
-                    context: {
-                        currentTime: new Date().toLocaleString('zh-TW'),
-                        hasNotes: Object.keys(notes).length > 0
-                    }
-                });
-                
-                document.getElementById('aiMessage').innerHTML = result.response;
-                
-            } catch (error) {
-                console.error('AI聊天失敗:', error);
-                document.getElementById('aiMessage').textContent = '🐱 小軟的腦袋有點卡住了～';
-            }
-            
-            thinking.style.display = 'none';
-        }
-
-        // 行事曆功能（保持原有功能）
-        function formatDate(year, month, day) {
-            return `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
-        }
-
-        function isToday(year, month, day) {
-            const today = new Date();
-            return year === today.getFullYear() && 
-                   month === today.getMonth() + 1 && 
-                   day === today.getDate();
-        }
-
-        function openNoteModal(dateStr, dayElement) {
-            currentEditingDate = dateStr;
-            const modal = document.getElementById('noteModal');
-            const textarea = document.getElementById('noteTextarea');
-            const modalDate = document.getElementById('modalDate');
-            
-            const date = new Date(dateStr);
-            const formattedDate = `${date.getFullYear()}年${date.getMonth() + 1}月${date.getDate()}日`;
-            modalDate.textContent = `${formattedDate} 記事`;
-            
-            textarea.value = notes[dateStr] || '';
-            modal.style.display = 'block';
-            setTimeout(() => textarea.focus(), 100);
-        }
-
-        function closeModal() {
-            document.getElementById('noteModal').style.display = 'none';
-        }
-
-        function saveNote() {
-            const textarea = document.getElementById('noteTextarea');
-            const noteText = textarea.value.trim();
-            
-            if (noteText) {
-                notes[currentEditingDate] = noteText;
-            } else {
-                delete notes[currentEditingDate];
-            }
-            
-            updateDayDisplay(currentEditingDate);
-            closeModal();
-        }
-
-        function deleteNote() {
-            delete notes[currentEditingDate];
-            updateDayDisplay(currentEditingDate);
-            closeModal();
-        }
-
-        function updateDayDisplay(dateStr) {
-            const dayElement = document.querySelector(`[data-date="${dateStr}"]`);
-            if (dayElement) {
-                dayElement.classList.remove('has-note');
-                const existingPreview = dayElement.querySelector('.note-preview');
-                if (existingPreview) {
-                    existingPreview.remove();
-                }
-                
-                if (notes[dateStr]) {
-                    dayElement.classList.add('has-note');
-                    const notePreview = document.createElement('div');
-                    notePreview.className = 'note-preview';
-                    notePreview.textContent = notes[dateStr];
-                    dayElement.appendChild(notePreview);
-                }
-            }
-        }
-
-        function generateCalendar() {
-            const calendarContainer = document.getElementById('calendar');
-            const year = 2025;
-
-            for (let month = 1; month <= 12; month++) {
-                const monthDiv = document.createElement('div');
-                monthDiv.className = 'month';
-
-                const headerDiv = document.createElement('div');
-                headerDiv.className = 'month-header';
-                headerDiv.innerHTML = `
-                    <div class="month-name">${monthNames[month - 1].zh}</div>
-                    <div class="month-english">${monthNames[month - 1].en} ${year}</div>
-                `;
-                monthDiv.appendChild(headerDiv);
-
-                const weekdaysDiv = document.createElement('div');
-                weekdaysDiv.className = 'weekdays';
-                weekdays.forEach(day => {
-                    const dayDiv = document.createElement('div');
-                    dayDiv.className = 'weekday';
-                    dayDiv.textContent = day;
-                    weekdaysDiv.appendChild(dayDiv);
+            card.addEventListener('mouseleave', function() {
+                this.style.transform = 'translateY(0) scale(1)';
+            });
+        });
+    </script>
+</body>
+</html>
