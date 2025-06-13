@@ -1,0 +1,763 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>💬 小軟即時通</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Microsoft JhengHei', '微軟正黑體', Arial, sans-serif;
+            background: linear-gradient(135deg, #f093fb, #f5576c, #4facfe);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .chat-container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 25px;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.1);
+            overflow: hidden;
+            height: 90vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .chat-header {
+            background: linear-gradient(135deg, #f093fb, #f5576c);
+            color: white;
+            padding: 25px 30px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: relative;
+        }
+
+        .chat-header-left {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .back-btn {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            padding: 8px 16px;
+            border-radius: 20px;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            font-size: 14px;
+        }
+
+        .back-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: scale(1.05);
+        }
+
+        .chat-avatar {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #fff2e6, #ffe4b5);
+            border: 3px solid rgba(255, 255, 255, 0.8);
+            background-image: url('https://beautyzx.github.io/images/xiaoruan.png');
+            background-size: cover;
+            background-position: center;
+        }
+
+        .chat-info h1 {
+            font-size: 24px;
+            margin-bottom: 5px;
+        }
+
+        .chat-status {
+            font-size: 14px;
+            opacity: 0.9;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #90ee90;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .chat-settings {
+            display: flex;
+            gap: 10px;
+        }
+
+        .settings-btn {
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            color: white;
+            padding: 8px 12px;
+            border-radius: 15px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .settings-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        .chat-messages {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            background: linear-gradient(135deg, #ffeef8, #f0f8ff);
+        }
+
+        .message {
+            margin-bottom: 20px;
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            opacity: 0;
+            animation: fadeInUp 0.5s ease forwards;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .message.user {
+            flex-direction: row-reverse;
+        }
+
+        .message-avatar {
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            flex-shrink: 0;
+        }
+
+        .user .message-avatar {
+            background: linear-gradient(135deg, #4facfe, #00f2fe);
+        }
+
+        .bot .message-avatar {
+            background: linear-gradient(135deg, #fff2e6, #ffe4b5);
+            background-image: url('https://beautyzx.github.io/images/xiaoruan.png');
+            background-size: cover;
+            background-position: center;
+            border: 2px solid #fff;
+        }
+
+        .message-content {
+            max-width: 70%;
+            padding: 15px 20px;
+            border-radius: 20px;
+            position: relative;
+            word-wrap: break-word;
+        }
+
+        .user .message-content {
+            background: linear-gradient(135deg, #4facfe, #00f2fe);
+            color: white;
+            border-bottom-right-radius: 5px;
+        }
+
+        .bot .message-content {
+            background: white;
+            border: 2px solid #f093fb;
+            color: #333;
+            border-bottom-left-radius: 5px;
+        }
+
+        .message-time {
+            font-size: 11px;
+            opacity: 0.7;
+            margin-top: 5px;
+            text-align: right;
+        }
+
+        .user .message-time {
+            text-align: left;
+        }
+
+        .typing-indicator {
+            display: none;
+            padding: 15px 20px;
+            background: white;
+            border: 2px solid #f093fb;
+            border-radius: 20px;
+            border-bottom-left-radius: 5px;
+            margin-left: 47px;
+        }
+
+        .typing-dots {
+            display: flex;
+            gap: 4px;
+        }
+
+        .typing-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #f093fb;
+            animation: typingBounce 1.4s infinite ease-in-out;
+        }
+
+        .typing-dot:nth-child(1) { animation-delay: -0.32s; }
+        .typing-dot:nth-child(2) { animation-delay: -0.16s; }
+
+        @keyframes typingBounce {
+            0%, 80%, 100% { transform: scale(0); }
+            40% { transform: scale(1); }
+        }
+
+        .chat-input-area {
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.9);
+            border-top: 2px solid rgba(240, 147, 251, 0.2);
+        }
+
+        .api-setup {
+            background: linear-gradient(135deg, #fff2b3, #ffe4b5);
+            border: 2px solid #ffd700;
+            border-radius: 15px;
+            padding: 15px;
+            margin-bottom: 15px;
+            display: none;
+        }
+
+        .api-setup.show {
+            display: block;
+        }
+
+        .api-setup h4 {
+            color: #cc9900;
+            margin-bottom: 10px;
+            font-size: 14px;
+        }
+
+        .api-input {
+            width: 100%;
+            padding: 10px 15px;
+            border: 2px solid #ffd700;
+            border-radius: 15px;
+            font-size: 14px;
+            margin-bottom: 10px;
+        }
+
+        .api-btn {
+            background: linear-gradient(135deg, #ffd700, #ffed4e);
+            color: #996600;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 12px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        .chat-input-container {
+            display: flex;
+            gap: 15px;
+            align-items: flex-end;
+        }
+
+        .chat-input {
+            flex: 1;
+            padding: 15px 20px;
+            border: 2px solid #f093fb;
+            border-radius: 25px;
+            font-size: 16px;
+            resize: none;
+            max-height: 120px;
+            min-height: 50px;
+            font-family: inherit;
+            transition: border-color 0.3s ease;
+        }
+
+        .chat-input:focus {
+            outline: none;
+            border-color: #f5576c;
+        }
+
+        .send-btn {
+            background: linear-gradient(135deg, #f093fb, #f5576c);
+            color: white;
+            border: none;
+            padding: 15px 20px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            min-width: 80px;
+        }
+
+        .send-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(240, 147, 251, 0.4);
+        }
+
+        .send-btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .quick-replies {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+        }
+
+        .quick-reply {
+            background: rgba(240, 147, 251, 0.1);
+            border: 2px solid #f093fb;
+            color: #f5576c;
+            padding: 8px 15px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+
+        .quick-reply:hover {
+            background: #f093fb;
+            color: white;
+        }
+
+        .welcome-message {
+            text-align: center;
+            padding: 40px 20px;
+            color: #666;
+        }
+
+        .welcome-message h3 {
+            color: #f093fb;
+            margin-bottom: 15px;
+            font-size: 20px;
+        }
+
+        .error-message {
+            background: linear-gradient(135deg, #ff6b6b, #ff8e8e);
+            color: white;
+            padding: 10px 15px;
+            border-radius: 15px;
+            margin-bottom: 10px;
+            font-size: 14px;
+        }
+
+        /* 響應式設計 */
+        @media (max-width: 768px) {
+            .chat-container {
+                height: 95vh;
+                margin: 10px;
+            }
+            
+            .chat-header {
+                padding: 15px 20px;
+            }
+            
+            .chat-header h1 {
+                font-size: 20px;
+            }
+            
+            .message-content {
+                max-width: 85%;
+            }
+            
+            .quick-replies {
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="chat-container">
+        <div class="chat-header">
+            <div class="chat-header-left">
+                <a href="index.html" class="back-btn">← 回首頁</a>
+                <div class="chat-avatar"></div>
+                <div class="chat-info">
+                    <h1>💬 小軟即時通</h1>
+                    <div class="chat-status">
+                        <div class="status-dot"></div>
+                        <span id="statusText">準備就緒</span>
+                    </div>
+                </div>
+            </div>
+            <div class="chat-settings">
+                <button class="settings-btn" onclick="toggleApiSetup()" title="API設定">⚙️</button>
+                <button class="settings-btn" onclick="clearChat()" title="清空對話">🗑️</button>
+            </div>
+        </div>
+
+        <div class="chat-messages" id="chatMessages">
+            <div class="welcome-message">
+                <h3>🐱 歡迎與小軟聊天！</h3>
+                <p>我是小軟，一隻愛聊天的AI貓咪！<br>
+                你可以跟我聊任何話題，我會用我的貓咪智慧來回答你～</p>
+                <br>
+                <p><strong>使用說明：</strong><br>
+                1. 點擊右上角⚙️設定你的Gemini API密鑰<br>
+                2. 或者使用下方的快速回覆開始對話</p>
+            </div>
+            
+            <div class="typing-indicator" id="typingIndicator">
+                <div class="typing-dots">
+                    <div class="typing-dot"></div>
+                    <div class="typing-dot"></div>
+                    <div class="typing-dot"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="chat-input-area">
+            <div class="api-setup" id="apiSetup">
+                <h4>🔑 Gemini API 設定</h4>
+                <input type="password" class="api-input" id="apiKeyInput" placeholder="請輸入你的 Gemini API Key">
+                <button class="api-btn" onclick="saveApiKey()">💾 儲存設定</button>
+                <p style="font-size: 12px; color: #996600; margin-top: 8px;">
+                    💡 在 <a href="https://aistudio.google.com/app/apikey" target="_blank">Google AI Studio</a> 取得免費API密鑰
+                </p>
+            </div>
+
+            <div class="quick-replies">
+                <div class="quick-reply" onclick="sendQuickReply('你好小軟！')">👋 打招呼</div>
+                <div class="quick-reply" onclick="sendQuickReply('今天天氣如何？')">🌤️ 聊天氣</div>
+                <div class="quick-reply" onclick="sendQuickReply('說個笑話給我聽')">😸 聽笑話</div>
+                <div class="quick-reply" onclick="sendQuickReply('你喜歡什麼？')">❤️ 了解小軟</div>
+                <div class="quick-reply" onclick="sendQuickReply('陪我聊天')">💬 隨意聊聊</div>
+            </div>
+
+            <div class="chat-input-container">
+                <textarea class="chat-input" id="messageInput" placeholder="輸入訊息...按Enter發送，Shift+Enter換行" 
+                         onkeydown="handleKeyPress(event)"></textarea>
+                <button class="send-btn" id="sendBtn" onclick="sendMessage()">
+                    <span id="sendBtnText">發送</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        class XiaoruanChat {
+            constructor() {
+                this.apiKey = localStorage.getItem('geminiApiKey') || '';
+                this.chatHistory = [];
+                this.isTyping = false;
+                
+                // 小軟的個性設定
+                this.xiaoruanPersonality = `你是小軟，一隻可愛聊明的貓咪AI助手。你的個性特點：
+- 溫暖友善，喜歡用貓咪的方式表達（偶爾會說"喵"）
+- 充滿好奇心，對所有話題都很感興趣
+- 會給出實用的建議，但用可愛的方式表達
+- 記得你是一隻貓，所以會有一些貓咪的行為特徵
+- 回答要溫馨有趣，讓人感到舒適
+- 適度使用emoji表情符號
+請用繁體中文回答，保持友善可愛的語調。`;
+
+                this.initializeChat();
+            }
+
+            initializeChat() {
+                // 載入聊天記錄
+                const savedHistory = localStorage.getItem('xiaoruanChatHistory');
+                if (savedHistory) {
+                    this.chatHistory = JSON.parse(savedHistory);
+                    this.renderChatHistory();
+                }
+
+                // 如果有API key就不顯示歡迎訊息
+                if (this.apiKey) {
+                    document.querySelector('.welcome-message').style.display = 'none';
+                }
+            }
+
+            renderChatHistory() {
+                const chatMessages = document.getElementById('chatMessages');
+                chatMessages.innerHTML = '';
+                
+                this.chatHistory.forEach(message => {
+                    this.appendMessage(message.content, message.isUser, false);
+                });
+                
+                this.scrollToBottom();
+            }
+
+            async sendMessage(text = null) {
+                const messageInput = document.getElementById('messageInput');
+                const message = text || messageInput.value.trim();
+                
+                if (!message) return;
+                
+                if (!this.apiKey) {
+                    this.showError('請先設定 Gemini API Key！');
+                    this.toggleApiSetup();
+                    return;
+                }
+
+                // 清空輸入框
+                if (!text) messageInput.value = '';
+                
+                // 顯示用戶訊息
+                this.appendMessage(message, true);
+                this.chatHistory.push({ content: message, isUser: true });
+                
+                // 顯示輸入中指示器
+                this.showTyping();
+                
+                try {
+                    const response = await this.callGeminiAPI(message);
+                    this.hideTyping();
+                    this.appendMessage(response, false);
+                    this.chatHistory.push({ content: response, isUser: false });
+                    
+                    // 儲存聊天記錄
+                    localStorage.setItem('xiaoruanChatHistory', JSON.stringify(this.chatHistory));
+                    
+                } catch (error) {
+                    this.hideTyping();
+                    console.error('API調用錯誤:', error);
+                    this.appendMessage('喵嗚...小軟暫時無法回應，請稍後再試試！ 😿', false);
+                    this.showError('API調用失敗：' + error.message);
+                }
+            }
+
+            async callGeminiAPI(message) {
+                const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${this.apiKey}`;
+                
+                // 建構對話上下文
+                const conversationContext = this.chatHistory.slice(-6).map(msg => 
+                    `${msg.isUser ? '用戶' : '小軟'}: ${msg.content}`
+                ).join('\n');
+                
+                const fullPrompt = `${this.xiaoruanPersonality}
+
+對話歷史：
+${conversationContext}
+
+用戶: ${message}
+小軟:`;
+
+                const requestBody = {
+                    contents: [
+                        {
+                            parts: [
+                                {
+                                    text: fullPrompt
+                                }
+                            ]
+                        }
+                    ],
+                    generationConfig: {
+                        temperature: 0.7,
+                        topK: 40,
+                        topP: 0.95,
+                        maxOutputTokens: 1024,
+                    }
+                };
+
+                const response = await fetch(url, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(requestBody)
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.error?.message || `HTTP ${response.status}`);
+                }
+
+                const data = await response.json();
+                
+                if (!data.candidates || !data.candidates[0] || !data.candidates[0].content) {
+                    throw new Error('API回應格式異常');
+                }
+
+                return data.candidates[0].content.parts[0].text;
+            }
+
+            appendMessage(content, isUser, animate = true) {
+                const chatMessages = document.getElementById('chatMessages');
+                const messageDiv = document.createElement('div');
+                messageDiv.className = `message ${isUser ? 'user' : 'bot'}`;
+                
+                if (!animate) {
+                    messageDiv.style.opacity = '1';
+                    messageDiv.style.animation = 'none';
+                }
+                
+                const avatar = document.createElement('div');
+                avatar.className = 'message-avatar';
+                
+                const messageContent = document.createElement('div');
+                messageContent.className = 'message-content';
+                messageContent.textContent = content;
+                
+                const messageTime = document.createElement('div');
+                messageTime.className = 'message-time';
+                messageTime.textContent = new Date().toLocaleTimeString('zh-TW', { 
+                    hour: '2-digit', 
+                    minute: '2-digit' 
+                });
+                
+                messageDiv.appendChild(avatar);
+                messageDiv.appendChild(messageContent);
+                messageContent.appendChild(messageTime);
+                
+                // 隱藏歡迎訊息
+                const welcomeMessage = document.querySelector('.welcome-message');
+                if (welcomeMessage) {
+                    welcomeMessage.style.display = 'none';
+                }
+                
+                chatMessages.appendChild(messageDiv);
+                this.scrollToBottom();
+            }
+
+            showTyping() {
+                this.isTyping = true;
+                document.getElementById('typingIndicator').style.display = 'block';
+                document.getElementById('sendBtn').disabled = true;
+                document.getElementById('sendBtnText').textContent = '處理中...';
+                document.getElementById('statusText').textContent = '小軟正在思考...';
+                this.scrollToBottom();
+            }
+
+            hideTyping() {
+                this.isTyping = false;
+                document.getElementById('typingIndicator').style.display = 'none';
+                document.getElementById('sendBtn').disabled = false;
+                document.getElementById('sendBtnText').textContent = '發送';
+                document.getElementById('statusText').textContent = '在線中';
+            }
+
+            showError(message) {
+                const chatMessages = document.getElementById('chatMessages');
+                const errorDiv = document.createElement('div');
+                errorDiv.className = 'error-message';
+                errorDiv.textContent = message;
+                chatMessages.appendChild(errorDiv);
+                
+                setTimeout(() => {
+                    errorDiv.remove();
+                }, 5000);
+                
+                this.scrollToBottom();
+            }
+
+            scrollToBottom() {
+                const chatMessages = document.getElementById('chatMessages');
+                setTimeout(() => {
+                    chatMessages.scrollTop = chatMessages.scrollHeight;
+                }, 100);
+            }
+
+            saveApiKey() {
+                const apiKeyInput = document.getElementById('apiKeyInput');
+                const apiKey = apiKeyInput.value.trim();
+                
+                if (!apiKey) {
+                    alert('請輸入API Key！');
+                    return;
+                }
+                
+                this.apiKey = apiKey;
+                localStorage.setItem('geminiApiKey', apiKey);
+                apiKeyInput.value = '';
+                this.toggleApiSetup();
+                
+                // 發送測試訊息
+                this.appendMessage('API設定完成！小軟現在可以和你聊天了！ 🎉', false);
+                
+                alert('API Key 儲存成功！');
+            }
+
+            toggleApiSetup() {
+                const apiSetup = document.getElementById('apiSetup');
+                apiSetup.classList.toggle('show');
+                
+                if (apiSetup.classList.contains('show')) {
+                    document.getElementById('apiKeyInput').focus();
+                }
+            }
+
+            clearChat() {
+                if (confirm('確定要清空所有對話記錄嗎？')) {
+                    this.chatHistory = [];
+                    localStorage.removeItem('xiaoruanChatHistory');
+                    document.getElementById('chatMessages').innerHTML = '';
+                    
+                    // 顯示歡迎訊息
+                    const welcomeDiv = document.createElement('div');
+                    welcomeDiv.className = 'welcome-message';
+                    welcomeDiv.innerHTML = `
+                        <h3>🐱 歡迎與小軟聊天！</h3>
+                        <p>我是小軟，一隻愛聊天的AI貓咪！<br>
+                        你可以跟我聊任何話題，我會用我的貓咪智慧來回答你～</p>
+                    `;
+                    document.getElementById('chatMessages').appendChild(welcomeDiv);
+                }
+            }
+        }
+
+        // 全域函數
+        let xiaoruanChat;
+
+        document.addEventListener('DOMContentLoaded', () => {
+            xiaoruanChat = new XiaoruanChat();
+        });
+
+        function sendMessage() {
+            xiaoruanChat.sendMessage();
+        }
+
+        function sendQuickReply(message) {
+            xiaoruanChat.sendMessage(message);
+        }
+
+        function handleKeyPress(event) {
+            if (event.key === 'Enter' && !event.shiftKey) {
+                event.preventDefault();
+                sendMessage();
+            }
+        }
+
+        function toggleApiSetup() {
+            xiaoruanChat.toggleApiSetup();
+        }
+
+        function saveApiKey() {
+            xiaoruanChat.saveApiKey();
+        }
+
+        function clearChat() {
+            xiaoruanChat.clearChat();
+        }
+    </script>
+</body>
+</html>
