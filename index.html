@@ -239,6 +239,93 @@
             0%, 100% { transform: translateY(0px); }
             50% { transform: translateY(-20px); }
         }
+
+        /* 小軟會說話功能 */
+        #xiaoruan-btn {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 1000;
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: linear-gradient(135deg, #fff2e6, #ffe4b5);
+            border: 3px solid rgba(255, 255, 255, 0.8);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+            overflow: hidden;
+        }
+
+        #xiaoruan-btn img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        #xiaoruan-btn:hover {
+            transform: scale(1.1);
+            box-shadow: 0 12px 35px rgba(0,0,0,0.2);
+        }
+
+        #xiaoruan-bubble {
+            position: fixed;
+            bottom: 120px;
+            right: 20px;
+            max-width: 280px;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            color: #555;
+            padding: 15px 20px;
+            font-size: 14px;
+            line-height: 1.6;
+            font-family: "Microsoft JhengHei", "微軟正黑體", sans-serif;
+            border-radius: 20px 20px 5px 20px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.15);
+            border: 2px solid rgba(255, 182, 193, 0.3);
+            display: none;
+            z-index: 1001;
+            animation: bubbleAppear 0.3s ease-out;
+        }
+
+        #xiaoruan-bubble::after {
+            content: '';
+            position: absolute;
+            bottom: -8px;
+            right: 15px;
+            width: 0;
+            height: 0;
+            border-left: 8px solid transparent;
+            border-right: 8px solid transparent;
+            border-top: 8px solid rgba(255, 255, 255, 0.95);
+        }
+
+        @keyframes bubbleAppear {
+            0% {
+                opacity: 0;
+                transform: translateY(10px) scale(0.8);
+            }
+            100% {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+
+        /* 小軟按鈕呼吸動畫 */
+        @keyframes breathe {
+            0%, 100% { 
+                transform: scale(1);
+                box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+            }
+            50% { 
+                transform: scale(1.05);
+                box-shadow: 0 10px 30px rgba(255, 182, 193, 0.3);
+            }
+        }
+
+        #xiaoruan-btn {
+            animation: breathe 3s ease-in-out infinite;
+        }
     </style>
 </head>
 <body>
@@ -331,6 +418,12 @@
         </main>
     </div>
 
+    <!-- 小軟會說話功能 -->
+    <div id="xiaoruan-bubble"></div>
+    <div id="xiaoruan-btn">
+        <img src="https://beautyzx.github.io/images/xiaoruan.png" alt="小軟" />
+    </div>
+
     <script>
         // 選單互動效果
         document.querySelectorAll('.menu-item').forEach(item => {
@@ -388,6 +481,40 @@
             card.addEventListener('mouseleave', function() {
                 this.style.transform = 'translateY(0) scale(1)';
             });
+        });
+
+        // 小軟會說話功能
+        const xiaoruanBtn = document.getElementById('xiaoruan-btn');
+        const bubble = document.getElementById('xiaoruan-bubble');
+        const quotes = [
+            "喵～歡迎來到我的Beauty世界！✨",
+            "今天也要美美的哦～ 🌸",
+            "記得要按時吃飯，就像我一樣！😋",
+            "累了就休息一下，學學我的慵懶哲學～ 😴",
+            "每天都要保持好心情，像我這樣～ 😊",
+            "別忘了給自己一點甜蜜時光 🍰",
+            "生活要像馬卡龍一樣，甜甜軟軟的～ 💕",
+            "陪我一起看看日落吧～ 🌅",
+            "今天的你也很棒哦！給自己一個讚 👍",
+            "喵嗚～想和你分享今天的小確幸 🌟",
+            "記得要多喝水，保持水潤美麗 💧",
+            "偶爾偷個懶也沒關係的啦～ 😸"
+        ];
+
+        xiaoruanBtn.addEventListener('click', () => {
+            const message = quotes[Math.floor(Math.random() * quotes.length)];
+            bubble.innerText = message;
+            bubble.style.display = 'block';
+            
+            // 添加點擊動畫效果
+            xiaoruanBtn.style.transform = 'scale(0.9)';
+            setTimeout(() => {
+                xiaoruanBtn.style.transform = 'scale(1)';
+            }, 100);
+            
+            setTimeout(() => {
+                bubble.style.display = 'none';
+            }, 4000);
         });
     </script>
 </body>
