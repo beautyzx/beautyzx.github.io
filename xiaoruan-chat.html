@@ -1,385 +1,4 @@
-renderChatHistory() {
-                const chatMessages = document.getElementById('chatMessages');
-                chatMessages.innerHTML = '';
-                
-                this.chatHistory.forEach(message => {
-                    this.appendMessage(message.content, message.isUser, false);
-                });
-                
-                this.scrollToBottom();
-            }
-
-            appendMessage(content, isUser, animate = true) {
-                const chatMessages = document.getElementById('chatMessages');
-                const messageDiv = document.createElement('div');
-                messageDiv.className = `message ${isUser ? 'user' : 'bot'}`;
-                
-                if (!animate) {
-                    messageDiv.style.opacity = '1';
-                    messageDiv.style.animation = 'none';
-                }
-                
-                const avatar = document.createElement('div');
-                avatar.className = 'message-avatar';
-                
-                const messageContent = document.createElement('div');
-                messageContent.className = 'message-content';
-                messageContent.textContent = content;
-                
-                const messageTime = document.createElement('div');
-                messageTime.className = 'message-time';
-                messageTime.textContent = new Date().toLocaleTimeString('zh-TW', { 
-                    hour: '2-digit', 
-                    minute: '2-digit' 
-                });
-                
-                messageDiv.appendChild(avatar);
-                messageDiv.appendChild(messageContent);
-                messageContent.appendChild(messageTime);
-                
-                // 隱藏歡迎訊息
-                const welcomeMessage = document.querySelector('.welcome-message');
-                if (welcomeMessage) {
-                    welcomeMessage.style.display = 'none';
-                }
-                
-                chatMessages.appendChild(messageDiv);
-                this.scrollToBottom();
-            }
-
-            showTyping() {
-                this.isTyping = true;
-                document.getElementById('typingIndicator').style.display = 'block';
-                document.getElementById('sendBtn').disabled = true;
-                document.getElementById('sendBtnText').textContent = '處理中...';
-                document.getElementById('statusText').textContent = '小軟正在思考...';
-                this.scrollToBottom();
-            }
-
-            hideTyping() {
-                this.isTyping = false;
-                document.getElementById('typingIndicator').style.display = 'none';
-                document.getElementById('sendBtn').disabled = false;
-                document.getElementById('sendBtnText').textContent = '發送';
-                document.getElementById('statusText').textContent = '在線中';
-            }
-
-            showError(message) {
-                const chatMessages = document.getElementById('chatMessages');
-                const errorDiv = document.createElement('div');
-                errorDiv.className = 'error-message';
-                errorDiv.textContent = message;
-                chatMessages.appendChild(errorDiv);
-                
-                setTimeout(() => {
-                    errorDiv.remove();
-                }, 5000);
-                
-                this.scrollToBottom();
-            }
-
-            scrollToBottom() {
-                const chatMessages = document.getElementById('chatMessages');
-                setTimeout(() => {
-                    chatMessages.scrollTop = chatMessages.scrollHeight;
-                }, 100);
-            }
-
-            toggleApiSetup() {
-                const apiSetup = document.getElementById('apiSetup');
-                apiSetup.classList.toggle('show');
-                
-                if (apiSetup.classList.contains('show')) {
-                    if (this.connectionType === 'replit') {
-                        document.getElementById('replitUrlInput').focus();
-                    } else {
-                        document.getElementById('apiKeyInput').focus();
-                    }
-                }
-            }
-
-            clearChat() {
-                if (confirm('確定要清空所有對話記錄嗎？')) {
-                    this.chatHistory = [];
-                    localStorage.removeItem('xiaoruanChatHistory');
-                    document.getElementById('chatMessages').innerHTML = '';
-                    
-                    // 顯示歡迎訊息
-                    const welcomeDiv = document.createElement('div');
-                    welcomeDiv.className = 'welcome-message';
-                    welcomeDiv.innerHTML = `
-                        <h3>🐱 歡迎與小軟聊天！</h3>
-                        <p>我是小軟，一隻愛聊天的AI貓咪！<br>
-                        你可以跟我聊任何話題，我會用我的貓咪智慧來回答你～</p>
-                        <br>
-                        <p><strong>使用說明：</strong><br>
-                        1. 點擊右上角⚙️選擇連接方式<br>
-                        2. 推薦使用Replit後端服務<br>
-                        3. 或者使用下方的快速回覆開始對話</p>
-                    `;
-                    document.getElementById('chatMessages').appendChild(welcomeDiv);
-                }
-            }
-        }
-
-        // 全域函數
-        let xiaoruanChat;
-
-        document.addEventListener('DOMContentLoaded', () => {
-            xiaoruanChat = new XiaoruanChat();
-        });
-
-        function sendMessage() {
-            xiaoruanChat.sendMessage();
-        }
-
-        function sendQuickReply(message) {
-            xiaoruanChat.sendMessage(message);
-        }
-
-        function handleKeyPress(event) {
-            if (event.key === 'Enter' && !event.shiftKey) {
-                event.preventDefault();
-                sendMessage();
-            }
-        }
-
-        function toggleApiSetup() {
-            xiaoruanChat.toggleApiSetup();
-        }
-
-        function saveSettings() {
-            xiaoruanChat.saveSettings();
-        }
-
-        function clearChat() {
-            xiaoruanChat.clearChat();
-        }
-
-        function switchConnectionType() {
-            const connectionType = document.querySelector('input[name="connectionType"]:checked').value;
-            const replitInput = document.getElementById('replitUrlInput');
-            const apiKeyInput = document.getElementById('apiKeyInput');
-
-            if (connectionType === 'replit') {
-                replitInput.disabled = false;
-                apiKeyInput.disabled = true;
-            } else {
-                replitInput.disabled = true;
-                apiKeyInput.disabled = false;
-            }
-        }
-
-        function showReplitCode() {
-            const codeWindow = window.open('', '_blank', 'width=800,height=600,scrollbars=yes');
-            codeWindow.document.write(`
-                <html>
-                <head>
-                    <title>Replit後端代碼</title>
-                    <style>
-                        body { font-family: 'Courier New', monospace; padding: 20px; background: #f5f5f5; }
-                        .code-block { background: #2d3748; color: #e2e8f0; padding: 20px; border-radius: 10px; margin: 20px 0; overflow-x: auto; white-space: pre; }
-                        .copy-btn { background: #4299e1; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; margin: 10px 0; }
-                        h2 { color: #2d3748; }
-                        .step { margin: 20px 0; padding: 15px; background: white; border-radius: 8px; border-left: 4px solid #4299e1; }
-                        .filename { background: #4a5568; color: #e2e8f0; padding: 5px 10px; border-radius: 5px 5px 0 0; font-weight: bold; }
-                    </style>
-                </head>
-                <body>
-                    <h1>🚀 Replit後端設定指南</h1>
-                    
-                    <div class="step">
-                        <h2>步驟1: 創建Replit專案</h2>
-                        <p>1. 到 <a href="https://replit.com" target="_blank">Replit.com</a> 註冊並登入</p>
-                        <p>2. 點擊 "Create Repl" 創建新專案</p>
-                        <p>3. 選擇 "Node.js" 模板</p>
-                        <p>4. 為專案命名，例如：xiaoruan-chat-backend</p>
-                    </div>
-
-                    <div class="step">
-                        <h2>步驟2: 安裝依賴包</h2>
-                        <div class="filename">package.json</div>
-                        <div class="code-block">{
-  "name": "xiaoruan-chat-backend",
-  "version": "1.0.0",
-  "description": "小軟即時通後端服務",
-  "main": "index.js",
-  "scripts": {
-    "start": "node index.js"
-  },
-  "dependencies": {
-    "express": "^4.18.2",
-    "cors": "^2.8.5",
-    "dotenv": "^16.0.3"
-  }
-}</div>
-                    </div>
-
-                    <div class="step">
-                        <h2>步驟3: 主要後端代碼</h2>
-                        <div class="filename">index.js</div>
-                        <div class="code-block">const express = require('express');
-const cors = require('cors');
-require('dotenv').config();
-
-const app = express();
-const PORT = process.env.PORT || 3000;
-
-// 中間件
-app.use(cors());
-app.use(express.json());
-
-// 小軟聊天API
-app.post('/chat', async (req, res) => {
-    try {
-        const { message, history, personality } = req.body;
-        
-        if (!message) {
-            return res.status(400).json({ error: '請提供訊息內容' });
-        }
-
-        // 調用Gemini API
-        const reply = await callGeminiAPI(message, history, personality);
-        
-        res.json({ 
-            reply: reply,
-            timestamp: new Date().toISOString()
-        });
-        
-    } catch (error) {
-        console.error('聊天API錯誤:', error);
-        res.status(500).json({ 
-            error: '伺服器錯誤：' + error.message 
-        });
-    }
-});
-
-// Gemini API調用函數
-async function callGeminiAPI(message, history = [], personality = '') {
-    const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
-    
-    if (!GEMINI_API_KEY) {
-        throw new Error('請設定GEMINI_API_KEY環境變數');
-    }
-
-    const url = \`https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=\${GEMINI_API_KEY}\`;
-    
-    // 建構對話上下文
-    const conversationContext = history.slice(-6).map(msg => 
-        \`\${msg.isUser ? '用戶' : '小軟'}: \${msg.content}\`
-    ).join('\\n');
-    
-    const fullPrompt = \`\${personality}
-
-對話歷史：
-\${conversationContext}
-
-用戶: \${message}
-小軟:\`;
-
-    const requestBody = {
-        contents: [
-            {
-                parts: [
-                    {
-                        text: fullPrompt
-                    }
-                ]
-            }
-        ],
-        generationConfig: {
-            temperature: 0.7,
-            topK: 40,
-            topP: 0.95,
-            maxOutputTokens: 1024,
-        }
-    };
-
-    const response = await fetch(url, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(requestBody)
-    });
-
-    if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error?.message || \`HTTP \${response.status}\`);
-    }
-
-    const data = await response.json();
-    
-    if (!data.candidates || !data.candidates[0] || !data.candidates[0].content) {
-        throw new Error('Gemini API回應格式異常');
-    }
-
-    return data.candidates[0].content.parts[0].text;
-}
-
-// 健康檢查API
-app.get('/health', (req, res) => {
-    res.json({ 
-        status: 'ok', 
-        message: '小軟後端服務運行中！🐱',
-        timestamp: new Date().toISOString()
-    });
-});
-
-// 根路徑
-app.get('/', (req, res) => {
-    res.json({
-        message: '🐱 小軟即時通後端服務',
-        version: '1.0.0',
-        endpoints: {
-            'POST /chat': '聊天API',
-            'GET /health': '健康檢查'
-        }
-    });
-});
-
-app.listen(PORT, () => {
-    console.log(\`🚀 小軟後端服務啟動成功！\`);
-    console.log(\`📡 服務地址: http://localhost:\${PORT}\`);
-    console.log(\`🐱 小軟準備好聊天了！\`);
-});</div>
-                    </div>
-
-                    <div class="step">
-                        <h2>步驟4: 環境變數設定</h2>
-                        <div class="filename">.env</div>
-                        <div class="code-block">GEMINI_API_KEY=你的_Gemini_API_金鑰
-PORT=3000</div>
-                        <p><strong>重要：</strong>到 <a href="https://aistudio.google.com/app/apikey" target="_blank">Google AI Studio</a> 取得免費的Gemini API Key</p>
-                    </div>
-
-                    <div class="step">
-                        <h2>步驟5: 啟動服務</h2>
-                        <p>1. 在Replit中點擊 "Run" 按鈕</p>
-                        <p>2. 看到服務啟動成功的訊息</p>
-                        <p>3. 複製Replit提供的網址（通常是 https://your-app.username.repl.co）</p>
-                        <p>4. 回到小軟即時通，在設定中貼上這個網址</p>
-                    </div>
-
-                    <div class="step">
-                        <h2>🎉 完成！</h2>
-                        <p>現在你的小軟即時通就可以透過Replit後端與Gemini AI對話了！</p>
-                        <p><strong>優點：</strong></p>
-                        <ul>
-                            <li>✅ API Key安全儲存在伺服器端</li>
-                            <li>✅ 避免瀏覽器CORS問題</li>
-                            <li>✅ 可以添加更多自定義功能</li>
-                            <li>✅ 24/7穩定運行</li>
-                        </ul>
-                    </div>
-
-                    <button class="copy-btn" onclick="navigator.clipboard.writeText(document.querySelector('.code-block').textContent)">
-                        📋 複製package.json代碼
-                    </button>
-                </body>
-                </html>
-            `);
-        }<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
@@ -632,64 +251,6 @@ PORT=3000</div>
             display: block;
         }
 
-        .connection-options {
-            margin-bottom: 15px;
-        }
-
-        .option-group {
-            margin-bottom: 15px;
-            padding: 15px;
-            border: 2px solid #ffd700;
-            border-radius: 12px;
-            background: rgba(255, 255, 255, 0.5);
-        }
-
-        .option-group label {
-            display: block;
-            font-weight: bold;
-            color: #996600;
-            margin-bottom: 8px;
-            cursor: pointer;
-        }
-
-        .option-group input[type="radio"] {
-            margin-right: 8px;
-        }
-
-        .setup-guide {
-            background: rgba(255, 255, 255, 0.8);
-            padding: 15px;
-            border-radius: 12px;
-            margin-top: 15px;
-            font-size: 13px;
-            color: #666;
-        }
-
-        .setup-guide h5 {
-            color: #cc9900;
-            margin-bottom: 10px;
-        }
-
-        .setup-guide ol {
-            padding-left: 20px;
-            margin-bottom: 10px;
-        }
-
-        .setup-guide li {
-            margin-bottom: 5px;
-        }
-
-        .copy-code-btn {
-            background: linear-gradient(135deg, #4ecdc4, #44a08d);
-            color: white;
-            border: none;
-            padding: 8px 16px;
-            border-radius: 12px;
-            cursor: pointer;
-            font-size: 12px;
-            font-weight: bold;
-        }
-
         .api-setup h4 {
             color: #cc9900;
             margin-bottom: 10px;
@@ -807,7 +368,6 @@ PORT=3000</div>
             font-size: 14px;
         }
 
-        /* 響應式設計 */
         @media (max-width: 768px) {
             .chat-container {
                 height: 95vh;
@@ -836,7 +396,7 @@ PORT=3000</div>
     <div class="chat-container">
         <div class="chat-header">
             <div class="chat-header-left">
-                <a href="index.html" class="back-btn">← 回首頁</a>
+                <a href="/" class="back-btn">← 回首頁</a>
                 <div class="chat-avatar"></div>
                 <div class="chat-info">
                     <h1>💬 小軟即時通</h1>
@@ -847,7 +407,6 @@ PORT=3000</div>
                 </div>
             </div>
             <div class="chat-settings">
-                <button class="settings-btn" onclick="toggleApiSetup()" title="API設定">⚙️</button>
                 <button class="settings-btn" onclick="clearChat()" title="清空對話">🗑️</button>
             </div>
         </div>
@@ -859,8 +418,8 @@ PORT=3000</div>
                 你可以跟我聊任何話題，我會用我的貓咪智慧來回答你～</p>
                 <br>
                 <p><strong>使用說明：</strong><br>
-                1. 點擊右上角⚙️設定你的Gemini API密鑰<br>
-                2. 或者使用下方的快速回覆開始對話</p>
+                1. 輸入訊息開始與小軟聊天<br>
+                2. 或使用下方的快速回覆開始對話</p>
             </div>
             
             <div class="typing-indicator" id="typingIndicator">
@@ -873,38 +432,6 @@ PORT=3000</div>
         </div>
 
         <div class="chat-input-area">
-            <div class="api-setup" id="apiSetup">
-                <h4>🔗 連接設定</h4>
-                <div class="connection-options">
-                    <div class="option-group">
-                        <label>
-                            <input type="radio" name="connectionType" value="replit" checked onchange="switchConnectionType()">
-                            🚀 使用Replit後端服務 (推薦)
-                        </label>
-                        <input type="url" class="api-input" id="replitUrlInput" placeholder="請輸入你的Replit應用網址 (例如: https://your-app.username.repl.co)">
-                    </div>
-                    <div class="option-group">
-                        <label>
-                            <input type="radio" name="connectionType" value="direct" onchange="switchConnectionType()">
-                            🔑 直接使用Gemini API
-                        </label>
-                        <input type="password" class="api-input" id="apiKeyInput" placeholder="請輸入你的 Gemini API Key" disabled>
-                    </div>
-                </div>
-                <button class="api-btn" onclick="saveSettings()">💾 儲存設定</button>
-                <div class="setup-guide">
-                    <h5>📖 Replit後端設定指南：</h5>
-                    <ol>
-                        <li>在 <a href="https://replit.com" target="_blank">Replit.com</a> 創建新專案</li>
-                        <li>選擇 "Node.js" 模板</li>
-                        <li>複製下方的後端代碼到你的專案</li>
-                        <li>設定你的Gemini API Key環境變數</li>
-                        <li>執行專案並複製網址到上方</li>
-                    </ol>
-                    <button class="copy-code-btn" onclick="showReplitCode()">📋 查看後端代碼</button>
-                </div>
-            </div>
-
             <div class="quick-replies">
                 <div class="quick-reply" onclick="sendQuickReply('你好小軟！')">👋 打招呼</div>
                 <div class="quick-reply" onclick="sendQuickReply('今天天氣如何？')">🌤️ 聊天氣</div>
@@ -926,14 +453,10 @@ PORT=3000</div>
     <script>
         class XiaoruanChat {
             constructor() {
-                this.connectionType = localStorage.getItem('connectionType') || 'replit';
-                this.replitUrl = localStorage.getItem('replitUrl') || '';
-                this.apiKey = localStorage.getItem('geminiApiKey') || '';
                 this.chatHistory = [];
                 this.isTyping = false;
                 
-                // 小軟的個性設定
-                this.xiaoruanPersonality = `你是小軟，一隻可愛聰明的貓咪AI助手。你的個性特點：
+                this.xiaoruanPersonality = `你是小軟，一隻可愛聊明的貓咪AI助手。你的個性特點：
 - 溫暖友善，喜歡用貓咪的方式表達（偶爾會說"喵"）
 - 充滿好奇心，對所有話題都很感興趣
 - 會給出實用的建議，但用可愛的方式表達
@@ -946,39 +469,22 @@ PORT=3000</div>
             }
 
             initializeChat() {
-                // 載入聊天記錄
                 const savedHistory = localStorage.getItem('xiaoruanChatHistory');
                 if (savedHistory) {
                     this.chatHistory = JSON.parse(savedHistory);
                     this.renderChatHistory();
                 }
-
-                // 設定連接類型
-                this.updateConnectionUI();
-
-                // 如果有設定就不顯示歡迎訊息
-                if ((this.connectionType === 'replit' && this.replitUrl) || (this.connectionType === 'direct' && this.apiKey)) {
-                    document.querySelector('.welcome-message').style.display = 'none';
-                }
             }
 
-            updateConnectionUI() {
-                const replitRadio = document.querySelector('input[value="replit"]');
-                const directRadio = document.querySelector('input[value="direct"]');
-                const replitInput = document.getElementById('replitUrlInput');
-                const apiKeyInput = document.getElementById('apiKeyInput');
-
-                if (this.connectionType === 'replit') {
-                    replitRadio.checked = true;
-                    replitInput.disabled = false;
-                    replitInput.value = this.replitUrl;
-                    apiKeyInput.disabled = true;
-                } else {
-                    directRadio.checked = true;
-                    replitInput.disabled = true;
-                    apiKeyInput.disabled = false;
-                    apiKeyInput.value = this.apiKey;
-                }
+            renderChatHistory() {
+                const chatMessages = document.getElementById('chatMessages');
+                chatMessages.innerHTML = '';
+                
+                this.chatHistory.forEach(message => {
+                    this.appendMessage(message.content, message.isUser, false);
+                });
+                
+                this.scrollToBottom();
             }
 
             async sendMessage(text = null) {
@@ -986,86 +492,33 @@ PORT=3000</div>
                 const message = text || messageInput.value.trim();
                 
                 if (!message) return;
-                
-                // 檢查連接設定
-                if (this.connectionType === 'replit' && !this.replitUrl) {
-                    this.showError('請先設定 Replit 應用網址！');
-                    this.toggleApiSetup();
-                    return;
-                } else if (this.connectionType === 'direct' && !this.apiKey) {
-                    this.showError('請先設定 Gemini API Key！');
-                    this.toggleApiSetup();
-                    return;
-                }
 
-                // 清空輸入框
                 if (!text) messageInput.value = '';
                 
-                // 顯示用戶訊息
                 this.appendMessage(message, true);
                 this.chatHistory.push({ content: message, isUser: true });
                 
-                // 顯示輸入中指示器
                 this.showTyping();
                 
                 try {
-                    let response;
-                    if (this.connectionType === 'replit') {
-                        response = await this.callReplitAPI(message);
-                    } else {
-                        response = await this.callGeminiAPI(message);
-                    }
-                    
+                    const response = await this.callGeminiAPI(message);
                     this.hideTyping();
                     this.appendMessage(response, false);
                     this.chatHistory.push({ content: response, isUser: false });
                     
-                    // 儲存聊天記錄
                     localStorage.setItem('xiaoruanChatHistory', JSON.stringify(this.chatHistory));
                     
                 } catch (error) {
                     this.hideTyping();
                     console.error('API調用錯誤:', error);
                     this.appendMessage('喵嗚...小軟暫時無法回應，請稍後再試試！ 😿', false);
-                    this.showError('連接失敗：' + error.message);
+                    this.showError('API調用失敗：' + error.message);
                 }
-            }
-
-            async callReplitAPI(message) {
-                const url = `${this.replitUrl.replace(/\/$/, '')}/chat`;
-                
-                const requestBody = {
-                    message: message,
-                    history: this.chatHistory.slice(-6),
-                    personality: this.xiaoruanPersonality
-                };
-
-                const response = await fetch(url, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify(requestBody)
-                });
-
-                if (!response.ok) {
-                    const errorText = await response.text();
-                    throw new Error(`Replit服務錯誤 (${response.status}): ${errorText}`);
-                }
-
-                const data = await response.json();
-                
-                if (!data.reply) {
-                    throw new Error('Replit服務回應格式異常');
-                }
-
-                return data.reply;
             }
 
             async callGeminiAPI(message) {
-                const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${this.apiKey}`;
+                const url = '/api/gemini';
                 
-                // 建構對話上下文
                 const conversationContext = this.chatHistory.slice(-6).map(msg => 
                     `${msg.isUser ? '用戶' : '小軟'}: ${msg.content}`
                 ).join('\n');
@@ -1118,57 +571,79 @@ ${conversationContext}
                 return data.candidates[0].content.parts[0].text;
             }
 
-            saveSettings() {
-                const connectionType = document.querySelector('input[name="connectionType"]:checked').value;
+            appendMessage(content, isUser, animate = true) {
+                const chatMessages = document.getElementById('chatMessages');
+                const messageDiv = document.createElement('div');
+                messageDiv.className = `message ${isUser ? 'user' : 'bot'}`;
                 
-                if (connectionType === 'replit') {
-                    const replitUrl = document.getElementById('replitUrlInput').value.trim();
-                    if (!replitUrl) {
-                        alert('請輸入Replit應用網址！');
-                        return;
-                    }
-                    
-                    // 驗證URL格式
-                    try {
-                        new URL(replitUrl);
-                    } catch {
-                        alert('請輸入有效的網址格式！');
-                        return;
-                    }
-                    
-                    this.connectionType = 'replit';
-                    this.replitUrl = replitUrl;
-                    localStorage.setItem('connectionType', 'replit');
-                    localStorage.setItem('replitUrl', replitUrl);
-                    
-                } else {
-                    const apiKey = document.getElementById('apiKeyInput').value.trim();
-                    if (!apiKey) {
-                        alert('請輸入API Key！');
-                        return;
-                    }
-                    
-                    this.connectionType = 'direct';
-                    this.apiKey = apiKey;
-                    localStorage.setItem('connectionType', 'direct');
-                    localStorage.setItem('geminiApiKey', apiKey);
+                if (!animate) {
+                    messageDiv.style.opacity = '1';
+                    messageDiv.style.animation = 'none';
                 }
                 
-                this.toggleApiSetup();
+                const avatar = document.createElement('div');
+                avatar.className = 'message-avatar';
                 
-                // 發送測試訊息
-                this.appendMessage(`${connectionType === 'replit' ? 'Replit後端' : 'Gemini API'}設定完成！小軟現在可以和你聊天了！ 🎉`, false);
+                const messageContent = document.createElement('div');
+                messageContent.className = 'message-content';
+                messageContent.textContent = content;
                 
-                alert('設定儲存成功！');
+                const messageTime = document.createElement('div');
+                messageTime.className = 'message-time';
+                messageTime.textContent = new Date().toLocaleTimeString('zh-TW', { 
+                    hour: '2-digit', 
+                    minute: '2-digit' 
+                });
+                
+                messageDiv.appendChild(avatar);
+                messageDiv.appendChild(messageContent);
+                messageContent.appendChild(messageTime);
+                
+                const welcomeMessage = document.querySelector('.welcome-message');
+                if (welcomeMessage) {
+                    welcomeMessage.style.display = 'none';
+                }
+                
+                chatMessages.appendChild(messageDiv);
+                this.scrollToBottom();
             }
 
-            toggleApiSetup() {
-                const apiSetup = document.getElementById('apiSetup');
-                apiSetup.classList.toggle('show');
+            showTyping() {
+                this.isTyping = true;
+                document.getElementById('typingIndicator').style.display = 'block';
+                document.getElementById('sendBtn').disabled = true;
+                document.getElementById('sendBtnText').textContent = '處理中...';
+                document.getElementById('statusText').textContent = '小軟正在思考...';
+                this.scrollToBottom();
+            }
+
+            hideTyping() {
+                this.isTyping = false;
+                document.getElementById('typingIndicator').style.display = 'none';
+                document.getElementById('sendBtn').disabled = false;
+                document.getElementById('sendBtnText').textContent = '發送';
+                document.getElementById('statusText').textContent = '在線中';
+            }
+
+            showError(message) {
+                const chatMessages = document.getElementById('chatMessages');
+                const errorDiv = document.createElement('div');
+                errorDiv.className = 'error-message';
+                errorDiv.textContent = message;
+                chatMessages.appendChild(errorDiv);
                 
-                if (apiSetup.classList.contains('show')) {
-                    document.getElementById('apiKeyInput').focus();
-                }
+                setTimeout(() => {
+                    errorDiv.remove();
+                }, 5000);
+                
+                this.scrollToBottom();
+            }
+
+            scrollToBottom() {
+                const chatMessages = document.getElementById('chatMessages');
+                setTimeout(() => {
+                    chatMessages.scrollTop = chatMessages.scrollHeight;
+                }, 100);
             }
 
             clearChat() {
@@ -1177,7 +652,6 @@ ${conversationContext}
                     localStorage.removeItem('xiaoruanChatHistory');
                     document.getElementById('chatMessages').innerHTML = '';
                     
-                    // 顯示歡迎訊息
                     const welcomeDiv = document.createElement('div');
                     welcomeDiv.className = 'welcome-message';
                     welcomeDiv.innerHTML = `
@@ -1190,7 +664,6 @@ ${conversationContext}
             }
         }
 
-        // 全域函數
         let xiaoruanChat;
 
         document.addEventListener('DOMContentLoaded', () => {
@@ -1210,15 +683,6 @@ ${conversationContext}
                 event.preventDefault();
                 sendMessage();
             }
-        }
-
-        function toggleApiSetup() {
-            xiaoruanChat.toggleApiSetup();
-        }
-
-        function saveApiKey() {
-            // 這個函數保留作為向後兼容
-            xiaoruanChat.saveSettings();
         }
 
         function clearChat() {
