@@ -240,6 +240,14 @@
             50% { transform: translateY(-20px); }
         }
 
+        .page-content {
+            width: 100%;
+        }
+
+        .page-content iframe {
+            box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+        }
+
         /* 小軟會說話功能 */
         #xiaoruan-btn {
             position: fixed;
@@ -349,7 +357,7 @@
                 首頁
             </a>
             
-            <a href="calendar.html" class="menu-item">
+            <a href="#" class="menu-item" data-page="calendar">
                 <span class="icon icon-calendar"></span>
                 小軟2025行事曆 🐱
             </a>
@@ -377,43 +385,51 @@
 
         <!-- 主要內容 -->
         <main class="main-content">
-            <header class="header">
-                <h2>歡迎來到Beauty的馬卡龍世界 🐱✨</h2>
-                <p>跟著小軟貓咪一起探索美麗生活，記錄每一個可愛的瞬間</p>
-            </header>
+            <!-- 首頁內容 -->
+            <div id="home-content" class="page-content">
+                <header class="header">
+                    <h2>歡迎來到Beauty的馬卡龍世界 🐱✨</h2>
+                    <p>跟著小軟貓咪一起探索美麗生活，記錄每一個可愛的瞬間</p>
+                </header>
 
-            <div class="content-cards">
-                <div class="card calendar-highlight">
-                    <div class="card-header">
-                        <div class="card-icon" style="background: linear-gradient(45deg, #fff2b3, #ffe4b5);"></div>
-                        <h3>🗓️ 小軟2025行事曆</h3>
+                <div class="content-cards">
+                    <div class="card calendar-highlight">
+                        <div class="card-header">
+                            <div class="card-icon" style="background: linear-gradient(45deg, #fff2b3, #ffe4b5);"></div>
+                            <h3>🗓️ 小軟2025行事曆</h3>
+                        </div>
+                        <p>記錄小軟貓咪2025年的重要日程！包含疫苗時間、美容預約、生日慶祝，還有那些值得紀念的可愛時光。</p>
                     </div>
-                    <p>記錄小軟貓咪2025年的重要日程！包含疫苗時間、美容預約、生日慶祝，還有那些值得紀念的可愛時光。</p>
-                </div>
 
-                <div class="card">
-                    <div class="card-header">
-                        <div class="card-icon icon-blog"></div>
-                        <h3>📝 Beauty日記</h3>
+                    <div class="card">
+                        <div class="card-header">
+                            <div class="card-icon icon-blog"></div>
+                            <h3>📝 Beauty日記</h3>
+                        </div>
+                        <p>分享小軟的日常生活趣事，美容保養心得、可愛瞬間記錄，還有那些讓人融化的貓咪日常。</p>
                     </div>
-                    <p>分享小軟的日常生活趣事，美容保養心得、可愛瞬間記錄，還有那些讓人融化的貓咪日常。</p>
-                </div>
 
-                <div class="card">
-                    <div class="card-header">
-                        <div class="card-icon icon-gallery"></div>
-                        <h3>📸 小軟寫真集</h3>
+                    <div class="card">
+                        <div class="card-header">
+                            <div class="card-icon icon-gallery"></div>
+                            <h3>📸 小軟寫真集</h3>
+                        </div>
+                        <p>捕捉小軟最美的瞬間！從慵懶的午後時光到調皮的玩耍模樣，每一張照片都是珍貴的回憶。</p>
                     </div>
-                    <p>捕捉小軟最美的瞬間！從慵懶的午後時光到調皮的玩耍模樣，每一張照片都是珍貴的回憶。</p>
-                </div>
 
-                <div class="card">
-                    <div class="card-header">
-                        <div class="card-icon icon-about"></div>
-                        <h3>💫 關於小軟</h3>
+                    <div class="card">
+                        <div class="card-header">
+                            <div class="card-icon icon-about"></div>
+                            <h3>💫 關於小軟</h3>
+                        </div>
+                        <p>認識我們家的小帥哥！小軟是一隻充滿魅力的男子漢貓咪，擁有獨特的個性和帥氣的魅力。</p>
                     </div>
-                    <p>認識我們家的小帥哥！小軟是一隻充滿魅力的男子漢貓咪，擁有獨特的個性和帥氣的魅力。</p>
                 </div>
+            </div>
+
+            <!-- 行事曆內容 -->
+            <div id="calendar-content" class="page-content" style="display: none;">
+                <iframe src="calendar.html" style="width: 100%; height: 800px; border: none; border-radius: 15px;"></iframe>
             </div>
         </main>
     </div>
@@ -438,36 +454,49 @@
                 // 添加active到點擊的項目
                 this.classList.add('active');
                 
-                // 更新主要內容標題
-                const itemText = this.textContent.trim();
-                const header = document.querySelector('.header h2');
-                const description = document.querySelector('.header p');
+                // 獲取頁面類型
+                const pageType = this.getAttribute('data-page');
                 
-                switch(itemText) {
-                    case '首頁':
-                        header.textContent = '歡迎來到Beauty的馬卡龍世界 🐱✨';
-                        description.textContent = '跟著小軟貓咪一起探索美麗生活，記錄每一個可愛的瞬間';
-                        break;
-                    case '小軟2025行事曆 🐱':
-                        header.textContent = '🗓️ 小軟2025行事曆';
-                        description.textContent = '規劃小軟貓咪美好的2025年，記錄重要的日子和可愛的回憶';
-                        break;
-                    case '部落格文章':
-                        header.textContent = '📝 Beauty日記';
-                        description.textContent = '分享小軟的日常趣事和美麗生活點滴';
-                        break;
-                    case '相片集':
-                        header.textContent = '📸 小軟寫真集';
-                        description.textContent = '用鏡頭捕捉小軟貓咪最美的瞬間';
-                        break;
-                    case '關於我':
-                        header.textContent = '💫 關於小軟';
-                        description.textContent = '認識我們家的小帥哥，了解小軟貓咪的帥氣故事';
-                        break;
-                    case '聯絡方式':
-                        header.textContent = '📧 聯絡方式';
-                        description.textContent = '歡迎與我們交流，一起分享關於貓咪的美好時光';
-                        break;
+                // 隱藏所有頁面內容
+                document.querySelectorAll('.page-content').forEach(page => {
+                    page.style.display = 'none';
+                });
+                
+                // 顯示對應的頁面內容
+                if (pageType === 'calendar') {
+                    document.getElementById('calendar-content').style.display = 'block';
+                } else {
+                    document.getElementById('home-content').style.display = 'block';
+                }
+                
+                // 更新主要內容標題（僅首頁需要）
+                if (!pageType || pageType === 'home') {
+                    const itemText = this.textContent.trim();
+                    const header = document.querySelector('#home-content .header h2');
+                    const description = document.querySelector('#home-content .header p');
+                    
+                    switch(itemText) {
+                        case '首頁':
+                            header.textContent = '歡迎來到Beauty的馬卡龍世界 🐱✨';
+                            description.textContent = '跟著小軟貓咪一起探索美麗生活，記錄每一個可愛的瞬間';
+                            break;
+                        case '部落格文章':
+                            header.textContent = '📝 Beauty日記';
+                            description.textContent = '分享小軟的日常趣事和美麗生活點滴';
+                            break;
+                        case '相片集':
+                            header.textContent = '📸 小軟寫真集';
+                            description.textContent = '用鏡頭捕捉小軟貓咪最美的瞬間';
+                            break;
+                        case '關於我':
+                            header.textContent = '💫 關於小軟';
+                            description.textContent = '認識我們家的小帥哥，了解小軟貓咪的帥氣故事';
+                            break;
+                        case '聯絡方式':
+                            header.textContent = '📧 聯絡方式';
+                            description.textContent = '歡迎與我們交流，一起分享關於貓咪的美好時光';
+                            break;
+                    }
                 }
             });
         });
