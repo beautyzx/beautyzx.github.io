@@ -457,7 +457,12 @@
             constructor() {
                 this.chatHistory = [];
                 this.isTyping = false;
-                this.baseUrl = window.location.origin; // 自動獲取當前域名
+                
+                // 配置後端服務器地址
+                // 如果是在同一個域名下，使用相對路徑；否則使用完整的 Replit URL
+                this.baseUrl = window.location.hostname === 'localhost' 
+                    ? window.location.origin  // 本地開發環境
+                    : 'https://791f59a3-0c48-41fc-963c-67df73bf8443-00-gxs3080kth8w.sisko.replit.dev'; // Replit 服務器
                 
                 this.xiaoruanPersonality = `你是小軟，一隻可愛聰明的貓咪AI助手。你的個性特點：
 - 溫暖友善，喜歡用貓咪的方式表達（偶爾會說"喵"）
