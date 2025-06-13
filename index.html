@@ -676,7 +676,7 @@
 
             <!-- 小軟即時通 -->
             <div id="xiaoruan-chat-content" class="page-content" style="display: none;">
-                <iframe src="xiaoruan-chat.html" style="width: 100%; height: 1000px; border: none; border-radius: 15px; background: white;"></iframe>
+                <iframe src="xiaoruan-chat.html" style="width: 100%; height: 1000px; border: none; border-radius: 15px;"></iframe>
             </div>
         </main>
     </div>
@@ -693,9 +693,6 @@
             item.addEventListener('click', function(e) {
                 e.preventDefault();
                 
-                // 調試信息
-                console.log('點擊了選單項目:', this.textContent.trim());
-                
                 // 移除所有active狀態
                 document.querySelectorAll('.menu-item').forEach(link => {
                     link.classList.remove('active');
@@ -706,7 +703,6 @@
                 
                 // 獲取頁面類型
                 const pageType = this.getAttribute('data-page');
-                console.log('頁面類型:', pageType);
                 
                 // 隱藏所有頁面內容
                 document.querySelectorAll('.page-content').forEach(page => {
@@ -715,22 +711,16 @@
                 
                 // 顯示對應的頁面內容
                 if (pageType === 'calendar') {
-                    console.log('顯示行事曆');
                     document.getElementById('calendar-content').style.display = 'block';
                 } else if (pageType === 'xunxun') {
-                    console.log('顯示勳勳的小世界');
                     document.getElementById('xunxun-content').style.display = 'block';
                 } else if (pageType === 'linlin') {
-                    console.log('顯示麟麟的小天地');
                     document.getElementById('linlin-content').style.display = 'block';
                 } else if (pageType === 'ai') {
-                    console.log('顯示AI創作');
                     document.getElementById('ai-content').style.display = 'block';
                 } else if (pageType === 'xiaoruan-chat') {
-                    console.log('顯示小軟即時通');
                     document.getElementById('xiaoruan-chat-content').style.display = 'block';
                 } else {
-                    console.log('顯示首頁');
                     document.getElementById('home-content').style.display = 'block';
                 }
                 
@@ -740,29 +730,27 @@
                     const header = document.querySelector('#home-content .header h2');
                     const description = document.querySelector('#home-content .header p');
                     
-                    if (header && description) {
-                        switch(itemText) {
-                            case '首頁':
-                                header.textContent = '歡迎來到Beauty的馬卡龍世界 🐱✨';
-                                description.textContent = '跟著小軟貓咪一起探索美麗生活，記錄每一個可愛的瞬間';
-                                break;
-                            case '部落格文章':
-                                header.textContent = '📝 Beauty日記';
-                                description.textContent = '分享小軟的日常趣事和美麗生活點滴';
-                                break;
-                            case '相片集':
-                                header.textContent = '📸 小軟寫真集';
-                                description.textContent = '用鏡頭捕捉小軟貓咪最美的瞬間';
-                                break;
-                            case '關於我':
-                                header.textContent = '💫 關於小軟';
-                                description.textContent = '認識我們家的小帥哥，了解小軟貓咪的帥氣故事';
-                                break;
-                            case '聯絡方式':
-                                header.textContent = '📧 聯絡方式';
-                                description.textContent = '歡迎與我們交流，一起分享關於貓咪的美好時光';
-                                break;
-                        }
+                    switch(itemText) {
+                        case '首頁':
+                            header.textContent = '歡迎來到Beauty的馬卡龍世界 🐱✨';
+                            description.textContent = '跟著小軟貓咪一起探索美麗生活，記錄每一個可愛的瞬間';
+                            break;
+                        case '部落格文章':
+                            header.textContent = '📝 Beauty日記';
+                            description.textContent = '分享小軟的日常趣事和美麗生活點滴';
+                            break;
+                        case '相片集':
+                            header.textContent = '📸 小軟寫真集';
+                            description.textContent = '用鏡頭捕捉小軟貓咪最美的瞬間';
+                            break;
+                        case '關於我':
+                            header.textContent = '💫 關於小軟';
+                            description.textContent = '認識我們家的小帥哥，了解小軟貓咪的帥氣故事';
+                            break;
+                        case '聯絡方式':
+                            header.textContent = '📧 聯絡方式';
+                            description.textContent = '歡迎與我們交流，一起分享關於貓咪的美好時光';
+                            break;
                     }
                 }
             });
@@ -778,19 +766,6 @@
                 this.style.transform = 'translateY(0) scale(1)';
             });
         });
-
-        // 小軟會說話功能;
-            const replitInput = document.getElementById('replitUrlInputInline');
-            const apiKeyInput = document.getElementById('apiKeyInputInline');
-
-            if (connectionType === 'replit') {
-                replitInput.disabled = false;
-                apiKeyInput.disabled = true;
-            } else {
-                replitInput.disabled = true;
-                apiKeyInput.disabled = false;
-            }
-        }
 
         // 小軟會說話功能
         const xiaoruanBtn = document.getElementById('xiaoruan-btn');
