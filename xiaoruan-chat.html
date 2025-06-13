@@ -297,12 +297,67 @@
             }
             
             .message-content {
-                max-width: 85%;
+                max-height: 85%;
             }
             
             .quick-replies {
                 justify-content: center;
             }
+        }
+
+        /* 優化輸入訊息欄 */
+        .chat-input {
+            flex: 1;
+            padding: 20px 25px;
+            border: 3px solid #f093fb;
+            border-radius: 30px;
+            font-size: 18px;
+            resize: none;
+            max-height: 400px; /* 從 200px 增至 400px */
+            min-height: 160px; /* 從 80px 增至 160px，加倍 */
+            font-family: inherit;
+            background: linear-gradient(135deg, #fff0f5, #f8e1f0);
+            box-shadow: 0 5px 15px rgba(240, 147, 251, 0.3);
+            transition: all 0.3s ease;
+        }
+
+        .chat-input:focus {
+            outline: none;
+            border-color: #f5576c;
+            box-shadow: 0 8px 20px rgba(245, 87, 108, 0.4);
+            transform: translateY(-2px);
+        }
+
+        /* 美化發送按鈕 */
+        .send-btn {
+            background: linear-gradient(135deg, #f093fb, #f5576c);
+            color: white;
+            border: none;
+            padding: 18px 25px; /* 增大 padding */
+            border-radius: 30px;
+            cursor: pointer;
+            font-size: 18px; /* 增大字體 */
+            transition: all 0.3s ease;
+            min-width: 100px; /* 確保按鈕寬度足夠 */
+            box-shadow: 0 4px 12px rgba(240, 147, 251, 0.4);
+        }
+
+        .send-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 18px rgba(245, 87, 108, 0.5);
+            background: linear-gradient(135deg, #f5576c, #f093fb); /* 反轉漸層 */
+        }
+
+        .send-btn:active {
+            transform: translateY(0);
+            box-shadow: 0 2px 8px rgba(245, 87, 108, 0.3);
+        }
+
+        .send-btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
         }
     </style>
 </head>
@@ -452,7 +507,7 @@
                 });
 
                 if (!response.ok) {
-                    const errorData = await response.json();
+                    const errorData = await response.json().catch(() => ({}));
                     throw new Error(errorData.error || `HTTP ${response.status}`);
                 }
 
