@@ -791,6 +791,8 @@
                     document.getElementById('ai-content').style.display = 'block';
                 } else if (pageType === 'xiaoruan-chat') {
                     document.getElementById('xiaoruan-chat-content').style.display = 'block';
+                    // 初始化內嵌版小軟聊天
+                    setTimeout(() => initXiaoruanChatInline(), 100);
                 } else {
                     document.getElementById('home-content').style.display = 'block';
                 }
