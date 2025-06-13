@@ -1,0 +1,732 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>圈圈人村莊生存RPG</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background: linear-gradient(135deg, #87CEEB, #98FB98);
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+        }
+        
+        .game-container {
+            position: relative;
+            margin: 10px;
+        }
+        
+        canvas {
+            border: 3px solid #8B4513;
+            border-radius: 10px;
+            background: #90EE90;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+        }
+        
+        .ui-panel {
+            background: rgba(0,0,0,0.8);
+            color: white;
+            padding: 15px;
+            border-radius: 10px;
+            margin: 10px;
+            width: 780px;
+            display: flex;
+            justify-content: space-between;
+            flex-wrap: wrap;
+        }
+        
+        .stats {
+            display: flex;
+            gap: 20px;
+            align-items: center;
+        }
+        
+        .stat-bar {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        
+        .bar {
+            width: 80px;
+            height: 12px;
+            background: #333;
+            border-radius: 6px;
+            overflow: hidden;
+            margin-top: 3px;
+        }
+        
+        .bar-fill {
+            height: 100%;
+            transition: width 0.3s;
+        }
+        
+        .hp-bar { background: #ff4444; }
+        .hunger-bar { background: #ffaa44; }
+        .energy-bar { background: #44ff44; }
+        
+        .resources {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+        }
+        
+        .controls {
+            background: rgba(0,0,0,0.9);
+            color: white;
+            padding: 10px;
+            border-radius: 8px;
+            margin: 10px;
+            text-align: center;
+        }
+        
+        .controls button {
+            background: #4CAF50;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            margin: 3px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+        
+        .controls button:hover {
+            background: #45a049;
+        }
+        
+        .controls button.active {
+            background: #FF6B6B;
+        }
+        
+        .time-display {
+            font-size: 18px;
+            font-weight: bold;
+            color: white;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+        }
+        
+        .mode-indicator {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: rgba(0,0,0,0.8);
+            color: white;
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-weight: bold;
+        }
+        
+        .day-mode { background: rgba(255,165,0,0.8); }
+        .night-mode { background: rgba(25,25,112,0.8); }
+    </style>
+</head>
+<body>
+    <h1 style="color: #8B4513; text-shadow: 2px 2px 4px rgba(0,0,0,0.3);">🏘️ 圈圈人村莊生存RPG</h1>
+    
+    <div class="game-container">
+        <canvas id="gameCanvas" width="800" height="600"></canvas>
+        <div class="mode-indicator" id="modeIndicator">白天模式</div>
+    </div>
+    
+    <div class="ui-panel">
+        <div class="stats">
+            <div class="stat-bar">
+                <span>❤️ HP</span>
+                <div class="bar">
+                    <div class="bar-fill hp-bar" id="hpBar" style="width: 100%"></div>
+                </div>
+                <span id="hpText">100/100</span>
+            </div>
+            <div class="stat-bar">
+                <span>🍖 飢餓</span>
+                <div class="bar">
+                    <div class="bar-fill hunger-bar" id="hungerBar" style="width: 100%"></div>
+                </div>
+                <span id="hungerText">100/100</span>
+            </div>
+            <div class="stat-bar">
+                <span>⚡ 體力</span>
+                <div class="bar">
+                    <div class="bar-fill energy-bar" id="energyBar" style="width: 100%"></div>
+                </div>
+                <span id="energyText">100/100</span>
+            </div>
+        </div>
+        
+        <div class="time-display" id="timeDisplay">第1天 - 06:00</div>
+        
+        <div class="resources">
+            <span>🪵 木材: <span id="wood">10</span></span>
+            <span>🪨 石頭: <span id="stone">5</span></span>
+            <span>🍞 食物: <span id="food">15</span></span>
+            <span>⭐ 經驗: <span id="exp">0</span></span>
+        </div>
+    </div>
+    
+    <div class="controls">
+        <div>
+            <strong>移動:</strong> WASD 或方向鍵 | <strong>攻擊:</strong> 空白鍵 | <strong>互動:</strong> E鍵
+        </div>
+        <div style="margin-top: 8px;">
+            <button id="buildHouse" onclick="toggleBuildMode('house')">建造房屋 (🪵5 🪨3)</button>
+            <button id="buildWall" onclick="toggleBuildMode('wall')">建造圍牆 (🪨2)</button>
+            <button id="buildFarm" onclick="toggleBuildMode('farm')">建造農田 (🪵3)</button>
+            <button onclick="eatFood()">吃食物 🍞</button>
+            <button onclick="sleep()">睡覺 😴</button>
+        </div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        
+        // 遊戲狀態
+        let gameState = {
+            day: 1,
+            time: 6, // 24小時制 (6=早上6點)
+            mode: 'day', // 'day' 或 'night'
+            buildMode: null,
+            player: {
+                x: 400,
+                y: 300,
+                hp: 100,
+                maxHp: 100,
+                hunger: 100,
+                maxHunger: 100,
+                energy: 100,
+                maxEnergy: 100,
+                weapon: true,
+                attacking: false,
+                attackCooldown: 0
+            },
+            resources: {
+                wood: 10,
+                stone: 5,
+                food: 15,
+                exp: 0
+            },
+            buildings: [],
+            monsters: [],
+            trees: [],
+            rocks: []
+        };
+        
+        // 初始化資源點
+        function initResources() {
+            // 生成樹木
+            for (let i = 0; i < 8; i++) {
+                gameState.trees.push({
+                    x: Math.random() * 750 + 25,
+                    y: Math.random() * 550 + 25,
+                    hp: 3
+                });
+            }
+            
+            // 生成石頭
+            for (let i = 0; i < 6; i++) {
+                gameState.rocks.push({
+                    x: Math.random() * 750 + 25,
+                    y: Math.random() * 550 + 25,
+                    hp: 2
+                });
+            }
+        }
+        
+        // 繪製圈圈人
+        function drawStickman(x, y, color = '#000', weapon = false, attacking = false) {
+            ctx.strokeStyle = color;
+            ctx.lineWidth = 3;
+            
+            // 頭
+            ctx.beginPath();
+            ctx.arc(x, y - 30, 8, 0, Math.PI * 2);
+            ctx.stroke();
+            
+            // 身體
+            ctx.beginPath();
+            ctx.moveTo(x, y - 22);
+            ctx.lineTo(x, y + 10);
+            ctx.stroke();
+            
+            // 手臂
+            ctx.beginPath();
+            if (attacking) {
+                ctx.moveTo(x, y - 10);
+                ctx.lineTo(x + 20, y - 15);
+            } else {
+                ctx.moveTo(x, y - 10);
+                ctx.lineTo(x + 15, y - 5);
+                ctx.moveTo(x, y - 10);
+                ctx.lineTo(x - 15, y - 5);
+            }
+            ctx.stroke();
+            
+            // 腿
+            ctx.beginPath();
+            ctx.moveTo(x, y + 10);
+            ctx.lineTo(x + 12, y + 25);
+            ctx.moveTo(x, y + 10);
+            ctx.lineTo(x - 12, y + 25);
+            ctx.stroke();
+            
+            // 武器
+            if (weapon) {
+                ctx.strokeStyle = '#8B4513';
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                if (attacking) {
+                    ctx.moveTo(x + 20, y - 15);
+                    ctx.lineTo(x + 35, y - 20);
+                } else {
+                    ctx.moveTo(x + 15, y - 5);
+                    ctx.lineTo(x + 25, y - 10);
+                }
+                ctx.stroke();
+            }
+        }
+        
+        // 繪製建築
+        function drawBuilding(building) {
+            ctx.fillStyle = building.color;
+            ctx.fillRect(building.x, building.y, building.width, building.height);
+            ctx.strokeStyle = '#000';
+            ctx.lineWidth = 2;
+            ctx.strokeRect(building.x, building.y, building.width, building.height);
+            
+            // 建築圖標
+            ctx.fillStyle = '#000';
+            ctx.font = '20px Arial';
+            ctx.textAlign = 'center';
+            ctx.fillText(building.icon, building.x + building.width/2, building.y + building.height/2 + 7);
+        }
+        
+        // 繪製樹木
+        function drawTree(tree) {
+            if (tree.hp <= 0) return;
+            
+            ctx.fillStyle = '#8B4513';
+            ctx.fillRect(tree.x - 3, tree.y - 5, 6, 20);
+            
+            ctx.fillStyle = '#228B22';
+            ctx.beginPath();
+            ctx.arc(tree.x, tree.y - 10, 15, 0, Math.PI * 2);
+            ctx.fill();
+        }
+        
+        // 繪製石頭
+        function drawRock(rock) {
+            if (rock.hp <= 0) return;
+            
+            ctx.fillStyle = '#696969';
+            ctx.beginPath();
+            ctx.arc(rock.x, rock.y, 12, 0, Math.PI * 2);
+            ctx.fill();
+            
+            ctx.strokeStyle = '#000';
+            ctx.lineWidth = 1;
+            ctx.stroke();
+        }
+        
+        // 繪製怪物
+        function drawMonster(monster) {
+            drawStickman(monster.x, monster.y, '#ff0000', false, false);
+            
+            // HP條
+            let hpPercent = monster.hp / monster.maxHp;
+            ctx.fillStyle = '#ff0000';
+            ctx.fillRect(monster.x - 15, monster.y - 50, 30 * hpPercent, 4);
+            ctx.strokeStyle = '#000';
+            ctx.strokeRect(monster.x - 15, monster.y - 50, 30, 4);
+        }
+        
+        // 主渲染函數
+        function render() {
+            // 清空畫布
+            if (gameState.mode === 'night') {
+                ctx.fillStyle = '#1a1a2e';
+            } else {
+                ctx.fillStyle = '#90EE90';
+            }
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            // 繪製建築
+            gameState.buildings.forEach(building => drawBuilding(building));
+            
+            // 繪製資源
+            gameState.trees.forEach(tree => drawTree(tree));
+            gameState.rocks.forEach(rock => drawRock(rock));
+            
+            // 繪製怪物
+            gameState.monsters.forEach(monster => drawMonster(monster));
+            
+            // 繪製玩家
+            drawStickman(
+                gameState.player.x, 
+                gameState.player.y, 
+                '#0066cc', 
+                gameState.player.weapon,
+                gameState.player.attacking
+            );
+            
+            // 建造預覽
+            if (gameState.buildMode && mousePos) {
+                ctx.globalAlpha = 0.5;
+                let buildingData = getBuildingData(gameState.buildMode);
+                ctx.fillStyle = buildingData.color;
+                ctx.fillRect(
+                    Math.floor(mousePos.x / 40) * 40,
+                    Math.floor(mousePos.y / 40) * 40,
+                    buildingData.width,
+                    buildingData.height
+                );
+                ctx.globalAlpha = 1;
+            }
+        }
+        
+        let mousePos = null;
+        canvas.addEventListener('mousemove', (e) => {
+            const rect = canvas.getBoundingClientRect();
+            mousePos = {
+                x: e.clientX - rect.left,
+                y: e.clientY - rect.top
+            };
+        });
+        
+        // 建造系統
+        function getBuildingData(type) {
+            const buildings = {
+                house: { width: 60, height: 40, color: '#8B4513', icon: '🏠', cost: {wood: 5, stone: 3} },
+                wall: { width: 20, height: 40, color: '#696969', icon: '🧱', cost: {stone: 2} },
+                farm: { width: 40, height: 40, color: '#DEB887', icon: '🌾', cost: {wood: 3} }
+            };
+            return buildings[type];
+        }
+        
+        function toggleBuildMode(type) {
+            if (gameState.buildMode === type) {
+                gameState.buildMode = null;
+                document.querySelectorAll('.controls button').forEach(btn => btn.classList.remove('active'));
+            } else {
+                gameState.buildMode = type;
+                document.querySelectorAll('.controls button').forEach(btn => btn.classList.remove('active'));
+                document.getElementById('build' + type.charAt(0).toUpperCase() + type.slice(1)).classList.add('active');
+            }
+        }
+        
+        canvas.addEventListener('click', (e) => {
+            if (!gameState.buildMode) return;
+            
+            const rect = canvas.getBoundingClientRect();
+            const x = Math.floor((e.clientX - rect.left) / 40) * 40;
+            const y = Math.floor((e.clientY - rect.top) / 40) * 40;
+            
+            const buildingData = getBuildingData(gameState.buildMode);
+            
+            // 檢查資源
+            let canBuild = true;
+            for (let resource in buildingData.cost) {
+                if (gameState.resources[resource] < buildingData.cost[resource]) {
+                    canBuild = false;
+                    break;
+                }
+            }
+            
+            if (canBuild) {
+                // 扣除資源
+                for (let resource in buildingData.cost) {
+                    gameState.resources[resource] -= buildingData.cost[resource];
+                }
+                
+                // 建造建築
+                gameState.buildings.push({
+                    x: x,
+                    y: y,
+                    type: gameState.buildMode,
+                    ...buildingData
+                });
+                
+                gameState.buildMode = null;
+                document.querySelectorAll('.controls button').forEach(btn => btn.classList.remove('active'));
+            }
+        });
+        
+        // 鍵盤控制
+        const keys = {};
+        
+        document.addEventListener('keydown', (e) => {
+            keys[e.key.toLowerCase()] = true;
+            
+            if (e.key === ' ') {
+                e.preventDefault();
+                attack();
+            }
+            
+            if (e.key.toLowerCase() === 'e') {
+                interact();
+            }
+        });
+        
+        document.addEventListener('keyup', (e) => {
+            keys[e.key.toLowerCase()] = false;
+        });
+        
+        // 玩家移動
+        function updatePlayer() {
+            const speed = 3;
+            let moved = false;
+            
+            if (keys['w'] || keys['arrowup']) {
+                gameState.player.y = Math.max(20, gameState.player.y - speed);
+                moved = true;
+            }
+            if (keys['s'] || keys['arrowdown']) {
+                gameState.player.y = Math.min(580, gameState.player.y + speed);
+                moved = true;
+            }
+            if (keys['a'] || keys['arrowleft']) {
+                gameState.player.x = Math.max(20, gameState.player.x - speed);
+                moved = true;
+            }
+            if (keys['d'] || keys['arrowright']) {
+                gameState.player.x = Math.min(780, gameState.player.x + speed);
+                moved = true;
+            }
+            
+            // 移動消耗體力
+            if (moved && gameState.player.energy > 0) {
+                gameState.player.energy = Math.max(0, gameState.player.energy - 0.1);
+            }
+            
+            // 攻擊冷卻
+            if (gameState.player.attackCooldown > 0) {
+                gameState.player.attackCooldown--;
+            } else {
+                gameState.player.attacking = false;
+            }
+        }
+        
+        // 攻擊系統
+        function attack() {
+            if (gameState.player.attackCooldown > 0 || gameState.player.energy < 10) return;
+            
+            gameState.player.attacking = true;
+            gameState.player.attackCooldown = 20;
+            gameState.player.energy = Math.max(0, gameState.player.energy - 10);
+            
+            // 攻擊怪物
+            gameState.monsters.forEach((monster, index) => {
+                const distance = Math.sqrt(
+                    Math.pow(monster.x - gameState.player.x, 2) + 
+                    Math.pow(monster.y - gameState.player.y, 2)
+                );
+                
+                if (distance < 40) {
+                    monster.hp -= 25;
+                    if (monster.hp <= 0) {
+                        gameState.monsters.splice(index, 1);
+                        gameState.resources.exp += 10;
+                        gameState.resources.food += 2;
+                    }
+                }
+            });
+        }
+        
+        // 互動系統
+        function interact() {
+            // 收集樹木
+            gameState.trees.forEach((tree, index) => {
+                const distance = Math.sqrt(
+                    Math.pow(tree.x - gameState.player.x, 2) + 
+                    Math.pow(tree.y - gameState.player.y, 2)
+                );
+                
+                if (distance < 30 && tree.hp > 0) {
+                    tree.hp--;
+                    gameState.resources.wood++;
+                    gameState.player.energy = Math.max(0, gameState.player.energy - 5);
+                    
+                    if (tree.hp <= 0) {
+                        // 重新生成樹木
+                        setTimeout(() => {
+                            tree.hp = 3;
+                        }, 30000);
+                    }
+                }
+            });
+            
+            // 收集石頭
+            gameState.rocks.forEach((rock, index) => {
+                const distance = Math.sqrt(
+                    Math.pow(rock.x - gameState.player.x, 2) + 
+                    Math.pow(rock.y - gameState.player.y, 2)
+                );
+                
+                if (distance < 30 && rock.hp > 0) {
+                    rock.hp--;
+                    gameState.resources.stone++;
+                    gameState.player.energy = Math.max(0, gameState.player.energy - 5);
+                    
+                    if (rock.hp <= 0) {
+                        // 重新生成石頭
+                        setTimeout(() => {
+                            rock.hp = 2;
+                        }, 45000);
+                    }
+                }
+            });
+        }
+        
+        // 生存系統
+        function eatFood() {
+            if (gameState.resources.food > 0 && gameState.player.hunger < gameState.player.maxHunger) {
+                gameState.resources.food--;
+                gameState.player.hunger = Math.min(gameState.player.maxHunger, gameState.player.hunger + 30);
+            }
+        }
+        
+        function sleep() {
+            if (gameState.player.energy < gameState.player.maxEnergy) {
+                gameState.player.energy = Math.min(gameState.player.maxEnergy, gameState.player.energy + 50);
+                gameState.time += 2;
+                updateTimeAndMode();
+            }
+        }
+        
+        // 時間系統
+        function updateTimeAndMode() {
+            if (gameState.time >= 24) {
+                gameState.time -= 24;
+                gameState.day++;
+            }
+            
+            // 白天: 6:00-18:00, 夜晚: 18:00-6:00
+            if (gameState.time >= 6 && gameState.time < 18) {
+                if (gameState.mode === 'night') {
+                    gameState.mode = 'day';
+                    gameState.monsters = []; // 清除怪物
+                }
+            } else {
+                if (gameState.mode === 'day') {
+                    gameState.mode = 'night';
+                    spawnMonsters(); // 生成怪物
+                }
+            }
+            
+            updateUI();
+        }
+        
+        // 生成怪物
+        function spawnMonsters() {
+            const monsterCount = Math.min(5, gameState.day);
+            for (let i = 0; i < monsterCount; i++) {
+                gameState.monsters.push({
+                    x: Math.random() * 760 + 20,
+                    y: Math.random() * 560 + 20,
+                    hp: 50,
+                    maxHp: 50,
+                    speed: 1
+                });
+            }
+        }
+        
+        // 怪物AI
+        function updateMonsters() {
+            gameState.monsters.forEach(monster => {
+                // 向玩家移動
+                const dx = gameState.player.x - monster.x;
+                const dy = gameState.player.y - monster.y;
+                const distance = Math.sqrt(dx * dx + dy * dy);
+                
+                if (distance > 5) {
+                    monster.x += (dx / distance) * monster.speed;
+                    monster.y += (dy / distance) * monster.speed;
+                }
+                
+                // 攻擊玩家
+                if (distance < 25) {
+                    gameState.player.hp = Math.max(0, gameState.player.hp - 0.5);
+                }
+            });
+        }
+        
+        // 更新UI
+        function updateUI() {
+            // 血量條
+            const hpPercent = (gameState.player.hp / gameState.player.maxHp) * 100;
+            document.getElementById('hpBar').style.width = hpPercent + '%';
+            document.getElementById('hpText').textContent = `${Math.floor(gameState.player.hp)}/${gameState.player.maxHp}`;
+            
+            // 飢餓條
+            const hungerPercent = (gameState.player.hunger / gameState.player.maxHunger) * 100;
+            document.getElementById('hungerBar').style.width = hungerPercent + '%';
+            document.getElementById('hungerText').textContent = `${Math.floor(gameState.player.hunger)}/${gameState.player.maxHunger}`;
+            
+            // 體力條
+            const energyPercent = (gameState.player.energy / gameState.player.maxEnergy) * 100;
+            document.getElementById('energyBar').style.width = energyPercent + '%';
+            document.getElementById('energyText').textContent = `${Math.floor(gameState.player.energy)}/${gameState.player.maxEnergy}`;
+            
+            // 資源
+            document.getElementById('wood').textContent = gameState.resources.wood;
+            document.getElementById('stone').textContent = gameState.resources.stone;
+            document.getElementById('food').textContent = gameState.resources.food;
+            document.getElementById('exp').textContent = gameState.resources.exp;
+            
+            // 時間
+            const hour = Math.floor(gameState.time);
+            const minute = Math.floor((gameState.time - hour) * 60);
+            document.getElementById('timeDisplay').textContent = `第${gameState.day}天 - ${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`;
+            
+            // 模式指示器
+            const modeIndicator = document.getElementById('modeIndicator');
+            if (gameState.mode === 'day') {
+                modeIndicator.textContent = '☀️ 白天模式';
+                modeIndicator.className = 'mode-indicator day-mode';
+            } else {
+                modeIndicator.textContent = '🌙 夜晚模式';
+                modeIndicator.className = 'mode-indicator night-mode';
+            }
+        }
+        
+        // 遊戲循環
+        function gameLoop() {
+            updatePlayer();
+            
+            if (gameState.mode === 'night') {
+                updateMonsters();
+            }
+            
+            // 自然消耗
+            gameState.player.hunger = Math.max(0, gameState.player.hunger - 0.02);
+            gameState.player.energy = Math.min(gameState.player.maxEnergy, gameState.player.energy + 0.05);
+            
+            // 飢餓傷害
+            if (gameState.player.hunger <= 0) {
+                gameState.player.hp = Math.max(0, gameState.player.hp - 0.1);
+            }
+            
+            // 時間流逝
+            gameState.time += 0.01;
+            if (Math.floor(gameState.time * 100) % 100 === 0) {
+                updateTimeAndMode();
+            }
+            
+            render();
+            updateUI();
+            
+            requestAnimationFrame(gameLoop);
+        }
+        
+        // 初始化遊戲
+        initResources();
+        updateUI();
+        gameLoop();
+    </script>
+</body>
+</html>
