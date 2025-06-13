@@ -91,6 +91,8 @@
         .icon-gallery { background: linear-gradient(45deg, #e6b3ff, #f0c7ff); }
         .icon-xunxun { background: linear-gradient(45deg, #87ceeb, #add8e6); }
         .icon-linlin { background: linear-gradient(45deg, #ffb347, #ffd700); }
+        .icon-ai { background: linear-gradient(45deg, #667eea, #764ba2); }
+        .icon-chat { background: linear-gradient(45deg, #f093fb, #f5576c); }
         .icon-about { background: linear-gradient(45deg, #b3ffb3, #c7ffc7); }
         .icon-contact { background: linear-gradient(45deg, #ffcc99, #ffd9b3); }
 
@@ -587,6 +589,16 @@
                 麟麟的小天地 🎨
             </a>
             
+            <a href="#" class="menu-item" data-page="ai">
+                <span class="icon icon-ai"></span>
+                AI創作 🤖
+            </a>
+
+            <a href="#" class="menu-item" data-page="xiaoruan-chat">
+                <span class="icon icon-chat"></span>
+                小軟即時通 💬
+            </a>
+            
             <a href="#" class="menu-item">
                 <span class="icon icon-about"></span>
                 關於我
@@ -649,12 +661,22 @@
 
             <!-- 勳勳的小世界 -->
             <div id="xunxun-content" class="page-content" style="display: none;">
-                <iframe src="xunxun-game.html" style="width: 100%; height: 800px; border: none; border-radius: 15px;"></iframe>
+                <iframe src="xunxun-game.html" style="width: 100%; height: 1000px; border: none; border-radius: 15px;"></iframe>
             </div>
 
             <!-- 麟麟的小天地 -->
             <div id="linlin-content" class="page-content" style="display: none;">
-                <iframe src="linlin-drawing.html" style="width: 100%; height: 800px; border: none; border-radius: 15px;"></iframe>
+                <iframe src="linlin-drawing.html" style="width: 100%; height: 1000px; border: none; border-radius: 15px;"></iframe>
+            </div>
+
+            <!-- AI創作 -->
+            <div id="ai-content" class="page-content" style="display: none;">
+                <iframe src="ai-creator.html" style="width: 100%; height: 1000px; border: none; border-radius: 15px;"></iframe>
+            </div>
+
+            <!-- 小軟即時通 -->
+            <div id="xiaoruan-chat-content" class="page-content" style="display: none;">
+                <iframe src="xiaoruan-chat.html" style="width: 100%; height: 1000px; border: none; border-radius: 15px;"></iframe>
             </div>
         </main>
     </div>
@@ -694,6 +716,10 @@
                     document.getElementById('xunxun-content').style.display = 'block';
                 } else if (pageType === 'linlin') {
                     document.getElementById('linlin-content').style.display = 'block';
+                } else if (pageType === 'ai') {
+                    document.getElementById('ai-content').style.display = 'block';
+                } else if (pageType === 'xiaoruan-chat') {
+                    document.getElementById('xiaoruan-chat-content').style.display = 'block';
                 } else {
                     document.getElementById('home-content').style.display = 'block';
                 }
