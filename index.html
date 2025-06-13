@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>小軟的馬卡龍部落格</title>
+    <title>🌸 Beauty部落格 🌸</title>
     <style>
         * {
             margin: 0;
@@ -12,9 +12,10 @@
         }
 
         body {
-            font-family: 'Arial', '微軟正黑體', sans-serif;
-            background: linear-gradient(135deg, #ffeef8, #f0f8ff);
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #FFE5F1 0%, #E5F3FF 50%, #F0E5FF 100%);
             min-height: 100vh;
+            color: #5A4FCF;
         }
 
         .container {
@@ -22,154 +23,275 @@
             min-height: 100vh;
         }
 
-        /* 左側選單 */
+        /* 左側導航 */
         .sidebar {
             width: 280px;
-            background: rgba(255, 255, 255, 0.9);
+            background: rgba(255, 255, 255, 0.95);
             backdrop-filter: blur(10px);
-            box-shadow: 2px 0 20px rgba(0,0,0,0.1);
-            padding: 30px 0;
+            padding: 20px;
+            box-shadow: 0 8px 32px rgba(31, 38, 135, 0.37);
+            border-right: 1px solid rgba(255, 255, 255, 0.18);
             position: fixed;
             height: 100vh;
             overflow-y: auto;
+            z-index: 1000;
         }
 
         .logo {
             text-align: center;
-            margin-bottom: 40px;
-            padding: 0 20px;
+            margin-bottom: 30px;
+            padding: 20px 0;
+            border-bottom: 2px solid #FFB6C1;
         }
 
         .logo h1 {
-            background: linear-gradient(45deg, #ff9a9e, #fecfef, #fecfef);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            font-size: 24px;
-            font-weight: bold;
+            font-size: 1.8em;
+            color: #FF69B4;
+            margin-bottom: 5px;
         }
 
-        .logo .subtitle {
-            font-size: 12px;
-            color: #999;
-            margin-top: 5px;
+        .logo p {
+            font-size: 0.9em;
+            color: #9370DB;
         }
 
-        .menu-item {
+        .nav-menu {
+            list-style: none;
+        }
+
+        .nav-item {
+            margin-bottom: 8px;
+        }
+
+        .nav-link {
             display: block;
-            padding: 15px 25px;
+            padding: 15px 20px;
+            color: #6B46C1;
             text-decoration: none;
-            color: #666;
+            border-radius: 15px;
             transition: all 0.3s ease;
-            border-left: 4px solid transparent;
-            margin: 5px 0;
+            font-weight: 500;
+            position: relative;
+            overflow: hidden;
         }
 
-        .menu-item:hover {
-            background: rgba(255, 182, 193, 0.2);
-            border-left-color: #ffb6c1;
+        .nav-link:hover {
+            background: linear-gradient(135deg, #FFB6C1, #DDA0DD);
+            color: white;
             transform: translateX(5px);
+            box-shadow: 0 5px 15px rgba(255, 182, 193, 0.4);
         }
 
-        .menu-item.active {
-            background: linear-gradient(90deg, rgba(255, 182, 193, 0.3), transparent);
-            border-left-color: #ff9a9e;
-            color: #ff6b8a;
+        .nav-link.active {
+            background: linear-gradient(135deg, #FF69B4, #9370DB);
+            color: white;
+            box-shadow: 0 5px 15px rgba(255, 105, 180, 0.4);
         }
 
-        .menu-item .icon {
-            display: inline-block;
-            width: 20px;
-            height: 20px;
-            margin-right: 10px;
-            border-radius: 50%;
-            vertical-align: middle;
+        .nav-link::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.5s;
         }
 
-        .icon-home { background: linear-gradient(45deg, #ffb6c1, #ffc0cb); }
-        .icon-calendar { background: linear-gradient(45deg, #fff2b3, #ffe4b5); }
-        .icon-blog { background: linear-gradient(45deg, #b3d9ff, #c7ecff); }
-        .icon-gallery { background: linear-gradient(45deg, #e6b3ff, #f0c7ff); }
-        .icon-about { background: linear-gradient(45deg, #b3ffb3, #c7ffc7); }
-        .icon-contact { background: linear-gradient(45deg, #ffcc99, #ffd9b3); }
+        .nav-link:hover::before {
+            left: 100%;
+        }
 
-        /* 主要內容區 */
+        /* 主要內容區域 */
         .main-content {
-            margin-left: 280px;
             flex: 1;
+            margin-left: 280px;
             padding: 40px;
         }
 
-        .header {
-            background: rgba(255, 255, 255, 0.8);
-            backdrop-filter: blur(10px);
-            border-radius: 20px;
-            padding: 30px;
-            margin-bottom: 30px;
-            box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+        .content-section {
+            display: none;
+            animation: fadeIn 0.5s ease-in-out;
         }
 
-        .header h2 {
-            color: #ff6b8a;
-            font-size: 28px;
+        .content-section.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .section-header {
+            text-align: center;
+            margin-bottom: 40px;
+            padding: 30px;
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        }
+
+        .section-header h2 {
+            font-size: 2.5em;
+            color: #FF69B4;
             margin-bottom: 10px;
         }
 
-        .header p {
-            color: #666;
-            font-size: 16px;
-        }
-
-        .content-cards {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 25px;
+        .section-header p {
+            font-size: 1.2em;
+            color: #9370DB;
         }
 
         .card {
-            background: rgba(255, 255, 255, 0.9);
-            backdrop-filter: blur(10px);
+            background: rgba(255, 255, 255, 0.95);
             border-radius: 20px;
-            padding: 25px;
-            box-shadow: 0 8px 32px rgba(0,0,0,0.1);
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
-            border: 1px solid rgba(255, 255, 255, 0.2);
+            padding: 30px;
+            margin-bottom: 25px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.18);
+            transition: all 0.3s ease;
         }
 
         .card:hover {
             transform: translateY(-5px);
-            box-shadow: 0 15px 40px rgba(0,0,0,0.15);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
         }
 
-        .card-header {
+        .card-title {
+            font-size: 1.5em;
+            color: #6B46C1;
+            margin-bottom: 15px;
             display: flex;
             align-items: center;
-            margin-bottom: 15px;
+            gap: 10px;
         }
 
-        .card-icon {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            margin-right: 15px;
-        }
-
-        .card h3 {
-            color: #555;
-            font-size: 18px;
-        }
-
-        .card p {
-            color: #777;
+        .card-content {
+            color: #5A4FCF;
             line-height: 1.6;
         }
 
-        .calendar-highlight {
-            background: linear-gradient(135deg, #fff2b3, #ffe4b5);
-            border: 2px solid #ffd700;
+        /* 行事曆樣式 */
+        .calendar {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
         }
 
-        .calendar-highlight h3 {
-            color: #cc9900;
+        .calendar-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .calendar-nav {
+            background: #FFB6C1;
+            border: none;
+            color: white;
+            padding: 10px 15px;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .calendar-nav:hover {
+            background: #FF69B4;
+            transform: scale(1.05);
+        }
+
+        .calendar-month {
+            font-size: 1.8em;
+            color: #FF69B4;
+            font-weight: bold;
+        }
+
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 5px;
+            margin-top: 20px;
+        }
+
+        .calendar-day {
+            aspect-ratio: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 500;
+        }
+
+        .calendar-day.header {
+            background: #E6E6FA;
+            color: #6B46C1;
+            font-weight: bold;
+            cursor: default;
+        }
+
+        .calendar-day.other-month {
+            color: #CCC;
+        }
+
+        .calendar-day:not(.header):not(.other-month):hover {
+            background: #FFB6C1;
+            color: white;
+            transform: scale(1.1);
+        }
+
+        .calendar-day.today {
+            background: #FF69B4;
+            color: white;
+            font-weight: bold;
+        }
+
+        /* AI創作區域特殊樣式 */
+        .ai-creator {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 20px;
+            padding: 30px;
+            margin-bottom: 25px;
+        }
+
+        .ai-input {
+            width: 100%;
+            padding: 15px;
+            border: none;
+            border-radius: 15px;
+            font-size: 1em;
+            margin-bottom: 15px;
+            resize: vertical;
+            min-height: 120px;
+        }
+
+        .ai-button {
+            background: linear-gradient(135deg, #FF69B4, #9370DB);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 15px;
+            font-size: 1em;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .ai-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(255, 105, 180, 0.4);
+        }
+
+        .ai-result {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 20px;
+            margin-top: 20px;
+            min-height: 100px;
         }
 
         /* 響應式設計 */
@@ -184,363 +306,340 @@
                 margin-left: 0;
                 padding: 20px;
             }
-            
-            .container {
-                flex-direction: column;
-            }
-        }
-
-        /* 裝飾性元素 */
-        .floating-shapes {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            pointer-events: none;
-            z-index: -1;
-        }
-
-        .shape {
-            position: absolute;
-            border-radius: 50%;
-            opacity: 0.1;
-            animation: float 6s ease-in-out infinite;
-        }
-
-        .shape1 {
-            width: 80px;
-            height: 80px;
-            background: #ffb6c1;
-            top: 20%;
-            left: 10%;
-            animation-delay: 0s;
-        }
-
-        .shape2 {
-            width: 60px;
-            height: 60px;
-            background: #b3d9ff;
-            top: 60%;
-            right: 15%;
-            animation-delay: 2s;
-        }
-
-        .shape3 {
-            width: 100px;
-            height: 100px;
-            background: #e6b3ff;
-            bottom: 20%;
-            left: 20%;
-            animation-delay: 4s;
-        }
-
-        @keyframes float {
-            0%, 100% { transform: translateY(0px); }
-            50% { transform: translateY(-20px); }
-        }
-
-        .page-content {
-            width: 100%;
-        }
-
-        .page-content iframe {
-            box-shadow: 0 8px 32px rgba(0,0,0,0.1);
-        }
-
-        /* 小軟會說話功能 */
-        #xiaoruan-btn {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            z-index: 1000;
-            width: 150px;
-            height: 150px;
-            border-radius: 50%;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            background: linear-gradient(135deg, #fff2e6, #ffe4b5);
-            border: 3px solid rgba(255, 255, 255, 0.8);
-            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
-            overflow: hidden;
-        }
-
-        #xiaoruan-btn img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-
-        #xiaoruan-btn:hover {
-            transform: scale(1.1);
-            box-shadow: 0 12px 35px rgba(0,0,0,0.2);
-        }
-
-        #xiaoruan-bubble {
-            position: fixed;
-            bottom: 190px;
-            right: 20px;
-            max-width: 320px;
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(10px);
-            color: #555;
-            padding: 20px 24px;
-            font-size: 15px;
-            line-height: 1.7;
-            font-family: "Microsoft JhengHei", "微軟正黑體", sans-serif;
-            border-radius: 20px 20px 5px 20px;
-            box-shadow: 0 8px 32px rgba(0,0,0,0.15);
-            border: 2px solid rgba(255, 182, 193, 0.3);
-            display: none;
-            z-index: 1001;
-            animation: bubbleAppear 0.3s ease-out;
-        }
-
-        #xiaoruan-bubble::after {
-            content: '';
-            position: absolute;
-            bottom: -8px;
-            right: 15px;
-            width: 0;
-            height: 0;
-            border-left: 8px solid transparent;
-            border-right: 8px solid transparent;
-            border-top: 8px solid rgba(255, 255, 255, 0.95);
-        }
-
-        @keyframes bubbleAppear {
-            0% {
-                opacity: 0;
-                transform: translateY(10px) scale(0.8);
-            }
-            100% {
-                opacity: 1;
-                transform: translateY(0) scale(1);
-            }
-        }
-
-        /* 小軟按鈕呼吸動畫 */
-        @keyframes breathe {
-            0%, 100% { 
-                transform: scale(1);
-                box-shadow: 0 8px 25px rgba(0,0,0,0.15);
-            }
-            50% { 
-                transform: scale(1.05);
-                box-shadow: 0 10px 30px rgba(255, 182, 193, 0.3);
-            }
-        }
-
-        #xiaoruan-btn {
-            animation: breathe 3s ease-in-out infinite;
         }
     </style>
 </head>
 <body>
-    <!-- 裝飾性浮動形狀 -->
-    <div class="floating-shapes">
-        <div class="shape shape1"></div>
-        <div class="shape shape2"></div>
-        <div class="shape shape3"></div>
-    </div>
-
     <div class="container">
-        <!-- 左側選單 -->
+        <!-- 左側導航 -->
         <nav class="sidebar">
             <div class="logo">
-                <h1>🌸 Beauty部落格 🌸</h1>
-                <div class="subtitle">小軟貓咪的美麗世界</div>
+                <h1>🐱 Beauty部落格</h1>
+                <p>小軟貓咪的馬卡龍世界</p>
             </div>
             
-            <a href="#" class="menu-item active">
-                <span class="icon icon-home"></span>
-                首頁
-            </a>
-            
-            <a href="#" class="menu-item" data-page="calendar">
-                <span class="icon icon-calendar"></span>
-                小軟2025行事曆 🐱
-            </a>
-            
-            <a href="#" class="menu-item">
-                <span class="icon icon-blog"></span>
-                部落格文章
-            </a>
-            
-            <a href="#" class="menu-item">
-                <span class="icon icon-gallery"></span>
-                相片集
-            </a>
-            
-            <a href="#" class="menu-item">
-                <span class="icon icon-about"></span>
-                關於我
-            </a>
-            
-            <a href="#" class="menu-item">
-                <span class="icon icon-contact"></span>
-                聯絡方式
-            </a>
+            <ul class="nav-menu">
+                <li class="nav-item">
+                    <a href="#home" class="nav-link active" onclick="showSection('home')">
+                        🏠 首頁
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="#calendar" class="nav-link" onclick="showSection('calendar')">
+                        🗓️ 小軟行事曆
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="#xunxun" class="nav-link" onclick="showSection('xunxun')">
+                        🌟 勳勳小世界
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="#linlin" class="nav-link" onclick="showSection('linlin')">
+                        🌈 麟麟小天地
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="#ai" class="nav-link" onclick="showSection('ai')">
+                        🤖 AI創作
+                    </a>
+                </li>
+            </ul>
         </nav>
 
-        <!-- 主要內容 -->
+        <!-- 主要內容區域 -->
         <main class="main-content">
-            <!-- 首頁內容 -->
-            <div id="home-content" class="page-content">
-                <header class="header">
+            <!-- 首頁 -->
+            <section id="home" class="content-section active">
+                <div class="section-header">
                     <h2>歡迎來到Beauty的馬卡龍世界 🐱✨</h2>
                     <p>跟著小軟貓咪一起探索美麗生活，記錄每一個可愛的瞬間</p>
-                </header>
+                </div>
 
-                <div class="content-cards">
-                    <div class="card calendar-highlight">
-                        <div class="card-header">
-                            <div class="card-icon" style="background: linear-gradient(45deg, #fff2b3, #ffe4b5);"></div>
-                            <h3>🗓️ 小軟2025行事曆</h3>
-                        </div>
-                        <p>記錄小軟貓咪2025年的重要日程！包含疫苗時間、美容預約、生日慶祝，還有那些值得紀念的可愛時光。</p>
-                    </div>
-
-                    <div class="card">
-                        <div class="card-header">
-                            <div class="card-icon icon-blog"></div>
-                            <h3>📝 Beauty日記</h3>
-                        </div>
-                        <p>分享小軟的日常生活趣事，美容保養心得、可愛瞬間記錄，還有那些讓人融化的貓咪日常。</p>
-                    </div>
-
-                    <div class="card">
-                        <div class="card-header">
-                            <div class="card-icon icon-gallery"></div>
-                            <h3>📸 小軟寫真集</h3>
-                        </div>
-                        <p>捕捉小軟最美的瞬間！從慵懶的午後時光到調皮的玩耍模樣，每一張照片都是珍貴的回憶。</p>
-                    </div>
-
-                    <div class="card">
-                        <div class="card-header">
-                            <div class="card-icon icon-about"></div>
-                            <h3>💫 關於小軟</h3>
-                        </div>
-                        <p>認識我們家的小帥哥！小軟是一隻充滿魅力的男子漢貓咪，擁有獨特的個性和帥氣的魅力。</p>
+                <div class="card">
+                    <h3 class="card-title">🗓️ 小軟2025行事曆</h3>
+                    <div class="card-content">
+                        記錄小軟貓咪2025年的重要日程！包含疫苗時間、美容預約、生日慶祝，還有那些值得紀念的可愛時光。
                     </div>
                 </div>
-            </div>
 
-            <!-- 行事曆內容 -->
-            <div id="calendar-content" class="page-content" style="display: none;">
-                <iframe src="calendar.html" style="width: 100%; height: 800px; border: none; border-radius: 15px;"></iframe>
-            </div>
+                <div class="card">
+                    <h3 class="card-title">📝 Beauty日記</h3>
+                    <div class="card-content">
+                        分享小軟的日常生活趣事，美容保養心得、可愛瞬間記錄，還有那些讓人融化的貓咪日常。
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h3 class="card-title">📸 小軟寫真集</h3>
+                    <div class="card-content">
+                        捕捉小軟最美的瞬間！從慵懶的午後時光到調皮的玩耍模樣，每一張照片都是珍貴的回憶。
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h3 class="card-title">💫 關於小軟</h3>
+                    <div class="card-content">
+                        認識我們家的小帥哥！小軟是一隻充滿魅力的男子漢貓咪，擁有獨特的個性和帥氣的魅力。
+                    </div>
+                </div>
+            </section>
+
+            <!-- 行事曆頁面 -->
+            <section id="calendar" class="content-section">
+                <div class="section-header">
+                    <h2>🗓️ 小軟2025行事曆</h2>
+                    <p>記錄小軟貓咪的重要時刻</p>
+                </div>
+
+                <div class="calendar">
+                    <div class="calendar-header">
+                        <button class="calendar-nav" onclick="previousMonth()">◀</button>
+                        <div class="calendar-month" id="currentMonth">2025年6月</div>
+                        <button class="calendar-nav" onclick="nextMonth()">▶</button>
+                    </div>
+                    <div class="calendar-grid" id="calendarGrid">
+                        <!-- 行事曆內容將由JavaScript生成 -->
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h3 class="card-title">🐱 本月重要事項</h3>
+                    <div class="card-content">
+                        <p>• 6月15日 - 小軟疫苗預約 💉</p>
+                        <p>• 6月20日 - 美容預約 ✂️</p>
+                        <p>• 6月25日 - 小軟生日慶祝 🎂</p>
+                        <p>• 6月30日 - 健康檢查 🏥</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 勳勳小世界 -->
+            <section id="xunxun" class="content-section">
+                <div class="section-header">
+                    <h2>🌟 勳勳小世界</h2>
+                    <p>探索勳勳的奇幻冒險旅程</p>
+                </div>
+
+                <div class="card">
+                    <h3 class="card-title">🎮 勳勳的遊戲時光</h3>
+                    <div class="card-content">
+                        勳勳最愛的遊戲世界！從經典的RPG到最新的冒險遊戲，記錄每一次精彩的遊戲體驗和心得分享。
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h3 class="card-title">📚 勳勳的學習筆記</h3>
+                    <div class="card-content">
+                        學習路上的點點滴滴，包括程式設計心得、新技能習得過程，還有那些讓人恍然大悟的學習時刻。
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h3 class="card-title">🎨 勳勳的創作工坊</h3>
+                    <div class="card-content">
+                        發揮創意的小天地！從繪畫作品到手工藝品，每一件作品都承載著滿滿的創意和用心。
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h3 class="card-title">🌟 勳勳的日常趣事</h3>
+                    <div class="card-content">
+                        生活中的小確幸和有趣見聞，用文字記錄下每一個值得回味的瞬間。
+                    </div>
+                </div>
+            </section>
+
+            <!-- 麟麟小天地 -->
+            <section id="linlin" class="content-section">
+                <div class="section-header">
+                    <h2>🌈 麟麟小天地</h2>
+                    <p>麟麟的彩虹世界充滿驚喜</p>
+                </div>
+
+                <div class="card">
+                    <h3 class="card-title">🎵 麟麟的音樂盒</h3>
+                    <div class="card-content">
+                        音樂是麟麟的最愛！分享喜歡的歌曲、音樂心得，還有那些觸動心靈的旋律故事。
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h3 class="card-title">📖 麟麟的閱讀角落</h3>
+                    <div class="card-content">
+                        在書海中遨遊的快樂時光，記錄讀書心得、好書推薦，還有那些讓人深思的閱讀感悟。
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h3 class="card-title">🌺 麟麟的花園日記</h3>
+                    <div class="card-content">
+                        與植物們的美好時光！記錄種植心得、花草成長過程，分享與大自然親密接觸的喜悅。
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h3 class="card-title">✨ 麟麟的夢想清單</h3>
+                    <div class="card-content">
+                        記錄那些閃閃發光的夢想和目標，以及實現夢想路上的點滴成長與收穫。
+                    </div>
+                </div>
+            </section>
+
+            <!-- AI創作 -->
+            <section id="ai" class="content-section">
+                <div class="section-header">
+                    <h2>🤖 AI創作</h2>
+                    <p>與AI一起創造無限可能</p>
+                </div>
+
+                <div class="ai-creator">
+                    <h3 style="margin-bottom: 20px;">✨ AI詩歌創作器</h3>
+                    <textarea id="poetryPrompt" class="ai-input" placeholder="請輸入你想要的詩歌主題或情感（例如：關於貓咪的溫暖詩歌）..."></textarea>
+                    <button class="ai-button" onclick="generatePoetry()">🎭 創作詩歌</button>
+                    <div id="poetryResult" class="ai-result">
+                        <p style="opacity: 0.7;">你的AI詩歌創作將在這裡顯示...</p>
+                    </div>
+                </div>
+
+                <div class="ai-creator">
+                    <h3 style="margin-bottom: 20px;">💝 AI故事生成器</h3>
+                    <textarea id="storyPrompt" class="ai-input" placeholder="請輸入故事的開頭或主題（例如：一隻會說話的貓咪的冒險）..."></textarea>
+                    <button class="ai-button" onclick="generateStory()">📚 創作故事</button>
+                    <div id="storyResult" class="ai-result">
+                        <p style="opacity: 0.7;">你的AI故事創作將在這裡顯示...</p>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h3 class="card-title">🎨 創作作品集</h3>
+                    <div class="card-content">
+                        <p><strong>最新作品：</strong></p>
+                        <p>• 《小軟的午後時光》- AI詩歌</p>
+                        <p>• 《勳勳的奇幻冒險》- AI故事</p>
+                        <p>• 《麟麟的花園日記》- AI散文</p>
+                        <p>• 《馬卡龍色的夢》- AI詩歌</p>
+                    </div>
+                </div>
+            </section>
         </main>
     </div>
 
-    <!-- 小軟會說話功能 -->
-    <div id="xiaoruan-bubble"></div>
-    <div id="xiaoruan-btn">
-        <img src="https://beautyzx.github.io/images/xiaoruan.png" alt="小軟" />
-    </div>
-
     <script>
-        // 選單互動效果
-        document.querySelectorAll('.menu-item').forEach(item => {
-            item.addEventListener('click', function(e) {
-                e.preventDefault();
-                
-                // 移除所有active狀態
-                document.querySelectorAll('.menu-item').forEach(link => {
-                    link.classList.remove('active');
-                });
-                
-                // 添加active到點擊的項目
-                this.classList.add('active');
-                
-                // 獲取頁面類型
-                const pageType = this.getAttribute('data-page');
-                
-                // 隱藏所有頁面內容
-                document.querySelectorAll('.page-content').forEach(page => {
-                    page.style.display = 'none';
-                });
-                
-                // 顯示對應的頁面內容
-                if (pageType === 'calendar') {
-                    document.getElementById('calendar-content').style.display = 'block';
-                } else {
-                    document.getElementById('home-content').style.display = 'block';
-                }
-                
-                // 更新主要內容標題（僅首頁需要）
-                if (!pageType || pageType === 'home') {
-                    const itemText = this.textContent.trim();
-                    const header = document.querySelector('#home-content .header h2');
-                    const description = document.querySelector('#home-content .header p');
-                    
-                    switch(itemText) {
-                        case '首頁':
-                            header.textContent = '歡迎來到Beauty的馬卡龍世界 🐱✨';
-                            description.textContent = '跟著小軟貓咪一起探索美麗生活，記錄每一個可愛的瞬間';
-                            break;
-                        case '部落格文章':
-                            header.textContent = '📝 Beauty日記';
-                            description.textContent = '分享小軟的日常趣事和美麗生活點滴';
-                            break;
-                        case '相片集':
-                            header.textContent = '📸 小軟寫真集';
-                            description.textContent = '用鏡頭捕捉小軟貓咪最美的瞬間';
-                            break;
-                        case '關於我':
-                            header.textContent = '💫 關於小軟';
-                            description.textContent = '認識我們家的小帥哥，了解小軟貓咪的帥氣故事';
-                            break;
-                        case '聯絡方式':
-                            header.textContent = '📧 聯絡方式';
-                            description.textContent = '歡迎與我們交流，一起分享關於貓咪的美好時光';
-                            break;
-                    }
-                }
+        // 導航功能
+        function showSection(sectionId) {
+            // 隱藏所有區域
+            const sections = document.querySelectorAll('.content-section');
+            sections.forEach(section => {
+                section.classList.remove('active');
             });
-        });
 
-        // 卡片懸停效果
-        document.querySelectorAll('.card').forEach(card => {
-            card.addEventListener('mouseenter', function() {
-                this.style.transform = 'translateY(-5px) scale(1.02)';
+            // 移除所有導航鏈接的active類
+            const navLinks = document.querySelectorAll('.nav-link');
+            navLinks.forEach(link => {
+                link.classList.remove('active');
+            });
+
+            // 顯示目標區域
+            document.getElementById(sectionId).classList.add('active');
+            
+            // 添加active類到對應的導航鏈接
+            event.target.classList.add('active');
+        }
+
+        // 行事曆功能
+        let currentDate = new Date();
+        let currentMonth = currentDate.getMonth();
+        let currentYear = currentDate.getFullYear();
+
+        const months = ['1月', '2月', '3月', '4月', '5月', '6月', '7月', '8月', '9月', '10月', '11月', '12月'];
+        const daysOfWeek = ['日', '一', '二', '三', '四', '五', '六'];
+
+        function generateCalendar(month, year) {
+            const firstDay = new Date(year, month, 1).getDay();
+            const daysInMonth = new Date(year, month + 1, 0).getDate();
+            const today = new Date();
+            
+            let calendarHTML = '';
+            
+            // 添加星期標題
+            daysOfWeek.forEach(day => {
+                calendarHTML += `<div class="calendar-day header">${day}</div>`;
             });
             
-            card.addEventListener('mouseleave', function() {
-                this.style.transform = 'translateY(0) scale(1)';
-            });
-        });
-
-        // 小軟會說話功能
-        const xiaoruanBtn = document.getElementById('xiaoruan-btn');
-        const bubble = document.getElementById('xiaoruan-bubble');
-        const quotes = [
-            "這個世界太喧囂，我只想靜靜地陪妳。",
-            "若妳迷路了，我會是妳的方向。",
-            "我不是路過，是為妳停下的。",
-            "我不會問為什麼不說，只會陪妳沉默。",
-            "即使妳不說，我也會留在這裡。",
-            "這城市再大，也找得到妳。",
-            "如果風太冷，我可以是妳的風衣。",
-            "放心吧，我不會走丟，就算妳先離開。"
-        ];
-
-        xiaoruanBtn.addEventListener('click', () => {
-            const message = quotes[Math.floor(Math.random() * quotes.length)];
-            bubble.innerText = message;
-            bubble.style.display = 'block';
+            // 添加空白天數
+            for (let i = 0; i < firstDay; i++) {
+                calendarHTML += '<div class="calendar-day other-month"></div>';
+            }
             
-            // 添加點擊動畫效果
-            xiaoruanBtn.style.transform = 'scale(0.9)';
+            // 添加當月天數
+            for (let day = 1; day <= daysInMonth; day++) {
+                const isToday = today.getDate() === day && today.getMonth() === month && today.getFullYear() === year;
+                const todayClass = isToday ? 'today' : '';
+                calendarHTML += `<div class="calendar-day ${todayClass}">${day}</div>`;
+            }
+            
+            document.getElementById('calendarGrid').innerHTML = calendarHTML;
+            document.getElementById('currentMonth').textContent = `${year}年${months[month]}`;
+        }
+
+        function previousMonth() {
+            currentMonth--;
+            if (currentMonth < 0) {
+                currentMonth = 11;
+                currentYear--;
+            }
+            generateCalendar(currentMonth, currentYear);
+        }
+
+        function nextMonth() {
+            currentMonth++;
+            if (currentMonth > 11) {
+                currentMonth = 0;
+                currentYear++;
+            }
+            generateCalendar(currentMonth, currentYear);
+        }
+
+        // AI創作功能
+        function generatePoetry() {
+            const prompt = document.getElementById('poetryPrompt').value;
+            const resultDiv = document.getElementById('poetryResult');
+            
+            if (!prompt.trim()) {
+                resultDiv.innerHTML = '<p style="color: #FFB6C1;">請先輸入詩歌主題哦～ 🌸</p>';
+                return;
+            }
+            
+            resultDiv.innerHTML = '<p style="opacity: 0.7;">AI正在創作中，請稍候... ✨</p>';
+            
+            // 模擬AI創作過程
             setTimeout(() => {
-                xiaoruanBtn.style.transform = 'scale(1)';
-            }, 100);
+                const poems = [
+                    `🌸 ${prompt} 🌸\n\n柔軟的陽光灑在窗台，\n小軟貓咪慵懶地打盹。\n馬卡龍色的夢境裡，\n有著甜蜜的午後時光。\n\n輕柔的呼吸聲，\n是世界上最動人的旋律。\n在這個溫暖的角落，\n時光彷彿也變得溫柔。`,
+                    `💕 ${prompt} 💕\n\n粉色的雲朵飄過天空，\n像是你溫柔的笑容。\n在這個美好的時刻，\n所有煩惱都煙消雲散。\n\n願這份純真與美好，\n永遠伴隨在你身邊。\n就像馬卡龍的甜蜜，\n填滿每一個平凡的日子。`,
+                    `🌈 ${prompt} 🌈\n\n彩虹橋連接著夢想，\n每一種顏色都有故事。\n在小軟的世界裡，\n每天都是新的冒險。\n\n用心感受這份美好，\n讓愛與溫暖延續。\n在這個充滿魔法的地方，\n我們一起創造奇蹟。`
+                ];
+                
+                const randomPoem = poems[Math.floor(Math.random() * poems.length)];
+                resultDiv.innerHTML = `<pre style="white-space: pre-wrap; line-height: 1.8; font-family: inherit;">${randomPoem}</pre>`;
+            }, 2000);
+        }
+
+        function generateStory() {
+            const prompt = document.getElementById('storyPrompt').value;
+            const resultDiv = document.getElementById('storyResult');
             
+            if (!prompt.trim()) {
+                resultDiv.innerHTML = '<p style="color: #FFB6C1;">請先輸入故事主題哦～ 📚</p>';
+                return;
+            }
+            
+            resultDiv.innerHTML = '<p style="opacity: 0.7;">AI正在編織故事，請稍候... ✨</p>';
+            
+            // 模擬AI創作過程
             setTimeout(() => {
-                bubble.style.display = 'none';
-            }, 5000);
-        });
-    </script>
-</body>
-</html>
+                const stories = [
+                    `📖 ${prompt}\n\n在一個飄著馬卡龍香味的午後，小軟睜開了惺忪的眼睛。陽光透過蕾絲窗簾，在地板上投下美麗的光影。\n\n"今天要做什麼好呢？"小軟伸了個懶腰，優雅地跳下了他的專屬小床。突然，一陣奇異的光芒從花園傳來...\n\n小軟好奇地走向窗邊，發現花園裡竟然開滿了會發光的花朵！每一朵花都散發著不同顏色的溫柔光芒，就像活著的馬卡龍一樣。\n\n這將是一個充滿魔法的故事開始...`,
+                    `🌟 ${prompt}\n\n勳勳打開了神秘的寶箱，裡面閃爍著七彩的光芒。"這是什麼？"他輕聲自語，小心翼翼地取出一個精美的水晶球。\n\n水晶球中浮現出一個美麗的世界，那裡有彩虹瀑布、會唱歌的樹木，還有友善的獨角獸在草地上奔跑。\n\n"我想去那個地方看看！"勳勳握緊水晶球，閉上眼睛許下心願。突然間，他感覺身體變得輕飄飄的...\n\n當他再次睜開眼睛時，已經站在了那個夢幻般的世界裡！`,
+                    `🌸 ${prompt}\n\n麟麟在圖書館的角落發現了一本古老的日記。封面上寫著"花語秘典"，散發著淡淡的花香。\n\n她好奇地翻開第一頁，上面寫著："每一朵花都有自己的語言，只有用心傾聽，才能理解它們的秘密。"\n\n麟麟決定按照日記上的指引，來到了後院的小花園。她輕撫著一朵粉色的玫瑰，閉上眼睛仔細聆聽...\n\n"你好，親愛的。"一個溫柔的聲音在她心中響起。麟麟驚喜地發現，她真的能聽
