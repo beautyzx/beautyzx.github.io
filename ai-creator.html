@@ -1,0 +1,536 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🤖 AI創作工具</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Microsoft JhengHei', '微軟正黑體', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea, #764ba2, #a8edea);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .ai-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 25px;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .ai-header {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            padding: 30px;
+            text-align: center;
+            position: relative;
+        }
+
+        .ai-header h1 {
+            font-size: 32px;
+            margin-bottom: 10px;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+
+        .ai-header p {
+            font-size: 16px;
+            opacity: 0.9;
+        }
+
+        .back-btn {
+            position: absolute;
+            left: 30px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            padding: 10px 20px;
+            border-radius: 25px;
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+
+        .back-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: translateY(-50%) scale(1.05);
+        }
+
+        .ai-content {
+            padding: 30px;
+        }
+
+        .tool-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 25px;
+            margin-bottom: 30px;
+        }
+
+        .tool-card {
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 20px;
+            padding: 25px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease;
+            border: 2px solid transparent;
+        }
+
+        .tool-card:hover {
+            transform: translateY(-5px);
+            border-color: rgba(102, 126, 234, 0.3);
+        }
+
+        .tool-card h3 {
+            color: #667eea;
+            margin-bottom: 15px;
+            font-size: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .tool-card p {
+            color: #666;
+            margin-bottom: 20px;
+            line-height: 1.6;
+        }
+
+        .tool-textarea {
+            width: 100%;
+            min-height: 100px;
+            padding: 15px;
+            border: 2px solid #f0f0f0;
+            border-radius: 15px;
+            font-family: inherit;
+            font-size: 14px;
+            resize: vertical;
+            transition: border-color 0.3s ease;
+            margin-bottom: 15px;
+        }
+
+        .tool-textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .tool-btn {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            width: 100%;
+        }
+
+        .tool-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
+        }
+
+        .tool-btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .result-area {
+            background: linear-gradient(135deg, #f8f9ff, #e8ecff);
+            border: 2px solid #667eea;
+            border-radius: 15px;
+            padding: 20px;
+            margin-top: 15px;
+            min-height: 120px;
+            white-space: pre-wrap;
+            font-size: 14px;
+            line-height: 1.6;
+            color: #333;
+        }
+
+        .result-area.loading {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #667eea;
+            font-style: italic;
+        }
+
+        .feature-showcase {
+            background: linear-gradient(135deg, #a8edea, #fed6e3);
+            border-radius: 20px;
+            padding: 30px;
+            margin-top: 30px;
+            text-align: center;
+        }
+
+        .feature-showcase h2 {
+            color: #333;
+            margin-bottom: 20px;
+            font-size: 24px;
+        }
+
+        .feature-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .feature-item {
+            background: rgba(255, 255, 255, 0.8);
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .feature-item h4 {
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+
+        .feature-item p {
+            color: #666;
+            font-size: 13px;
+        }
+
+        .copy-btn {
+            background: linear-gradient(135deg, #4ecdc4, #44a08d);
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 15px;
+            cursor: pointer;
+            font-size: 12px;
+            margin-top: 10px;
+            transition: all 0.3s ease;
+        }
+
+        .copy-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 5px 15px rgba(68, 160, 141, 0.3);
+        }
+
+        /* 響應式設計 */
+        @media (max-width: 768px) {
+            .ai-content {
+                padding: 20px;
+            }
+            
+            .tool-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .back-btn {
+                position: static;
+                transform: none;
+                margin-bottom: 15px;
+                display: inline-block;
+            }
+            
+            .ai-header h1 {
+                font-size: 24px;
+            }
+        }
+
+        .loading-animation {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="ai-container">
+        <div class="ai-header">
+            <a href="index.html" class="back-btn">← 回到首頁</a>
+            <h1>🤖 AI創作工具</h1>
+            <p>發揮人工智慧的創意力量，讓AI成為你的創作夥伴！</p>
+        </div>
+
+        <div class="ai-content">
+            <div class="tool-grid">
+                <div class="tool-card">
+                    <h3>📝 AI文章創作</h3>
+                    <p>輸入主題或關鍵字，AI將為你創作出精彩的文章內容</p>
+                    <textarea class="tool-textarea" id="articlePrompt" placeholder="例如：寫一篇關於貓咪的有趣故事..."></textarea>
+                    <button class="tool-btn" onclick="generateArticle()">✨ 生成文章</button>
+                    <div class="result-area" id="articleResult">AI生成的文章將顯示在這裡...</div>
+                    <button class="copy-btn" onclick="copyToClipboard('articleResult')">📋 複製內容</button>
+                </div>
+
+                <div class="tool-card">
+                    <h3>🎨 AI詩詞創作</h3>
+                    <p>讓AI為你創作優美的詩詞，表達內心的情感</p>
+                    <textarea class="tool-textarea" id="poemPrompt" placeholder="例如：寫一首關於春天的詩..."></textarea>
+                    <button class="tool-btn" onclick="generatePoem()">🌸 生成詩詞</button>
+                    <div class="result-area" id="poemResult">AI創作的詩詞將顯示在這裡...</div>
+                    <button class="copy-btn" onclick="copyToClipboard('poemResult')">📋 複製內容</button>
+                </div>
+
+                <div class="tool-card">
+                    <h3>💡 AI創意點子</h3>
+                    <p>卡住了嗎？讓AI為你提供創新的想法和靈感</p>
+                    <textarea class="tool-textarea" id="ideaPrompt" placeholder="例如：給我一些週末活動的創意點子..."></textarea>
+                    <button class="tool-btn" onclick="generateIdeas()">💫 生成點子</button>
+                    <div class="result-area" id="ideaResult">AI的創意點子將顯示在這裡...</div>
+                    <button class="copy-btn" onclick="copyToClipboard('ideaResult')">📋 複製內容</button>
+                </div>
+
+                <div class="tool-card">
+                    <h3>📚 AI學習助手</h3>
+                    <p>讓AI幫你解釋概念、整理知識，成為你的學習夥伴</p>
+                    <textarea class="tool-textarea" id="learnPrompt" placeholder="例如：請解釋什麼是人工智慧..."></textarea>
+                    <button class="tool-btn" onclick="generateExplanation()">🎓 開始學習</button>
+                    <div class="result-area" id="learnResult">AI的解釋將顯示在這裡...</div>
+                    <button class="copy-btn" onclick="copyToClipboard('learnResult')">📋 複製內容</button>
+                </div>
+            </div>
+
+            <div class="feature-showcase">
+                <h2>🌟 AI創作功能特色</h2>
+                <div class="feature-list">
+                    <div class="feature-item">
+                        <h4>🚀 快速生成</h4>
+                        <p>幾秒鐘內就能產生高品質的創作內容</p>
+                    </div>
+                    <div class="feature-item">
+                        <h4>🎭 多樣風格</h4>
+                        <p>支援各種文體和創作風格，滿足不同需求</p>
+                    </div>
+                    <div class="feature-item">
+                        <h4>💡 創意無限</h4>
+                        <p>AI能提供意想不到的創意角度和想法</p>
+                    </div>
+                    <div class="feature-item">
+                        <h4>📱 簡單易用</h4>
+                        <p>直觀的操作介面，任何人都能輕鬆使用</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 模擬AI生成函數（因為我們沒有真正的API，這裡用模擬內容）
+        function generateArticle() {
+            const prompt = document.getElementById('articlePrompt').value;
+            const resultArea = document.getElementById('articleResult');
+            
+            if (!prompt.trim()) {
+                alert('請輸入文章主題或關鍵字！');
+                return;
+            }
+
+            showLoading(resultArea);
+            
+            // 模擬API調用延遲
+            setTimeout(() => {
+                const sampleArticle = `基於您的主題「${prompt}」，AI為您創作了以下內容：
+
+這是一個充滿創意和想像力的主題。在這個快速變化的世界中，我們需要保持開放的心態去探索新的可能性。
+
+每個人都有自己獨特的觀點和經驗，這些寶貴的元素構成了我們豐富多彩的生活。當我們將這些經驗與創新思維結合時，就能創造出令人驚豔的成果。
+
+無論是在日常生活中還是在專業領域，保持好奇心和學習的態度都是非常重要的。這不僅能幫助我們成長，也能讓我們在面對挑戰時更加從容。
+
+希望這個內容能為您帶來啟發，並激發更多的創意想法！
+
+註：這是示範內容，實際使用時建議整合真正的AI API服務。`;
+                
+                resultArea.textContent = sampleArticle;
+                resultArea.classList.remove('loading');
+            }, 2000);
+        }
+
+        function generatePoem() {
+            const prompt = document.getElementById('poemPrompt').value;
+            const resultArea = document.getElementById('poemResult');
+            
+            if (!prompt.trim()) {
+                alert('請輸入詩詞主題！');
+                return;
+            }
+
+            showLoading(resultArea);
+            
+            setTimeout(() => {
+                const samplePoem = `根據「${prompt}」創作的詩詞：
+
+春風輕拂過大地，
+萬物復甦展生機。
+花開滿樹香氣濃，
+鳥兒歌唱迎新季。
+
+綠草如茵鋪滿園，
+蝴蝶翩翩舞花間。
+陽光溫暖照心田，
+美好時光共分享。
+
+生活如詩亦如畫，
+每日都有新發現。
+珍惜當下好時光，
+快樂心情永不變。
+
+註：這是示範詩詞，實際使用時建議整合真正的AI詩詞生成服務。`;
+                
+                resultArea.textContent = samplePoem;
+                resultArea.classList.remove('loading');
+            }, 1800);
+        }
+
+        function generateIdeas() {
+            const prompt = document.getElementById('ideaPrompt').value;
+            const resultArea = document.getElementById('ideaResult');
+            
+            if (!prompt.trim()) {
+                alert('請輸入您需要點子的主題！');
+                return;
+            }
+
+            showLoading(resultArea);
+            
+            setTimeout(() => {
+                const sampleIdeas = `針對「${prompt}」的創意點子：
+
+💡 創意點子清單：
+
+1. 🎨 舉辦家庭藝術創作日
+   - 全家一起畫畫、做手工
+   - 創作屬於家庭的獨特作品
+
+2. 🌳 探索戶外自然活動
+   - 到公園野餐賞花
+   - 觀察昆蟲和植物生態
+
+3. 🍳 廚房實驗時間
+   - 嘗試製作新料理
+   - 親子一起烘焙甜點
+
+4. 📚 主題學習日
+   - 選擇感興趣的主題深入探索
+   - 製作主題相關的小專案
+
+5. 🎭 家庭表演秀
+   - 準備小劇場或才藝表演
+   - 記錄美好的家庭時光
+
+這些點子都可以根據實際情況調整和延伸！
+
+註：這是示範內容，實際使用時建議整合真正的AI創意生成服務。`;
+                
+                resultArea.textContent = sampleIdeas;
+                resultArea.classList.remove('loading');
+            }, 1500);
+        }
+
+        function generateExplanation() {
+            const prompt = document.getElementById('learnPrompt').value;
+            const resultArea = document.getElementById('learnResult');
+            
+            if (!prompt.trim()) {
+                alert('請輸入您想了解的概念或問題！');
+                return;
+            }
+
+            showLoading(resultArea);
+            
+            setTimeout(() => {
+                const sampleExplanation = `關於「${prompt}」的學習內容：
+
+📖 基本概念：
+這是一個非常有趣且重要的主題。讓我們從基礎開始了解。
+
+🔍 深入解析：
+• 核心要素：包含多個相互關聯的組成部分
+• 運作原理：透過系統化的方式達成目標
+• 實際應用：在日常生活中有廣泛的運用
+
+💡 關鍵重點：
+1. 理解基本原理是學習的第一步
+2. 實際操作能加深理解
+3. 持續練習有助於掌握技能
+
+🎯 學習建議：
+- 從簡單的概念開始
+- 多做實際練習
+- 保持好奇心和求知慾
+- 不怕犯錯，從錯誤中學習
+
+希望這個解釋對您的學習有所幫助！
+
+註：這是示範內容，實際使用時建議整合真正的AI教學服務。`;
+                
+                resultArea.textContent = sampleExplanation;
+                resultArea.classList.remove('loading');
+            }, 2200);
+        }
+
+        function showLoading(element) {
+            element.classList.add('loading');
+            element.innerHTML = '<div class="loading-animation"></div> AI正在創作中，請稍候...';
+        }
+
+        function copyToClipboard(elementId) {
+            const element = document.getElementById(elementId);
+            const text = element.textContent;
+            
+            if (text.includes('將顯示在這裡') || text.includes('正在創作中')) {
+                alert('請先生成內容再複製！');
+                return;
+            }
+            
+            navigator.clipboard.writeText(text).then(() => {
+                // 顯示複製成功的提示
+                const btn = event.target;
+                const originalText = btn.textContent;
+                btn.textContent = '✅ 已複製';
+                btn.style.background = 'linear-gradient(135deg, #90ee90, #98fb98)';
+                
+                setTimeout(() => {
+                    btn.textContent = originalText;
+                    btn.style.background = 'linear-gradient(135deg, #4ecdc4, #44a08d)';
+                }, 2000);
+            }).catch(() => {
+                alert('複製失敗，請手動選取複製');
+            });
+        }
+
+        // 頁面載入時的歡迎動畫
+        document.addEventListener('DOMContentLoaded', () => {
+            const cards = document.querySelectorAll('.tool-card');
+            cards.forEach((card, index) => {
+                card.style.opacity = '0';
+                card.style.transform = 'translateY(20px)';
+                setTimeout(() => {
+                    card.style.transition = 'all 0.5s ease';
+                    card.style.opacity = '1';
+                    card.style.transform = 'translateY(0)';
+                }, index * 200);
+            });
+        });
+    </script>
+</body>
+</html>
