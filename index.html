@@ -320,27 +320,27 @@
             
             <ul class="nav-menu">
                 <li class="nav-item">
-                    <a href="#home" class="nav-link active" onclick="showSection('home')">
+                    <a href="#home" class="nav-link active" onclick="showSection('home'); return false;">
                         🏠 首頁
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a href="#calendar" class="nav-link" onclick="showSection('calendar')">
+                    <a href="#calendar" class="nav-link" onclick="showSection('calendar'); return false;">
                         🗓️ 小軟行事曆
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a href="#xunxun" class="nav-link" onclick="showSection('xunxun')">
+                    <a href="#xunxun" class="nav-link" onclick="showSection('xunxun'); return false;">
                         🌟 勳勳小世界
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a href="#linlin" class="nav-link" onclick="showSection('linlin')">
+                    <a href="#linlin" class="nav-link" onclick="showSection('linlin'); return false;">
                         🌈 麟麟小天地
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a href="#ai" class="nav-link" onclick="showSection('ai')">
+                    <a href="#ai" class="nav-link" onclick="showSection('ai'); return false;">
                         🤖 AI創作
                     </a>
                 </li>
@@ -528,6 +528,8 @@
     <script>
         // 導航功能
         function showSection(sectionId) {
+            console.log('切換到頁面:', sectionId); // 除錯用
+            
             // 隱藏所有區域
             const sections = document.querySelectorAll('.content-section');
             sections.forEach(section => {
@@ -544,6 +546,9 @@
             const targetSection = document.getElementById(sectionId);
             if (targetSection) {
                 targetSection.classList.add('active');
+                console.log('成功顯示頁面:', sectionId); // 除錯用
+            } else {
+                console.error('找不到頁面:', sectionId); // 除錯用
             }
             
             // 添加active類到對應的導航鏈接
@@ -554,9 +559,10 @@
             
             // 如果是行事曆頁面，確保初始化
             if (sectionId === 'calendar') {
+                console.log('初始化行事曆...'); // 除錯用
                 setTimeout(() => {
                     generateCalendar(currentMonth, currentYear);
-                }, 100);
+                }, 200);
             }
         }
 
