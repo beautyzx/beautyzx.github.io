@@ -238,92 +238,6 @@
             border-top: 2px solid rgba(240, 147, 251, 0.2);
         }
 
-        .api-setup {
-            background: linear-gradient(135deg, #fff2b3, #ffe4b5);
-            border: 2px solid #ffd700;
-            border-radius: 15px;
-            padding: 15px;
-            margin-bottom: 15px;
-            display: none;
-        }
-
-        .api-setup.show {
-            display: block;
-        }
-
-        .api-setup h4 {
-            color: #cc9900;
-            margin-bottom: 10px;
-            font-size: 14px;
-        }
-
-        .api-input {
-            width: 100%;
-            padding: 10px 15px;
-            border: 2px solid #ffd700;
-            border-radius: 15px;
-            font-size: 14px;
-            margin-bottom: 10px;
-        }
-
-        .api-btn {
-            background: linear-gradient(135deg, #ffd700, #ffed4e);
-            color: #996600;
-            border: none;
-            padding: 8px 16px;
-            border-radius: 12px;
-            cursor: pointer;
-            font-size: 12px;
-            font-weight: bold;
-        }
-
-        .chat-input-container {
-            display: flex;
-            gap: 15px;
-            align-items: flex-end;
-        }
-
-        .chat-input {
-            flex: 1;
-            padding: 15px 20px;
-            border: 2px solid #f093fb;
-            border-radius: 25px;
-            font-size: 16px;
-            resize: none;
-            max-height: 120px;
-            min-height: 50px;
-            font-family: inherit;
-            transition: border-color 0.3s ease;
-        }
-
-        .chat-input:focus {
-            outline: none;
-            border-color: #f5576c;
-        }
-
-        .send-btn {
-            background: linear-gradient(135deg, #f093fb, #f5576c);
-            color: white;
-            border: none;
-            padding: 15px 20px;
-            border-radius: 25px;
-            cursor: pointer;
-            font-size: 16px;
-            transition: all 0.3s ease;
-            min-width: 80px;
-        }
-
-        .send-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 25px rgba(240, 147, 251, 0.4);
-        }
-
-        .send-btn:disabled {
-            background: #ccc;
-            cursor: not-allowed;
-            transform: none;
-        }
-
         .quick-replies {
             display: flex;
             gap: 10px;
@@ -501,10 +415,10 @@
                 this.showTyping();
                 
                 try {
-                    const response = await this.callGeminiAPI(message);
+                    const response = await this.callChatAPI(message);
                     this.hideTyping();
-                    this.appendMessage(response, false);
-                    this.chatHistory.push({ content: response, isUser: false });
+                    this.appendMessage(response.reply, false);
+                    this.chatHistory.push({ content: response.reply, isUser: false });
                     
                     localStorage.setItem('xiaoruanChatHistory', JSON.stringify(this.chatHistory));
                     
@@ -516,37 +430,17 @@
                 }
             }
 
-            async callGeminiAPI(message) {
-                const url = '/api/gemini';
+            async callChatAPI(message) {
+                const url = '/chat';
                 
                 const conversationContext = this.chatHistory.slice(-6).map(msg => 
-                    `${msg.isUser ? '用戶' : '小軟'}: ${msg.content}`
-                ).join('\n');
+                    { return { content: msg.content, isUser: msg.isUser }; }
+                ).filter(msg => msg.content.trim() !== '');
                 
-                const fullPrompt = `${this.xiaoruanPersonality}
-
-對話歷史：
-${conversationContext}
-
-用戶: ${message}
-小軟:`;
-
                 const requestBody = {
-                    contents: [
-                        {
-                            parts: [
-                                {
-                                    text: fullPrompt
-                                }
-                            ]
-                        }
-                    ],
-                    generationConfig: {
-                        temperature: 0.7,
-                        topK: 40,
-                        topP: 0.95,
-                        maxOutputTokens: 1024,
-                    }
+                    message: message,
+                    history: conversationContext,
+                    personality: this.xiaoruanPersonality
                 };
 
                 const response = await fetch(url, {
@@ -559,16 +453,10 @@ ${conversationContext}
 
                 if (!response.ok) {
                     const errorData = await response.json();
-                    throw new Error(errorData.error?.message || `HTTP ${response.status}`);
+                    throw new Error(errorData.error || `HTTP ${response.status}`);
                 }
 
-                const data = await response.json();
-                
-                if (!data.candidates || !data.candidates[0] || !data.candidates[0].content) {
-                    throw new Error('API回應格式異常');
-                }
-
-                return data.candidates[0].content.parts[0].text;
+                return await response.json();
             }
 
             appendMessage(content, isUser, animate = true) {
