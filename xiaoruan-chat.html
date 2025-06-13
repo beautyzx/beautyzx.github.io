@@ -69,9 +69,10 @@
             border-radius: 50%;
             background: linear-gradient(135deg, #fff2e6, #ffe4b5);
             border: 3px solid rgba(255, 255, 255, 0.8);
-            background-image: url('https://beautyzx.github.io/images/xiaoruan.png');
-            background-size: cover;
-            background-position: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
         }
 
         .chat-info h1 {
@@ -93,6 +94,10 @@
             border-radius: 50%;
             background: #90ee90;
             animation: pulse 2s infinite;
+        }
+
+        .status-dot.error {
+            background: #ff6b6b;
         }
 
         @keyframes pulse {
@@ -155,6 +160,10 @@
             height: 35px;
             border-radius: 50%;
             flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
         }
 
         .user .message-avatar {
@@ -163,9 +172,6 @@
 
         .bot .message-avatar {
             background: linear-gradient(135deg, #fff2e6, #ffe4b5);
-            background-image: url('https://beautyzx.github.io/images/xiaoruan.png');
-            background-size: cover;
-            background-position: center;
             border: 2px solid #fff;
         }
 
@@ -261,6 +267,65 @@
             color: white;
         }
 
+        .chat-input-container {
+            display: flex;
+            gap: 15px;
+            align-items: flex-end;
+        }
+
+        .chat-input {
+            flex: 1;
+            padding: 15px 20px;
+            border: 3px solid #f093fb;
+            border-radius: 25px;
+            font-size: 16px;
+            resize: none;
+            max-height: 150px;
+            min-height: 50px;
+            font-family: inherit;
+            background: linear-gradient(135deg, #fff0f5, #f8e1f0);
+            box-shadow: 0 5px 15px rgba(240, 147, 251, 0.3);
+            transition: all 0.3s ease;
+        }
+
+        .chat-input:focus {
+            outline: none;
+            border-color: #f5576c;
+            box-shadow: 0 8px 20px rgba(245, 87, 108, 0.4);
+            transform: translateY(-2px);
+        }
+
+        .send-btn {
+            background: linear-gradient(135deg, #f093fb, #f5576c);
+            color: white;
+            border: none;
+            padding: 15px 25px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            min-width: 80px;
+            box-shadow: 0 4px 12px rgba(240, 147, 251, 0.4);
+        }
+
+        .send-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 18px rgba(245, 87, 108, 0.5);
+            background: linear-gradient(135deg, #f5576c, #f093fb);
+        }
+
+        .send-btn:active {
+            transform: translateY(0);
+            box-shadow: 0 2px 8px rgba(245, 87, 108, 0.3);
+        }
+
+        .send-btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
         .welcome-message {
             text-align: center;
             padding: 40px 20px;
@@ -276,10 +341,31 @@
         .error-message {
             background: linear-gradient(135deg, #ff6b6b, #ff8e8e);
             color: white;
-            padding: 10px 15px;
+            padding: 15px 20px;
             border-radius: 15px;
-            margin-bottom: 10px;
+            margin-bottom: 15px;
             font-size: 14px;
+            animation: fadeInUp 0.5s ease;
+        }
+
+        .debug-info {
+            background: #f0f0f0;
+            border: 1px solid #ddd;
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 8px;
+            font-family: monospace;
+            font-size: 12px;
+            max-height: 100px;
+            overflow-y: auto;
+        }
+
+        .connection-test {
+            background: rgba(255, 255, 255, 0.9);
+            padding: 15px;
+            margin-bottom: 10px;
+            border-radius: 10px;
+            border-left: 4px solid #f093fb;
         }
 
         @media (max-width: 768px) {
@@ -297,67 +383,12 @@
             }
             
             .message-content {
-                max-height: 85%;
+                max-width: 85%;
             }
             
             .quick-replies {
                 justify-content: center;
             }
-        }
-
-        /* 優化輸入訊息欄 */
-        .chat-input {
-            flex: 1;
-            padding: 20px 25px;
-            border: 3px solid #f093fb;
-            border-radius: 30px;
-            font-size: 18px;
-            resize: none;
-            max-height: 400px; /* 從 200px 增至 400px */
-            min-height: 160px; /* 從 80px 增至 160px，加倍 */
-            font-family: inherit;
-            background: linear-gradient(135deg, #fff0f5, #f8e1f0);
-            box-shadow: 0 5px 15px rgba(240, 147, 251, 0.3);
-            transition: all 0.3s ease;
-        }
-
-        .chat-input:focus {
-            outline: none;
-            border-color: #f5576c;
-            box-shadow: 0 8px 20px rgba(245, 87, 108, 0.4);
-            transform: translateY(-2px);
-        }
-
-        /* 美化發送按鈕 */
-        .send-btn {
-            background: linear-gradient(135deg, #f093fb, #f5576c);
-            color: white;
-            border: none;
-            padding: 18px 25px; /* 增大 padding */
-            border-radius: 30px;
-            cursor: pointer;
-            font-size: 18px; /* 增大字體 */
-            transition: all 0.3s ease;
-            min-width: 100px; /* 確保按鈕寬度足夠 */
-            box-shadow: 0 4px 12px rgba(240, 147, 251, 0.4);
-        }
-
-        .send-btn:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 6px 18px rgba(245, 87, 108, 0.5);
-            background: linear-gradient(135deg, #f5576c, #f093fb); /* 反轉漸層 */
-        }
-
-        .send-btn:active {
-            transform: translateY(0);
-            box-shadow: 0 2px 8px rgba(245, 87, 108, 0.3);
-        }
-
-        .send-btn:disabled {
-            background: #ccc;
-            cursor: not-allowed;
-            transform: none;
-            box-shadow: none;
         }
     </style>
 </head>
@@ -366,16 +397,17 @@
         <div class="chat-header">
             <div class="chat-header-left">
                 <a href="/" class="back-btn">← 回首頁</a>
-                <div class="chat-avatar"></div>
+                <div class="chat-avatar">🐱</div>
                 <div class="chat-info">
                     <h1>💬 小軟即時通</h1>
                     <div class="chat-status">
-                        <div class="status-dot"></div>
-                        <span id="statusText">準備就緒</span>
+                        <div class="status-dot" id="statusDot"></div>
+                        <span id="statusText">檢查連線中...</span>
                     </div>
                 </div>
             </div>
             <div class="chat-settings">
+                <button class="settings-btn" onclick="testConnection()" title="測試連線">🔧</button>
                 <button class="settings-btn" onclick="clearChat()" title="清空對話">🗑️</button>
             </div>
         </div>
@@ -387,8 +419,9 @@
                 你可以跟我聊任何話題，我會用我的貓咪智慧來回答你～</p>
                 <br>
                 <p><strong>使用說明：</strong><br>
-                1. 輸入訊息開始與小軟聊天<br>
-                2. 或使用下方的快速回覆開始對話</p>
+                1. 點擊右上角的 🔧 按鈕測試服務器連線<br>
+                2. 輸入訊息開始與小軟聊天<br>
+                3. 或使用下方的快速回覆開始對話</p>
             </div>
             
             <div class="typing-indicator" id="typingIndicator">
@@ -424,8 +457,9 @@
             constructor() {
                 this.chatHistory = [];
                 this.isTyping = false;
+                this.baseUrl = window.location.origin; // 自動獲取當前域名
                 
-                this.xiaoruanPersonality = `你是小軟，一隻可愛聊明的貓咪AI助手。你的個性特點：
+                this.xiaoruanPersonality = `你是小軟，一隻可愛聰明的貓咪AI助手。你的個性特點：
 - 溫暖友善，喜歡用貓咪的方式表達（偶爾會說"喵"）
 - 充滿好奇心，對所有話題都很感興趣
 - 會給出實用的建議，但用可愛的方式表達
@@ -435,6 +469,7 @@
 請用繁體中文回答，保持友善可愛的語調。`;
 
                 this.initializeChat();
+                this.testConnection();
             }
 
             initializeChat() {
@@ -447,13 +482,77 @@
 
             renderChatHistory() {
                 const chatMessages = document.getElementById('chatMessages');
-                chatMessages.innerHTML = '';
+                const welcomeMessage = document.querySelector('.welcome-message');
+                if (welcomeMessage) welcomeMessage.style.display = 'none';
                 
                 this.chatHistory.forEach(message => {
                     this.appendMessage(message.content, message.isUser, false);
                 });
                 
                 this.scrollToBottom();
+            }
+
+            async testConnection() {
+                try {
+                    this.updateStatus('檢查連線中...', 'checking');
+                    
+                    console.log('測試連線到:', this.baseUrl + '/health');
+                    
+                    const response = await fetch(this.baseUrl + '/health', {
+                        method: 'GET',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                    });
+
+                    if (response.ok) {
+                        const data = await response.json();
+                        this.updateStatus('連線成功', 'online');
+                        this.showConnectionInfo(`✅ 服務器連線正常\n狀態: ${data.status}\n訊息: ${data.message}`, 'success');
+                        console.log('健康檢查成功:', data);
+                    } else {
+                        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                    }
+                } catch (error) {
+                    this.updateStatus('連線失敗', 'error');
+                    this.showConnectionInfo(`❌ 無法連接到服務器\n錯誤: ${error.message}\n請檢查:\n1. 服務器是否已啟動\n2. 端口是否正確\n3. 防火牆設置`, 'error');
+                    console.error('連線測試失敗:', error);
+                }
+            }
+
+            updateStatus(text, status) {
+                const statusText = document.getElementById('statusText');
+                const statusDot = document.getElementById('statusDot');
+                
+                statusText.textContent = text;
+                statusDot.className = 'status-dot';
+                
+                if (status === 'error') {
+                    statusDot.classList.add('error');
+                } else if (status === 'checking') {
+                    statusDot.style.background = '#ffa500';
+                }
+            }
+
+            showConnectionInfo(message, type) {
+                const chatMessages = document.getElementById('chatMessages');
+                const infoDiv = document.createElement('div');
+                infoDiv.className = `connection-test ${type}`;
+                infoDiv.innerHTML = `<pre>${message}</pre>`;
+                
+                // 移除之前的連線資訊
+                const existingInfo = chatMessages.querySelector('.connection-test');
+                if (existingInfo) {
+                    existingInfo.remove();
+                }
+                
+                chatMessages.insertBefore(infoDiv, chatMessages.firstChild);
+                
+                if (type === 'success') {
+                    setTimeout(() => {
+                        infoDiv.remove();
+                    }, 5000);
+                }
             }
 
             async sendMessage(text = null) {
@@ -470,6 +569,8 @@
                 this.showTyping();
                 
                 try {
+                    console.log('發送聊天請求:', { message, baseUrl: this.baseUrl });
+                    
                     const response = await this.callChatAPI(message);
                     this.hideTyping();
                     this.appendMessage(response.reply, false);
@@ -480,13 +581,25 @@
                 } catch (error) {
                     this.hideTyping();
                     console.error('API調用錯誤:', error);
-                    this.appendMessage('喵嗚...小軟暫時無法回應，請稍後再試試！ 😿', false);
-                    this.showError('API調用失敗：' + error.message);
+                    
+                    let errorMessage = '喵嗚...小軟暫時無法回應！ 😿';
+                    
+                    if (error.message.includes('405')) {
+                        errorMessage += '\n\n🔧 診斷資訊：收到HTTP 405錯誤，這通常表示請求方法不被允許。';
+                    } else if (error.message.includes('404')) {
+                        errorMessage += '\n\n🔧 診斷資訊：找不到聊天端點，請檢查服務器是否正確啟動。';
+                    } else if (error.message.includes('Failed to fetch')) {
+                        errorMessage += '\n\n🔧 診斷資訊：無法連接到服務器，請檢查服務器是否運行中。';
+                    }
+                    
+                    this.appendMessage(errorMessage, false);
+                    this.showError(`API錯誤: ${error.message}`);
+                    this.updateStatus('通訊錯誤', 'error');
                 }
             }
 
             async callChatAPI(message) {
-                const url = '/chat';
+                const url = this.baseUrl + '/chat';
                 
                 const conversationContext = this.chatHistory.slice(-6).map(msg => 
                     { return { content: msg.content, isUser: msg.isUser }; }
@@ -498,6 +611,9 @@
                     personality: this.xiaoruanPersonality
                 };
 
+                console.log('發送請求到:', url);
+                console.log('請求內容:', requestBody);
+
                 const response = await fetch(url, {
                     method: 'POST',
                     headers: {
@@ -506,12 +622,21 @@
                     body: JSON.stringify(requestBody)
                 });
 
+                console.log('收到回應:', response.status, response.statusText);
+
                 if (!response.ok) {
-                    const errorData = await response.json().catch(() => ({}));
+                    let errorData;
+                    try {
+                        errorData = await response.json();
+                    } catch (e) {
+                        errorData = { error: `HTTP ${response.status}: ${response.statusText}` };
+                    }
                     throw new Error(errorData.error || `HTTP ${response.status}`);
                 }
 
-                return await response.json();
+                const result = await response.json();
+                console.log('API回應:', result);
+                return result;
             }
 
             appendMessage(content, isUser, animate = true) {
@@ -526,9 +651,11 @@
                 
                 const avatar = document.createElement('div');
                 avatar.className = 'message-avatar';
+                avatar.textContent = isUser ? '👤' : '🐱';
                 
                 const messageContent = document.createElement('div');
                 messageContent.className = 'message-content';
+                messageContent.style.whiteSpace = 'pre-wrap';
                 messageContent.textContent = content;
                 
                 const messageTime = document.createElement('div');
@@ -556,7 +683,7 @@
                 document.getElementById('typingIndicator').style.display = 'block';
                 document.getElementById('sendBtn').disabled = true;
                 document.getElementById('sendBtnText').textContent = '處理中...';
-                document.getElementById('statusText').textContent = '小軟正在思考...';
+                this.updateStatus('小軟正在思考...', 'checking');
                 this.scrollToBottom();
             }
 
@@ -565,19 +692,21 @@
                 document.getElementById('typingIndicator').style.display = 'none';
                 document.getElementById('sendBtn').disabled = false;
                 document.getElementById('sendBtnText').textContent = '發送';
-                document.getElementById('statusText').textContent = '在線中';
+                this.updateStatus('在線中', 'online');
             }
 
             showError(message) {
                 const chatMessages = document.getElementById('chatMessages');
                 const errorDiv = document.createElement('div');
                 errorDiv.className = 'error-message';
-                errorDiv.textContent = message;
+                errorDiv.innerHTML = `<strong>錯誤詳情：</strong><br>${message}`;
                 chatMessages.appendChild(errorDiv);
                 
                 setTimeout(() => {
-                    errorDiv.remove();
-                }, 5000);
+                    if (errorDiv.parentNode) {
+                        errorDiv.remove();
+                    }
+                }, 10000);
                 
                 this.scrollToBottom();
             }
@@ -601,6 +730,11 @@
                         <h3>🐱 歡迎與小軟聊天！</h3>
                         <p>我是小軟，一隻愛聊天的AI貓咪！<br>
                         你可以跟我聊任何話題，我會用我的貓咪智慧來回答你～</p>
+                        <br>
+                        <p><strong>使用說明：</strong><br>
+                        1. 點擊右上角的 🔧 按鈕測試服務器連線<br>
+                        2. 輸入訊息開始與小軟聊天<br>
+                        3. 或使用下方的快速回覆開始對話</p>
                     `;
                     document.getElementById('chatMessages').appendChild(welcomeDiv);
                 }
@@ -630,6 +764,10 @@
 
         function clearChat() {
             xiaoruanChat.clearChat();
+        }
+
+        function testConnection() {
+            xiaoruanChat.testConnection();
         }
     </script>
 </body>
