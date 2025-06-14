@@ -35,18 +35,20 @@
   <div id="quest">
     <h3>🎯 任務</h3>
     <p>收集 5 個木頭 <span id="wood-progress">(0/5)</span></p>
+    <p>放置 10 個石磚 <span id="brick-progress">(0/10)</span></p>
   </div>
   <div id="player">
     <p>等級: <span id="level">1</span></p>
     <p>經驗: <span id="exp">0/100</span></p>
     <p>金幣: <span id="gold">50</span></p>
+    <p>健康: <span id="health">10</span></p>
   </div>
   <div id="controls">
     <p>操作說明:</p>
     <p>WASD - 移動</p>
     <p>空白鍵 - 跳躍</p>
     <p>滑鼠左鍵 - 破壞/攻擊</p>
-    <p>滑鼠右鍵 - 放置方塊</p>
+    <p>滑鼠右鍵 - 放置方塊/使用烤肉</p>
     <p>1-6 - 選擇物品</p>
     <p>B - 開啟商店</p>
     <p>滑鼠移動 - 轉動視角</p>
@@ -82,6 +84,13 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/PointerLockControls.js"></script>
   <script>
+    // 簡單 Perlin 噪聲
+    function perlinNoise(x, z) {
+      const scale = 0.1;
+      const seed = Math.random();
+      return Math.sin(x * scale + seed) + Math.sin(z * scale + seed);
+    }
+
     // 場景設置
     const scene = new THREE.Scene();
     const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
@@ -99,7 +108,7 @@
     // 玩家控制
     const controls = new THREE.PointerLockControls(camera, document.body);
     document.addEventListener('click', () => controls.lock());
-    camera.position.set(0, 5, 10);
+    camera.position.set(0, 5, 15);
     scene.add(controls.getObject());
 
     // 移動與跳躍
@@ -128,38 +137,67 @@
     const blockSize = 1;
     const blockGeometry = new THREE.BoxGeometry(blockSize, blockSize, blockSize);
     const grassMaterial = new THREE.MeshPhongMaterial({ color: 0x00ff00 });
+    const dirtMaterial = new THREE.MeshPhongMaterial({ color: 0x8b4513 });
     const stoneMaterial = new THREE.MeshPhongMaterial({ color: 0x808080 });
-    const woodMaterial = new THREE.MeshPhongMaterial({ color: 0x8b4513 });
+    const woodMaterial = new THREE.MeshPhongMaterial({ color: 0x6b4e31 });
+    const leafMaterial = new THREE.MeshPhongMaterial({ color: 0x228b22 });
     const brickMaterial = new THREE.MeshPhongMaterial({ color: 0x696969 });
     const floatMaterial = new THREE.MeshPhongMaterial({ color: 0xff69b4 });
 
     // 生成地圖
     function generateMap() {
-      // 地面
-      for (let x = -10; x <= 10; x++) {
-        for (let z = -10; z <= 10; z++) {
-          const height = Math.floor(Math.random() * 3) + 1;
+      // 地面（丘陵）
+      for (let x = -15; x <= 15; x++) {
+        for (let z = -15; z <= 15; z++) {
+          const height = Math.floor(perlinNoise(x, z) * 3 + 3); // 高度 1-6
           addBlock(x, height, z, grassMaterial);
-          for (let y = height - 1; y >= 0; y--) {
+          for (let y = height - 1; y >= height - 2; y--) {
+            addBlock(x, y, z, dirtMaterial);
+          }
+          for (let y = height - 3; y >= -2; y--) {
             addBlock(x, y, z, stoneMaterial);
           }
         }
       }
       // 樹木
+      for (let i = 0; i < 10; i++) {
+        const x = Math.floor(Math.random() * 20 - 10);
+        const z = Math.floor(Math.random() * 20 - 10);
+        const height = Math.floor(perlinNoise(x, z) * 3 + 3);
+        for (let y = height + 1; y <= height + 4; y++) {
+          addBlock(x, y, z, woodMaterial);
+        }
+        for (let dx = -1; dx <= 1; dx++) {
+          for (let dz = -1; dz <= 1; dz++) {
+            addBlock(x + dx, height + 4, z + dz, leafMaterial);
+            if (Math.random() > 0.5) addBlock(x + dx, height + 5, z + dz, leafMaterial);
+          }
+        }
+      }
+      // 洞穴
       for (let i = 0; i < 5; i++) {
         const x = Math.floor(Math.random() * 10 - 5);
         const z = Math.floor(Math.random() * 10 - 5);
-        const height = Math.floor(Math.random() * 3) + 1;
-        addBlock(x, height + 1, z, woodMaterial);
-        addBlock(x, height + 2, z, grassMaterial); // 模擬葉子
+        const y = -1;
+        for (let dx = -1; dx <= 1; dx++) {
+          for (let dz = -1; dz <= 1; dz++) {
+            removeBlock(x + dx, y, z + dz);
+          }
+        }
       }
       // 漂浮島嶼
-      for (let i = 0; i < 4; i++) {
+      for (let i = 0; i < 5; i++) {
         const x = Math.floor(Math.random() * 10 - 5);
-        const y = Math.floor(Math.random() * 5 + 10);
+        const y = Math.floor(Math.random() * 5 + 15);
         const z = Math.floor(Math.random() * 10 - 5);
-        addBlock(x, y, z, floatMaterial);
-        addBlock(x + 1, y, z, floatMaterial);
+        for (let dx = -1; dx <= 1; dx++) {
+          addBlock(x + dx, y, z, floatMaterial);
+        }
+        addBlock(x, y + 1, z, grassMaterial);
+        if (Math.random() > 0.7) {
+          addBlock(x, y + 2, z, woodMaterial);
+          addBlock(x, y + 3, z, leafMaterial);
+        }
       }
     }
 
@@ -183,6 +221,7 @@
           checkQuest();
         }
         if (material === stoneMaterial) inventory.stone += 1;
+        if (material === leafMaterial && Math.random() > 0.8) inventory.wood += 1; // 模擬樹苗
         updateUI();
       }
     }
@@ -190,6 +229,8 @@
     // 射線投射
     const raycaster = new THREE.Raycaster();
     const mouse = new THREE.Vector2(0, 0);
+    let breakProgress = 0;
+    let breakTarget = null;
     function onMouseClick(event) {
       if (document.getElementById('shop').style.display === 'block') return;
       raycaster.setFromCamera(mouse, camera);
@@ -200,21 +241,42 @@
         const x = Math.round(pos.x / blockSize);
         const y = Math.round(pos.y / blockSize);
         const z = Math.round(pos.z / blockSize);
-        if (event.button === 0 && selectedItem === 'pickaxe') { // 左鍵 + 鎬子
-          removeBlock(x, y, z);
-        } else if (event.button === 2 && selectedItem === 'brick' && inventory.brick > 0) { // 右鍵 + 石磚
-          const normal = intersect.face.normal;
-          addBlock(x + normal.x, y + normal.y, z + normal.z, brickMaterial);
-          inventory.brick -= 1;
-          updateUI();
+        if (event.button === 0 && (selectedItem === 'pickaxe' || selectedItem === null)) { // 左鍵
+          if (breakTarget === `${x},${y},${z}`) {
+            breakProgress += selectedItem === 'pickaxe' && inventory.pickaxe > 1 ? 0.04 : 0.02;
+            if (breakProgress >= 0.5) {
+              removeBlock(x, y, z);
+              breakProgress = 0;
+              breakTarget = null;
+            }
+          } else {
+            breakTarget = `${x},${y},${z}`;
+            breakProgress = selectedItem === 'pickaxe' && inventory.pickaxe > 1 ? 0.04 : 0.02;
+          }
+        } else if (event.button === 2) { // 右鍵
+          if (selectedItem === 'brick' && inventory.brick > 0) {
+            const normal = intersect.face.normal;
+            addBlock(x + normal.x, y + normal.y, z + normal.z, brickMaterial);
+            inventory.brick -= 1;
+            player.bricksPlaced += 1;
+            checkQuest();
+            updateUI();
+          } else if (selectedItem === 'meat' && inventory.meat > 0 && player.health < 10) {
+            inventory.meat -= 1;
+            player.health = Math.min(player.health + 2, 10);
+            updateUI();
+          }
         }
+      } else {
+        breakProgress = 0;
+        breakTarget = null;
       }
     }
     document.addEventListener('mousedown', onMouseClick);
 
     // 背包與玩家數據
     let inventory = { brick: 20, wood: 0, stone: 0, pickaxe: 1, sword: 1, meat: 3 };
-    let player = { level: 1, exp: 0, gold: 50 };
+    let player = { level: 1, exp: 0, gold: 50, health: 10, bricksPlaced: 0 };
     let selectedItem = 'pickaxe';
     function updateUI() {
       document.getElementById('brick').textContent = inventory.brick;
@@ -226,21 +288,31 @@
       document.getElementById('level').textContent = player.level;
       document.getElementById('exp').textContent = `${player.exp}/100`;
       document.getElementById('gold').textContent = player.gold;
+      document.getElementById('health').textContent = player.health;
       document.getElementById('wood-progress').textContent = `(${inventory.wood}/5)`;
+      document.getElementById('brick-progress').textContent = `(${player.bricksPlaced}/10)`;
     }
 
     // 任務
     function checkQuest() {
-      if (inventory.wood >= 5) {
+      if (inventory.wood >= 5 && !quests.woodCompleted) {
         player.exp += 50;
         player.gold += 20;
-        document.getElementById('quest').innerHTML = '<h3>🎯 任務</h3><p>任務完成！</p>';
-        if (player.exp >= 100) {
-          player.level += 1;
-          player.exp -= 100;
-        }
-        updateUI();
+        quests.woodCompleted = true;
+        document.getElementById('wood-progress').textContent = '(完成)';
+        alert('木頭任務完成！獲得 50 經驗 + 20 金幣');
       }
+      if (player.bricksPlaced >= 10 && !quests.brickCompleted) {
+        player.gold += 30;
+        quests.brickCompleted = true;
+        document.getElementById('brick-progress').textContent = '(完成)';
+        alert('石磚任務完成！獲得 30 金幣');
+      }
+      if (player.exp >= 100) {
+        player.level += 1;
+        player.exp -= 100;
+      }
+      updateUI();
     }
 
     // 商店
@@ -261,6 +333,7 @@
     }
 
     // 生成地圖
+    let quests = { woodCompleted: false, brickCompleted: false };
     generateMap();
 
     // 渲染與物理
@@ -277,9 +350,28 @@
         velocity.y = 5;
         isOnGround = false;
       }
-      velocity.y -= 9.8 * delta; // 重力
+      velocity.y -= 9.8 * delta;
       controls.getObject().position.y += velocity.y * delta;
-      if (controls.getObject().position.y < 1) {
+      if (controls.getObject().position.y < -5) {
+        player.health = Math.max(player.health - 2, 0);
+        controls.getObject().position.set(0, 5, 15);
+        velocity.y = 0;
+        isOnGround = true;
+        updateUI();
+        if (player.health === 0) {
+          alert('遊戲結束！健康歸零，重置狀態。');
+          player.health = 10;
+          inventory.brick = 20;
+          inventory.wood = 0;
+          inventory.stone = 0;
+          player.bricksPlaced = 0;
+          quests.woodCompleted = false;
+          quests.brickCompleted = false;
+          document.getElementById('wood-progress').textContent = '(0/5)';
+          document.getElementById('brick-progress').textContent = '(0/10)';
+          updateUI();
+        }
+      } else if (controls.getObject().position.y < 1) {
         controls.getObject().position.y = 1;
         velocity.y = 0;
         isOnGround = true;
