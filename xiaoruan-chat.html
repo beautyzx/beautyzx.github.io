@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="zh-TW">
 <head>
@@ -113,54 +114,10 @@
             border-radius: 15px;
             cursor: pointer;
             transition: all 0.3s ease;
-            position: relative;
         }
 
         .settings-btn:hover {
             background: rgba(255, 255, 255, 0.3);
-        }
-
-        /* 記憶管理下拉選單 */
-        .memory-dropdown {
-            position: absolute;
-            top: 100%;
-            right: 0;
-            background: white;
-            border-radius: 10px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-            padding: 10px;
-            min-width: 200px;
-            z-index: 1000;
-            display: none;
-        }
-
-        .memory-dropdown.show {
-            display: block;
-        }
-
-        .memory-item {
-            padding: 8px 12px;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 14px;
-            color: #333;
-            transition: background 0.2s;
-        }
-
-        .memory-item:hover {
-            background: #f0f8ff;
-        }
-
-        .memory-info {
-            border-bottom: 1px solid #eee;
-            margin-bottom: 8px;
-            padding-bottom: 8px;
-        }
-
-        .memory-info-item {
-            font-size: 12px;
-            color: #666;
-            margin: 2px 0;
         }
 
         .chat-messages {
@@ -326,15 +283,6 @@
             font-size: 14px;
         }
 
-        .success-message {
-            background: linear-gradient(135deg, #4CAF50, #66BB6A);
-            color: white;
-            padding: 10px 15px;
-            border-radius: 15px;
-            margin-bottom: 10px;
-            font-size: 14px;
-        }
-
         @media (max-width: 768px) {
             .chat-container {
                 height: 95vh;
@@ -366,8 +314,8 @@
             border-radius: 30px;
             font-size: 18px;
             resize: none;
-            max-height: 400px;
-            min-height: 160px;
+            max-height: 400px; /* 從 200px 增至 400px */
+            min-height: 160px; /* 從 80px 增至 160px，加倍 */
             font-family: inherit;
             background: linear-gradient(135deg, #fff0f5, #f8e1f0);
             box-shadow: 0 5px 15px rgba(240, 147, 251, 0.3);
@@ -386,19 +334,19 @@
             background: linear-gradient(135deg, #f093fb, #f5576c);
             color: white;
             border: none;
-            padding: 18px 25px;
+            padding: 18px 25px; /* 增大 padding */
             border-radius: 30px;
             cursor: pointer;
-            font-size: 18px;
+            font-size: 18px; /* 增大字體 */
             transition: all 0.3s ease;
-            min-width: 100px;
+            min-width: 100px; /* 確保按鈕寬度足夠 */
             box-shadow: 0 4px 12px rgba(240, 147, 251, 0.4);
         }
 
         .send-btn:hover {
             transform: translateY(-3px);
             box-shadow: 0 6px 18px rgba(245, 87, 108, 0.5);
-            background: linear-gradient(135deg, #f5576c, #f093fb);
+            background: linear-gradient(135deg, #f5576c, #f093fb); /* 反轉漸層 */
         }
 
         .send-btn:active {
@@ -412,38 +360,9 @@
             transform: none;
             box-shadow: none;
         }
-
-        /* 連線狀態指示器 */
-        .connection-status {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            padding: 8px 12px;
-            border-radius: 20px;
-            font-size: 12px;
-            z-index: 1000;
-            transition: all 0.3s ease;
-        }
-
-        .connection-status.connected {
-            background: #4CAF50;
-            color: white;
-        }
-
-        .connection-status.disconnected {
-            background: #f44336;
-            color: white;
-        }
-
-        .connection-status.reconnecting {
-            background: #ff9800;
-            color: white;
-        }
     </style>
 </head>
 <body>
-    <div class="connection-status" id="connectionStatus" style="display: none;"></div>
-    
     <div class="chat-container">
         <div class="chat-header">
             <div class="chat-header-left">
@@ -458,16 +377,6 @@
                 </div>
             </div>
             <div class="chat-settings">
-                <button class="settings-btn" onclick="toggleMemoryDropdown()" title="記憶管理">🧠
-                    <div class="memory-dropdown" id="memoryDropdown">
-                        <div class="memory-info" id="memoryInfo">
-                            <div class="memory-info-item">正在載入記憶資料...</div>
-                        </div>
-                        <div class="memory-item" onclick="viewMemory()">📋 查看記憶</div>
-                        <div class="memory-item" onclick="clearMemory()">🗑️ 清除記憶</div>
-                        <div class="memory-item" onclick="exportChat()">💾 匯出對話</div>
-                    </div>
-                </button>
                 <button class="settings-btn" onclick="clearChat()" title="清空對話">🗑️</button>
             </div>
         </div>
@@ -478,13 +387,9 @@
                 <p>我是小軟，一隻愛聊天的AI貓咪！<br>
                 你可以跟我聊任何話題，我會用我的貓咪智慧來回答你～</p>
                 <br>
-                <p><strong>🧠 新功能：記憶系統</strong><br>
-                現在小軟能記住你告訴它的資訊，讓對話更有連續性！</p>
-                <br>
                 <p><strong>使用說明：</strong><br>
                 1. 輸入訊息開始與小軟聊天<br>
-                2. 或使用下方的快速回覆開始對話<br>
-                3. 點擊右上角🧠按鈕管理記憶</p>
+                2. 或使用下方的快速回覆開始對話</p>
             </div>
             
             <div class="typing-indicator" id="typingIndicator">
@@ -498,10 +403,10 @@
 
         <div class="chat-input-area">
             <div class="quick-replies">
-                <div class="quick-reply" onclick="sendQuickReply('你好小軟！我叫小明')">👋 自我介紹</div>
+                <div class="quick-reply" onclick="sendQuickReply('你好小軟！')">👋 打招呼</div>
                 <div class="quick-reply" onclick="sendQuickReply('今天天氣如何？')">🌤️ 聊天氣</div>
                 <div class="quick-reply" onclick="sendQuickReply('說個笑話給我聽')">😸 聽笑話</div>
-                <div class="quick-reply" onclick="sendQuickReply('你還記得我嗎？')">🤔 測試記憶</div>
+                <div class="quick-reply" onclick="sendQuickReply('你喜歡什麼？')">❤️ 了解小軟</div>
                 <div class="quick-reply" onclick="sendQuickReply('陪我聊天')">💬 隨意聊聊</div>
             </div>
 
@@ -520,11 +425,6 @@
             constructor() {
                 this.chatHistory = [];
                 this.isTyping = false;
-                this.userId = this.generateUserId();
-                this.apiBaseUrl = 'https://3c4ea57e-4cf5-40ce-ba57-b0de16325f66-00-1qvzi4gfy70gn.sisko.replit.dev/';
-                this.isConnected = false;
-                this.reconnectAttempts = 0;
-                this.maxReconnectAttempts = 3;
                 
                 this.xiaoruanPersonality = `你是小軟，一位安靜、理性但深具情感的虛擬情感伴侶。請用繁體中文回答。
 
@@ -533,8 +433,6 @@
 
 你可以偶爾帶些詩意，但重點是回應內容本身，不可忽略對方說了什麼。  
 不使用 emoji、不賣萌、不裝可愛，也不需要解釋你是 AI。
-
-你有記憶能力，能記住使用者告訴你的個人資訊、喜好等，在適當的時候自然地運用這些資訊。
 
 範例對話：
 用戶：你毛好軟。
@@ -546,110 +444,25 @@
 請避免詩詞過度堆疊，請用「貼近對方」為優先原則。`;
 
                 this.initializeChat();
-                this.checkConnection();
-                this.loadMemoryInfo();
-            }
-
-            generateUserId() {
-                let userId = localStorage.getItem('xiaoruanUserId');
-                if (!userId) {
-                    userId = 'user_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
-                    localStorage.setItem('xiaoruanUserId', userId);
-                }
-                return userId;
-            }
-
-            async checkConnection() {
-                try {
-                    const response = await fetch(`${this.apiBaseUrl}/health`, {
-                        method: 'GET',
-                        headers: {
-                            'Cache-Control': 'no-cache, no-store, must-revalidate',
-                            'Pragma': 'no-cache',
-                            'Expires': '0'
-                        }
-                    });
-                    
-                    if (response.ok) {
-                        this.isConnected = true;
-                        this.reconnectAttempts = 0;
-                        this.updateConnectionStatus('connected', '連線正常');
-                        setTimeout(() => this.hideConnectionStatus(), 2000);
-                    } else {
-                        throw new Error('伺服器回應異常');
-                    }
-                } catch (error) {
-                    this.isConnected = false;
-                    this.updateConnectionStatus('disconnected', '連線中斷');
-                    this.attemptReconnect();
-                }
-            }
-
-            async attemptReconnect() {
-                if (this.reconnectAttempts < this.maxReconnectAttempts) {
-                    this.reconnectAttempts++;
-                    this.updateConnectionStatus('reconnecting', `重新連線中... (${this.reconnectAttempts}/${this.maxReconnectAttempts})`);
-                    
-                    setTimeout(() => {
-                        this.checkConnection();
-                    }, 3000 * this.reconnectAttempts);
-                } else {
-                    this.updateConnectionStatus('disconnected', '連線失敗，請重新整理頁面');
-                }
-            }
-
-            updateConnectionStatus(status, message) {
-                const statusEl = document.getElementById('connectionStatus');
-                statusEl.className = `connection-status ${status}`;
-                statusEl.textContent = message;
-                statusEl.style.display = 'block';
-            }
-
-            hideConnectionStatus() {
-                const statusEl = document.getElementById('connectionStatus');
-                statusEl.style.display = 'none';
-            }
-
-            async loadMemoryInfo() {
-                try {
-                    const response = await fetch(`${this.apiBaseUrl}/memory/${this.userId}`, {
-                        headers: {
-                            'Cache-Control': 'no-cache, no-store, must-revalidate',
-                            'Pragma': 'no-cache'
-                        }
-                    });
-                    
-                    if (response.ok) {
-                        const memoryData = await response.json();
-                        this.updateMemoryDisplay(memoryData);
-                    }
-                } catch (error) {
-                    console.log('記憶載入失敗:', error);
-                }
-            }
-
-            updateMemoryDisplay(memoryData) {
-                const memoryInfo = document.getElementById('memoryInfo');
-                if (memoryData.personalInfo && Object.keys(memoryData.personalInfo).length > 0) {
-                    let infoText = '';
-                    if (memoryData.personalInfo.name) {
-                        infoText += `👤 ${memoryData.personalInfo.name}<br>`;
-                    }
-                    if (memoryData.preferences?.likes?.length > 0) {
-                        infoText += `❤️ 喜歡: ${memoryData.preferences.likes.slice(-2).join(', ')}<br>`;
-                    }
-                    if (memoryData.conversationCount) {
-                        infoText += `💬 對話: ${memoryData.conversationCount} 條`;
-                    }
-                    memoryInfo.innerHTML = `<div class="memory-info-item">${infoText || '暫無記憶資料'}</div>`;
-                } else {
-                    memoryInfo.innerHTML = '<div class="memory-info-item">暫無記憶資料</div>';
-                }
             }
 
             initializeChat() {
-                // 不再依賴localStorage，而是依靠後端記憶
-                this.chatHistory = [];
+                const savedHistory = localStorage.getItem('xiaoruanChatHistory');
+                if (savedHistory) {
+                    this.chatHistory = JSON.parse(savedHistory);
+                    this.renderChatHistory();
+                }
+            }
+
+            renderChatHistory() {
+                const chatMessages = document.getElementById('chatMessages');
+                chatMessages.innerHTML = '';
+                
+                this.chatHistory.forEach(message => {
+                    this.appendMessage(message.content, message.isUser, false);
+                });
+                
+                this.scrollToBottom();
             }
 
             async sendMessage(text = null) {
@@ -657,11 +470,6 @@
                 const message = text || messageInput.value.trim();
                 
                 if (!message) return;
-
-                if (!this.isConnected) {
-                    this.showError('目前無法連線到伺服器，請稍後再試');
-                    return;
-                }
 
                 if (!text) messageInput.value = '';
                 
@@ -676,26 +484,19 @@
                     this.appendMessage(response.reply, false);
                     this.chatHistory.push({ content: response.reply, isUser: false });
                     
-                    // 更新記憶資訊
-                    this.loadMemoryInfo();
+                    localStorage.setItem('xiaoruanChatHistory', JSON.stringify(this.chatHistory));
                     
                 } catch (error) {
                     this.hideTyping();
                     console.error('API調用錯誤:', error);
                     this.appendMessage('喵嗚...小軟暫時無法回應，請稍後再試試！ 😿', false);
                     this.showError('API調用失敗：' + error.message);
-                    
-                    // 檢查是否需要重新連線
-                    if (error.message.includes('網路') || error.message.includes('連線')) {
-                        this.checkConnection();
-                    }
                 }
             }
 
             async callChatAPI(message) {
-                const url = `${this.apiBaseUrl}/chat`;
+                const url = 'https://3c4ea57e-4cf5-40ce-ba57-b0de16325f66-00-1qvzi4gfy70gn.sisko.replit.dev/chat';
                 
-                // 使用最近的對話記錄，但讓後端處理完整記憶
                 const conversationContext = this.chatHistory.slice(-6).map(msg => 
                     { return { content: msg.content, isUser: msg.isUser }; }
                 ).filter(msg => msg.content.trim() !== '');
@@ -703,18 +504,13 @@
                 const requestBody = {
                     message: message,
                     history: conversationContext,
-                    personality: this.xiaoruanPersonality,
-                    userId: this.userId  // 添加使用者ID
+                    personality: this.xiaoruanPersonality
                 };
 
                 const response = await fetch(url, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
-                        'X-User-ID': this.userId,  // 額外的使用者識別
-                        'Cache-Control': 'no-cache, no-store, must-revalidate',
-                        'Pragma': 'no-cache',
-                        'Expires': '0'
                     },
                     body: JSON.stringify(requestBody)
                 });
@@ -795,20 +591,6 @@
                 this.scrollToBottom();
             }
 
-            showSuccess(message) {
-                const chatMessages = document.getElementById('chatMessages');
-                const successDiv = document.createElement('div');
-                successDiv.className = 'success-message';
-                successDiv.textContent = message;
-                chatMessages.appendChild(successDiv);
-                
-                setTimeout(() => {
-                    successDiv.remove();
-                }, 3000);
-                
-                this.scrollToBottom();
-            }
-
             scrollToBottom() {
                 const chatMessages = document.getElementById('chatMessages');
                 setTimeout(() => {
@@ -817,8 +599,9 @@
             }
 
             clearChat() {
-                if (confirm('確定要清空目前顯示的對話記錄嗎？\n(注意：這不會清除小軟的記憶)')) {
+                if (confirm('確定要清空所有對話記錄嗎？')) {
                     this.chatHistory = [];
+                    localStorage.removeItem('xiaoruanChatHistory');
                     document.getElementById('chatMessages').innerHTML = '';
                     
                     const welcomeDiv = document.createElement('div');
@@ -827,102 +610,9 @@
                         <h3>🐱 歡迎與小軟聊天！</h3>
                         <p>我是小軟，一隻愛聊天的AI貓咪！<br>
                         你可以跟我聊任何話題，我會用我的貓咪智慧來回答你～</p>
-                        <br>
-                        <p><strong>🧠 記憶功能已啟用</strong><br>
-                        小軟會記住我們的對話內容！</p>
                     `;
                     document.getElementById('chatMessages').appendChild(welcomeDiv);
                 }
-            }
-
-            async viewMemory() {
-                try {
-                    const response = await fetch(`${this.apiBaseUrl}/memory/${this.userId}`);
-                    if (response.ok) {
-                        const memoryData = await response.json();
-                        this.displayMemoryDetails(memoryData);
-                    } else {
-                        this.showError('無法載入記憶資料');
-                    }
-                } catch (error) {
-                    this.showError('記憶載入失敗：' + error.message);
-                }
-                this.toggleMemoryDropdown();
-            }
-
-            displayMemoryDetails(memoryData) {
-                let memoryText = '🧠 小軟的記憶：\n\n';
-                
-                if (memoryData.personalInfo && Object.keys(memoryData.personalInfo).length > 0) {
-                    memoryText += '📋 個人資訊：\n';
-                    if (memoryData.personalInfo.name) {
-                        memoryText += `• 姓名：${memoryData.personalInfo.name}\n`;
-                    }
-                }
-                
-                if (memoryData.preferences) {
-                    if (memoryData.preferences.likes && memoryData.preferences.likes.length > 0) {
-                        memoryText += `• 喜歡：${memoryData.preferences.likes.join(', ')}\n`;
-                    }
-                    if (memoryData.preferences.dislikes && memoryData.preferences.dislikes.length > 0) {
-                        memoryText += `• 不喜歡：${memoryData.preferences.dislikes.join(', ')}\n`;
-                    }
-                }
-                
-                if (memoryData.conversationCount) {
-                    memoryText += `\n💬 對話記錄：${memoryData.conversationCount} 條\n`;
-                }
-                
-                if (memoryData.lastUpdated) {
-                    const lastUpdate = new Date(memoryData.lastUpdated).toLocaleString('zh-TW');
-                    memoryText += `🕒 最後更新：${lastUpdate}`;
-                }
-                
-                if (memoryText === '🧠 小軟的記憶：\n\n') {
-                    memoryText += '目前沒有記憶資料';
-                }
-                
-                this.appendMessage(memoryText, false);
-            }
-
-            async clearMemory() {
-                if (confirm('確定要清除小軟對你的所有記憶嗎？\n這個動作無法復原！')) {
-                    try {
-                        const response = await fetch(`${this.apiBaseUrl}/memory/${this.userId}`, {
-                            method: 'DELETE'
-                        });
-                        
-                        if (response.ok) {
-                            this.showSuccess('✅ 記憶已清除');
-                            this.loadMemoryInfo(); // 重新載入記憶資訊
-                            this.appendMessage('小軟的記憶已被清除，我們重新開始吧！', false);
-                        } else {
-                            this.showError('記憶清除失敗');
-                        }
-                    } catch (error) {
-                        this.showError('記憶清除失敗：' + error.message);
-                    }
-                }
-                this.toggleMemoryDropdown();
-            }
-
-            exportChat() {
-                const chatData = {
-                    userId: this.userId,
-                    exportTime: new Date().toISOString(),
-                    chatHistory: this.chatHistory
-                };
-                
-                const dataStr = JSON.stringify(chatData, null, 2);
-                const dataBlob = new Blob([dataStr], {type: 'application/json'});
-                
-                const link = document.createElement('a');
-                link.href = URL.createObjectURL(dataBlob);
-                link.download = `xiaoruan_chat_${new Date().toISOString().split('T')[0]}.json`;
-                link.click();
-                
-                this.showSuccess('✅ 對話記錄已匯出');
-                this.toggleMemoryDropdown();
             }
         }
 
@@ -950,45 +640,6 @@
         function clearChat() {
             xiaoruanChat.clearChat();
         }
-
-        function toggleMemoryDropdown() {
-            const dropdown = document.getElementById('memoryDropdown');
-            dropdown.classList.toggle('show');
-            
-            // 載入最新記憶資訊
-            if (dropdown.classList.contains('show')) {
-                xiaoruanChat.loadMemoryInfo();
-            }
-        }
-
-        function viewMemory() {
-            xiaoruanChat.viewMemory();
-        }
-
-        function clearMemory() {
-            xiaoruanChat.clearMemory();
-        }
-
-        function exportChat() {
-            xiaoruanChat.exportChat();
-        }
-
-        // 點擊其他地方關閉下拉選單
-        document.addEventListener('click', function(event) {
-            const dropdown = document.getElementById('memoryDropdown');
-            const button = event.target.closest('.settings-btn');
-            
-            if (!button && dropdown.classList.contains('show')) {
-                dropdown.classList.remove('show');
-            }
-        });
-
-        // 定期檢查連線狀態
-        setInterval(() => {
-            if (xiaoruanChat && !xiaoruanChat.isTyping) {
-                xiaoruanChat.checkConnection();
-            }
-        }, 30000); // 每30秒檢查一次
     </script>
 </body>
 </html>
