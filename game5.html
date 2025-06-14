@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>CircleCraft</title>
+  <style>
+    body { margin: 0; overflow: hidden; }
+    canvas { display: block; }
+  </style>
+</head>
+<body>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+  // 場景設置
+  const scene = new THREE.Scene();
+  const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+  const renderer = new THREE.WebGLRenderer();
+  renderer.setSize(window.innerWidth, window.innerHeight);
+  document.body.appendChild(renderer.domElement);
+
+  // 光源
+  scene.add(new THREE.AmbientLight(0x404040));
+  const directionalLight = new THREE.DirectionalLight(0xffffff, 0.5);
+  directionalLight.position.set(1, 1, 1);
+  scene.add(directionalLight);
+
+  // 地圖數據
+  const blocks = {};
+  const blockSize = 1;
+  const blockGeometry = new THREE.BoxGeometry(blockSize, blockSize, blockSize);
+  const grassMaterial = new THREE.MeshPhongMaterial({ color: 0x00ff00 });
+  const stoneMaterial = new THREE.MeshPhongMaterial({ color: 0x808080 });
+
+  // 生成地圖
+  function generateMap() {
+    // 地面（隨機高度）
+    for (let x = -10; x <= 10; x++) {
+      for (let z = -10; z <= 10; z++) {
+        const height = Math.floor(Math.random() * 5); // 高度 0-4
+        for (let y = 0; y <= height; y++) {
+          addBlock(x, y, z, y === height ? grassMaterial : stoneMaterial);
+        }
+      }
+    }
+    // 空中漂浮島嶼
+    for (let i = 0; i < 5; i++) {
+      const islandX = Math.floor(Math.random() * 20 - 10);
+      const islandY = Math.floor(Math.random() * 10 + 20);
+      const islandZ = Math.floor(Math.random() * 20 - 10);
+      addBlock(islandX, islandY, islandZ, grassMaterial);
+      addBlock(islandX + 1, islandY, islandZ, grassMaterial);
+      addBlock(islandX, islandY - 1, islandZ, stoneMaterial);
+    }
+  }
+
+  // 添加方塊
+  function addBlock(x, y, z, material) {
+    const block = new THREE.Mesh(blockGeometry, material);
+    block.position.set(x * blockSize, y * blockSize, z * blockSize);
+    scene.add(block);
+    blocks[`${x},${y},${z}`] = block;
+  }
+
+  // 移除方塊
+  function removeBlock(x, y, z) {
+    const key = `${x},${y},${z}`;
+    if (blocks[key]) {
+      scene.remove(blocks[key]);
+      delete blocks[key];
+    }
+  }
+
+  // 射線投射
+  const raycaster = new THREE.Raycaster();
+  const mouse = new THREE.Vector2();
+  function onMouseClick(event) {
+    mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+    mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+    raycaster.setFromCamera(mouse, camera);
+    const intersects = raycaster.intersectObjects(Object.values(blocks));
+    if (intersects.length > 0) {
+      const intersect = intersects[0];
+      const pos = intersect.object.position;
+      const x = Math.round(pos.x / blockSize);
+      const y = Math.round(pos.y / blockSize);
+      const z = Math.round(pos.z / blockSize);
+      if (event.button === 0) { // 左鍵：破壞
+        removeBlock(x, y, z);
+      } else if (event.button === 2) { // 右鍵：放置
+        const normal = intersect.face.normal;
+        addBlock(x + normal.x, y + normal.y, z + normal.z, grassMaterial);
+      }
+    }
+  }
+
+  // 玩家控制
+  camera.position.set(0, 10, 20);
+  const controls = new THREE.OrbitControls(camera, renderer.domElement); // 臨時使用 OrbitControls
+  window.addEventListener('mousedown', onMouseClick);
+
+  // 生成地圖
+  generateMap();
+
+  // 渲染循環
+  function animate() {
+    requestAnimationFrame(animate);
+    renderer.render(scene, camera);
+  }
+  animate();
+
+  // 自適應窗口
+  window.addEventListener('resize', () => {
+    camera.aspect = window.innerWidth / window.innerHeight;
+    camera.updateProjectionMatrix();
+    renderer.setSize(window.innerWidth, window.innerHeight);
+  });
+</script>
+</body>
+</html>
