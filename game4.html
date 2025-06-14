@@ -1,4 +1,31 @@
-<!DOCTYPE html>
+// 遊戲主循環
+        function gameLoop() {
+            requestAnimationFrame(gameLoop);
+            
+            handleMovement();
+            updateChunkLoading(); // 新增：動態區塊加載
+            updateTargetBlock();
+            updateCamera();
+            updateDayNight();
+            updateUI();
+            
+            gameState.renderer.render(gameState.scene, gameState.camera);
+        }
+
+        function updateChunkLoading() {
+            const playerPos = gameState.camera.position;
+            const currentChunkX = Math.floor(playerPos.x / gameState.chunkSize);
+            const currentChunkZ = Math.floor(playerPos.z / gameState.chunkSize);
+            
+            // 只有當玩家移動到新區塊時才更新
+            if (gameState.lastChunkUpdate.x !== currentChunkX || 
+                gameState.lastChunkUpdate.z !== currentChunkZ) {
+                
+                updateChunksAroundPlayer(currentChunkX, currentChunkZ);
+                gameState.lastChunkUpdate.x = currentChunkX;
+                gameState.lastChunkUpdate.z = currentChunkZ;
+            }
+        }<!DOCTYPE html>
 <html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
@@ -279,14 +306,15 @@
             renderer: null,
             player: null,
             world: new Map(), // 使用 Map 來存儲方塊位置
-            chunks: new Map(), // 區塊系統
+            chunks: new Map(), // 區塊系統 - 存儲已生成的區塊數據
+            loadedChunks: new Set(), // 當前已加載到場景中的區塊
             selectedTool: 0,
             isFlying: false,
             isSurvival: true,
-            worldSize: 100,
-            chunkSize: 16,
-            maxHeight: 64,
-            seaLevel: 32,
+            chunkSize: 16, // 每個區塊16x16方塊
+            renderDistance: 3, // 減小渲染距離到3個區塊
+            maxHeight: 50, // 降低最大高度
+            seaLevel: 30, // 降低海平面
             keys: {},
             mouse: { x: 0, y: 0, locked: false },
             cameraDistance: 0, // 第一人稱視角
@@ -296,7 +324,9 @@
             onGround: false,
             dayTime: 0,
             targetBlock: null,
-            highlightMesh: null
+            highlightMesh: null,
+            lastChunkUpdate: { x: null, z: null },
+            maxLoadedBlocks: 5000 // 減少最大方塊數
         };
 
         // 方塊類型定義
@@ -510,114 +540,291 @@
         }
 
         function generateWorld() {
-            console.log('🌍 生成地形...');
+            console.log('🌍 初始化區塊系統...');
             
-            const size = 50; // 初始生成區域大小
+            // 設置玩家初始位置到一個安全的地面位置
+            gameState.camera.position.set(0, 40, 0);
             
-            for (let x = -size; x <= size; x++) {
-                for (let z = -size; z <= size; z++) {
-                    generateColumn(x, z);
+            // 初始生成玩家周圍的區塊
+            const playerChunkX = Math.floor(gameState.camera.position.x / gameState.chunkSize);
+            const playerChunkZ = Math.floor(gameState.camera.position.z / gameState.chunkSize);
+            
+            // 立即生成中心區塊
+            for (let x = playerChunkX - 2; x <= playerChunkX + 2; x++) {
+                for (let z = playerChunkZ - 2; z <= playerChunkZ + 2; z++) {
+                    generateChunkData(x, z);
+                    loadChunk(x, z);
                 }
             }
             
-            // 生成一些結構
-            generateStructures();
+            // 設置玩家到地面
+            setTimeout(() => {
+                const groundY = getTopBlockY(0, 0);
+                if (groundY > 0) {
+                    gameState.camera.position.y = groundY + 2;
+                }
+            }, 100);
             
-            console.log(`✅ 世界生成完成，共 ${gameState.world.size} 個方塊`);
+            console.log(`✅ 初始區塊載入完成，共生成 ${gameState.world.size} 個方塊`);
         }
 
-        function generateColumn(x, z) {
-            // 使用噪聲生成高度
-            const heightNoise = noiseGen.noise(x, z, 0.02) * 15 + 35;
+        // 區塊管理系統
+        function updateChunksAroundPlayer(playerChunkX, playerChunkZ) {
+            const renderDistance = gameState.renderDistance;
+            const requiredChunks = new Set();
+            
+            // 計算需要的區塊
+            for (let x = playerChunkX - renderDistance; x <= playerChunkX + renderDistance; x++) {
+                for (let z = playerChunkZ - renderDistance; z <= playerChunkZ + renderDistance; z++) {
+                    const distance = Math.sqrt((x - playerChunkX) ** 2 + (z - playerChunkZ) ** 2);
+                    if (distance <= renderDistance) {
+                        requiredChunks.add(`${x},${z}`);
+                    }
+                }
+            }
+            
+            // 卸載遠離的區塊
+            const toUnload = [];
+            for (const chunkKey of gameState.loadedChunks) {
+                if (!requiredChunks.has(chunkKey)) {
+                    toUnload.push(chunkKey);
+                }
+            }
+            
+            // 批量卸載以避免性能問題
+            let unloadCount = 0;
+            for (const chunkKey of toUnload) {
+                if (unloadCount >= 2) break; // 每幀最多卸載2個區塊
+                unloadChunk(chunkKey);
+                unloadCount++;
+            }
+            
+            // 加載新區塊
+            let loadCount = 0;
+            for (const chunkKey of requiredChunks) {
+                if (!gameState.loadedChunks.has(chunkKey)) {
+                    if (loadCount >= 1) break; // 每幀最多加載1個區塊
+                    const [x, z] = chunkKey.split(',').map(Number);
+                    loadChunk(x, z);
+                    loadCount++;
+                }
+            }
+            
+            // 檢查總方塊數量
+            if (gameState.world.size > gameState.maxLoadedBlocks) {
+                console.warn('⚠️ 方塊數量過多，強制清理遠距離區塊');
+                forceUnloadDistantChunks(playerChunkX, playerChunkZ);
+            }
+        }
+
+        function loadChunk(chunkX, chunkZ) {
+            const chunkKey = `${chunkX},${chunkZ}`;
+            
+            // 檢查是否已經生成過這個區塊的數據
+            if (!gameState.chunks.has(chunkKey)) {
+                generateChunkData(chunkX, chunkZ);
+            }
+            
+            // 加載區塊到場景中
+            const chunkData = gameState.chunks.get(chunkKey);
+            if (chunkData) {
+                for (const blockData of chunkData.blocks) {
+                    createBlockMesh(blockData.x, blockData.y, blockData.z, blockData.type);
+                }
+                gameState.loadedChunks.add(chunkKey);
+                console.log(`📦 加載區塊 ${chunkKey}，包含 ${chunkData.blocks.length} 個方塊`);
+            }
+        }
+
+        function unloadChunk(chunkKey) {
+            const [chunkX, chunkZ] = chunkKey.split(',').map(Number);
+            const startX = chunkX * gameState.chunkSize;
+            const startZ = chunkZ * gameState.chunkSize;
+            const endX = startX + gameState.chunkSize;
+            const endZ = startZ + gameState.chunkSize;
+            
+            // 移除該區塊的所有方塊mesh
+            const blocksToRemove = [];
+            for (const [blockKey, block] of gameState.world) {
+                if (block.x >= startX && block.x < endX && 
+                    block.z >= startZ && block.z < endZ) {
+                    blocksToRemove.push(blockKey);
+                    gameState.scene.remove(block.mesh);
+                    
+                    // 釋放幾何體和材質
+                    if (block.mesh.geometry) block.mesh.geometry.dispose();
+                    if (block.mesh.material) block.mesh.material.dispose();
+                }
+            }
+            
+            // 從world中移除
+            for (const blockKey of blocksToRemove) {
+                gameState.world.delete(blockKey);
+            }
+            
+            gameState.loadedChunks.delete(chunkKey);
+            console.log(`🗑️ 卸載區塊 ${chunkKey}，移除 ${blocksToRemove.length} 個方塊`);
+        }
+
+        function generateChunkData(chunkX, chunkZ) {
+            const chunkKey = `${chunkX},${chunkZ}`;
+            const chunkData = { blocks: [] };
+            
+            const startX = chunkX * gameState.chunkSize;
+            const startZ = chunkZ * gameState.chunkSize;
+            
+            for (let x = startX; x < startX + gameState.chunkSize; x++) {
+                for (let z = startZ; z < startZ + gameState.chunkSize; z++) {
+                    generateColumnData(x, z, chunkData);
+                }
+            }
+            
+            // 在該區塊生成一些樹木
+            generateChunkStructures(chunkX, chunkZ, chunkData);
+            
+            gameState.chunks.set(chunkKey, chunkData);
+        }
+
+        function generateColumnData(x, z, chunkData) {
+            // 使用噪聲生成高度 - 調整參數讓地形更明顯
+            const heightNoise = noiseGen.noise(x, z, 0.03) * 8 + 32; // 降低高度變化
             const caveNoise = noiseGen.noise(x, z, 0.1);
-            const oreNoise = noiseGen.noise(x * 2, z * 2, 0.05);
             
             const height = Math.floor(heightNoise);
-            const maxHeight = Math.min(height, gameState.maxHeight - 5);
+            const maxHeight = Math.min(height, 45); // 降低最大高度
             
             for (let y = 0; y <= maxHeight; y++) {
                 let blockType;
                 
-                // 地下洞穴
-                if (y < maxHeight - 10 && Math.abs(caveNoise) < 0.1) {
+                // 簡化洞穴生成 - 減少洞穴
+                if (y < maxHeight - 8 && Math.abs(caveNoise) < 0.03) {
                     continue; // 創建洞穴
                 }
                 
                 if (y === maxHeight) {
                     // 表面方塊
-                    if (y > gameState.seaLevel + 10) {
-                        blockType = blockTypes.STONE; // 山區
-                    } else if (y > gameState.seaLevel + 3) {
-                        blockType = blockTypes.GRASS; // 草地
+                    if (y > gameState.seaLevel + 5) {
+                        blockType = blockTypes.GRASS; // 更多草地
                     } else {
                         blockType = blockTypes.SAND; // 海灘
                     }
-                } else if (y > maxHeight - 3) {
+                } else if (y > maxHeight - 2) {
                     // 表層土壤
                     blockType = blockTypes.DIRT;
-                } else if (y < 10) {
+                } else if (y < 5) {
                     // 基岩層
                     blockType = blockTypes.STONE;
                 } else {
-                    // 地下
-                    if (oreNoise > 0.3) {
-                        blockType = blockTypes.STONE; // 礦物
+                    // 地下 - 增加方塊密度
+                    if (Math.random() < 0.9) { // 90%概率生成地下方塊
+                        blockType = blockTypes.STONE;
                     } else {
-                        blockType = blockTypes.DIRT;
+                        continue;
                     }
                 }
                 
                 if (blockType) {
-                    setBlock(x, y, z, blockType);
+                    chunkData.blocks.push({
+                        x: x, y: y, z: z,
+                        type: blockType
+                    });
                 }
             }
             
-            // 填充水
-            for (let y = 0; y <= gameState.seaLevel; y++) {
-                if (!getBlock(x, y, z) && y <= height) {
-                    setBlock(x, y, z, blockTypes.WATER);
+            // 簡化水的生成
+            if (height < gameState.seaLevel) {
+                for (let y = height + 1; y <= gameState.seaLevel; y++) {
+                    chunkData.blocks.push({
+                        x: x, y: y, z: z,
+                        type: blockTypes.WATER
+                    });
                 }
             }
         }
 
-        function generateStructures() {
-            const treeCount = 50;
+        function generateChunkStructures(chunkX, chunkZ, chunkData) {
+            // 每個區塊隨機生成1-2棵樹
+            const treeCount = Math.floor(Math.random() * 2) + 1;
+            const startX = chunkX * gameState.chunkSize;
+            const startZ = chunkZ * gameState.chunkSize;
             
             for (let i = 0; i < treeCount; i++) {
-                const x = Math.floor((Math.random() - 0.5) * 80);
-                const z = Math.floor((Math.random() - 0.5) * 80);
-                const y = getTopBlockY(x, z);
+                const x = startX + Math.floor(Math.random() * gameState.chunkSize);
+                const z = startZ + Math.floor(Math.random() * gameState.chunkSize);
                 
-                if (y > gameState.seaLevel + 2) {
-                    const block = getBlock(x, y, z);
-                    if (block && block.name === 'grass') {
-                        generateTree(x, y + 1, z);
-                    }
-                }
-            }
-        }
-
-        function generateTree(x, y, z) {
-            const height = 4 + Math.floor(Math.random() * 3);
-            
-            // 樹幹
-            for (let i = 0; i < height; i++) {
-                setBlock(x, y + i, z, blockTypes.WOOD);
-            }
-            
-            // 樹葉
-            const leafY = y + height - 1;
-            for (let dx = -2; dx <= 2; dx++) {
-                for (let dz = -2; dz <= 2; dz++) {
-                    for (let dy = 0; dy <= 2; dy++) {
-                        if (dx === 0 && dz === 0) continue; // 不覆蓋樹幹
-                        
-                        const distance = Math.sqrt(dx*dx + dz*dz + dy*dy);
-                        if (distance <= 2.5 && Math.random() > 0.2) {
-                            setBlock(x + dx, leafY + dy, z + dz, blockTypes.LEAVES);
+                // 找到該位置的地面高度
+                let groundY = 0;
+                for (const block of chunkData.blocks) {
+                    if (block.x === x && block.z === z && block.y > groundY) {
+                        if (block.type.name === 'grass' || block.type.name === 'dirt') {
+                            groundY = block.y;
                         }
                     }
                 }
+                
+                if (groundY > gameState.seaLevel) {
+                    generateTreeData(x, groundY + 1, z, chunkData);
+                }
+            }
+        }
+
+        function generateTreeData(x, y, z, chunkData) {
+            const height = 3 + Math.floor(Math.random() * 2); // 樹高3-4
+            
+            // 樹幹
+            for (let i = 0; i < height; i++) {
+                chunkData.blocks.push({
+                    x: x, y: y + i, z: z,
+                    type: blockTypes.WOOD
+                });
+            }
+            
+            // 樹葉 - 簡化樹葉生成
+            const leafY = y + height - 1;
+            for (let dx = -1; dx <= 1; dx++) {
+                for (let dz = -1; dz <= 1; dz++) {
+                    if (dx === 0 && dz === 0) continue; // 不覆蓋樹幹頂部
+                    
+                    // 樹葉層
+                    chunkData.blocks.push({
+                        x: x + dx, y: leafY, z: z + dz,
+                        type: blockTypes.LEAVES
+                    });
+                    
+                    // 頂層樹葉
+                    if (Math.abs(dx) + Math.abs(dz) <= 1) {
+                        chunkData.blocks.push({
+                            x: x + dx, y: leafY + 1, z: z + dz,
+                            type: blockTypes.LEAVES
+                        });
+                    }
+                }
+            }
+        }
+
+        function forceUnloadDistantChunks(playerChunkX, playerChunkZ) {
+            const chunksToUnload = [];
+            
+            for (const chunkKey of gameState.loadedChunks) {
+                const [x, z] = chunkKey.split(',').map(Number);
+                const distance = Math.sqrt((x - playerChunkX) ** 2 + (z - playerChunkZ) ** 2);
+                
+                if (distance > gameState.renderDistance + 1) {
+                    chunksToUnload.push(chunkKey);
+                }
+            }
+            
+            // 強制卸載最遠的區塊
+            chunksToUnload.sort((a, b) => {
+                const [ax, az] = a.split(',').map(Number);
+                const [bx, bz] = b.split(',').map(Number);
+                const distA = Math.sqrt((ax - playerChunkX) ** 2 + (az - playerChunkZ) ** 2);
+                const distB = Math.sqrt((bx - playerChunkX) ** 2 + (bz - playerChunkZ) ** 2);
+                return distB - distA;
+            });
+            
+            for (let i = 0; i < Math.min(3, chunksToUnload.length); i++) {
+                unloadChunk(chunksToUnload[i]);
             }
         }
 
@@ -628,21 +835,21 @@
             if (gameState.world.has(key)) {
                 const oldBlock = gameState.world.get(key);
                 gameState.scene.remove(oldBlock.mesh);
+                if (oldBlock.mesh.geometry) oldBlock.mesh.geometry.dispose();
+                if (oldBlock.mesh.material) oldBlock.mesh.material.dispose();
             }
             
             // 創建新方塊
-            const geometry = new THREE.BoxGeometry(1, 1, 1);
-            let material;
+            const block = createBlockMesh(x, y, z, blockType);
+            return block;
+        }
+
+        function createBlockMesh(x, y, z, blockType) {
+            const key = `${x},${y},${z}`;
             
-            if (blockType.transparent) {
-                material = new THREE.MeshLambertMaterial({ 
-                    color: blockType.color,
-                    transparent: true,
-                    opacity: blockType.name === 'water' ? 0.7 : 0.9
-                });
-            } else {
-                material = new THREE.MeshLambertMaterial({ color: blockType.color });
-            }
+            // 使用共享的幾何體以節省內存
+            const geometry = getSharedGeometry();
+            let material = getSharedMaterial(blockType);
             
             const mesh = new THREE.Mesh(geometry, material);
             mesh.position.set(x, y, z);
@@ -661,6 +868,37 @@
             return block;
         }
 
+        // 共享資源管理
+        let sharedGeometry = null;
+        const sharedMaterials = new Map();
+
+        function getSharedGeometry() {
+            if (!sharedGeometry) {
+                sharedGeometry = new THREE.BoxGeometry(1, 1, 1);
+            }
+            return sharedGeometry;
+        }
+
+        function getSharedMaterial(blockType) {
+            const key = blockType.name;
+            
+            if (!sharedMaterials.has(key)) {
+                let material;
+                if (blockType.transparent) {
+                    material = new THREE.MeshLambertMaterial({ 
+                        color: blockType.color,
+                        transparent: true,
+                        opacity: blockType.name === 'water' ? 0.7 : 0.9
+                    });
+                } else {
+                    material = new THREE.MeshLambertMaterial({ color: blockType.color });
+                }
+                sharedMaterials.set(key, material);
+            }
+            
+            return sharedMaterials.get(key);
+        }
+
         function getBlock(x, y, z) {
             const key = `${x},${y},${z}`;
             const block = gameState.world.get(key);
@@ -673,25 +911,61 @@
             
             if (block) {
                 gameState.scene.remove(block.mesh);
+                // 不需要dispose共享的geometry和material
                 gameState.world.delete(key);
+                
+                // 同時從區塊數據中移除
+                const chunkX = Math.floor(x / gameState.chunkSize);
+                const chunkZ = Math.floor(z / gameState.chunkSize);
+                const chunkKey = `${chunkX},${chunkZ}`;
+                const chunkData = gameState.chunks.get(chunkKey);
+                
+                if (chunkData) {
+                    chunkData.blocks = chunkData.blocks.filter(b => 
+                        !(b.x === x && b.y === y && b.z === z)
+                    );
+                }
+                
                 return true;
             }
             return false;
         }
 
         function getTopBlockY(x, z) {
-            for (let y = gameState.maxHeight; y >= 0; y--) {
-                if (getBlock(x, y, z)) {
-                    return y;
+            let maxHeight = 0;
+            
+            // 首先檢查已加載的方塊
+            for (const [key, block] of gameState.world) {
+                if (Math.abs(block.x - x) < 1 && Math.abs(block.z - z) < 1) {
+                    maxHeight = Math.max(maxHeight, block.y);
                 }
             }
-            return 0;
+            
+            // 如果沒有找到，檢查區塊數據
+            if (maxHeight === 0) {
+                const chunkX = Math.floor(x / gameState.chunkSize);
+                const chunkZ = Math.floor(z / gameState.chunkSize);
+                const chunkKey = `${chunkX},${chunkZ}`;
+                const chunkData = gameState.chunks.get(chunkKey);
+                
+                if (chunkData) {
+                    for (const block of chunkData.blocks) {
+                        if (block.x === x && block.z === z) {
+                            maxHeight = Math.max(maxHeight, block.y);
+                        }
+                    }
+                }
+            }
+            
+            return maxHeight;
         }
 
         function createPlayer() {
-            // 第一人稱視角，不需要可視化玩家模型
-            gameState.camera.position.set(0, 40, 0);
+            // 設置玩家初始位置到地面上方
+            gameState.camera.position.set(0, 35, 0);
             gameState.velocity = { x: 0, y: 0, z: 0 };
+            
+            console.log('👤 玩家創建完成，位置:', gameState.camera.position);
         }
 
         function createBlockHighlight() {
@@ -907,9 +1181,14 @@
                 gameState.scene.remove(block.mesh);
             });
             gameState.world.clear();
+            gameState.chunks.clear();
+            gameState.loadedChunks.clear();
             
             // 重新生成
-            generateWorld();
+            const playerChunkX = Math.floor(gameState.camera.position.x / gameState.chunkSize);
+            const playerChunkZ = Math.floor(gameState.camera.position.z / gameState.chunkSize);
+            updateChunksAroundPlayer(playerChunkX, playerChunkZ);
+            
             updateUI();
             console.log('🌍 世界已重新生成');
         }
@@ -1022,12 +1301,28 @@
             requestAnimationFrame(gameLoop);
             
             handleMovement();
+            updateChunkLoading(); // 新增：動態區塊加載
             updateTargetBlock();
             updateCamera();
             updateDayNight();
             updateUI();
             
             gameState.renderer.render(gameState.scene, gameState.camera);
+        }
+
+        function updateChunkLoading() {
+            const playerPos = gameState.camera.position;
+            const currentChunkX = Math.floor(playerPos.x / gameState.chunkSize);
+            const currentChunkZ = Math.floor(playerPos.z / gameState.chunkSize);
+            
+            // 只有當玩家移動到新區塊時才更新
+            if (gameState.lastChunkUpdate.x !== currentChunkX || 
+                gameState.lastChunkUpdate.z !== currentChunkZ) {
+                
+                updateChunksAroundPlayer(currentChunkX, currentChunkZ);
+                gameState.lastChunkUpdate.x = currentChunkX;
+                gameState.lastChunkUpdate.z = currentChunkZ;
+            }
         }
 
         function handleMovement() {
@@ -1089,7 +1384,7 @@
             
             // 碰撞檢測
             if (!gameState.isFlying) {
-                // 地面檢測
+                // 地面檢測 - 優化版本，不需要掃描所有方塊
                 const groundY = getTopBlockY(Math.floor(newPosition.x), Math.floor(newPosition.z)) + 1.8;
                 
                 if (newPosition.y <= groundY) {
@@ -1100,7 +1395,7 @@
                     gameState.onGround = false;
                 }
                 
-                // 簡單的牆壁碰撞檢測
+                // 簡化的牆壁碰撞檢測
                 const playerRadius = 0.3;
                 const checkPositions = [
                     { x: newPosition.x + playerRadius, z: newPosition.z },
@@ -1128,10 +1423,7 @@
                 gameState.camera.position.copy(newPosition);
             }
             
-            // 邊界限制
-            const boundary = gameState.worldSize / 2;
-            gameState.camera.position.x = Math.max(-boundary, Math.min(boundary, gameState.camera.position.x));
-            gameState.camera.position.z = Math.max(-boundary, Math.min(boundary, gameState.camera.position.z));
+            // 高度限制
             gameState.camera.position.y = Math.max(1, Math.min(gameState.maxHeight + 20, gameState.camera.position.y));
         }
 
@@ -1197,8 +1489,10 @@
             document.getElementById('coordinates').textContent = 
                 `${Math.floor(pos.x)}, ${Math.floor(pos.y)}, ${Math.floor(pos.z)}`;
             
-            // 更新方塊數量
-            document.getElementById('blockCount').textContent = gameState.world.size;
+            // 更新方塊數量和內存使用情況
+            const chunkCount = gameState.loadedChunks.size;
+            document.getElementById('blockCount').textContent = 
+                `${gameState.world.size} (${chunkCount} 區塊)`;
             
             // 更新高度
             document.getElementById('heightDisplay').textContent = Math.floor(pos.y);
@@ -1214,6 +1508,11 @@
             // 更新生物群落
             const biome = pos.y > 40 ? '山地' : pos.y > 35 ? '平原' : '海岸';
             document.getElementById('biome').textContent = biome;
+            
+            // 性能警告
+            if (gameState.world.size > gameState.maxLoadedBlocks * 0.8) {
+                console.warn(`⚠️ 方塊數量較多: ${gameState.world.size}/${gameState.maxLoadedBlocks}`);
+            }
         }
 
         // 啟動遊戲
