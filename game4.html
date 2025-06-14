@@ -245,16 +245,7 @@
     </div>
 
     <script>
-        // 等待 Three.js 載入
-        if (typeof THREE === 'undefined') {
-            console.error('Three.js 未載入');
-            document.getElementById('loading').textContent = '❌ Three.js 載入失敗';
-        } else {
-            console.log('✅ Three.js 載入成功');
-            initGame();
-        }
-
-        // 遊戲狀態
+        // 遊戲狀態 - 必須在所有函數之前定義
         const gameState = {
             scene: null,
             camera: null,
@@ -297,6 +288,27 @@
             WOOD: { color: 0xA0522D, name: 'wood' },
             LEAVES: { color: 0x228B22, name: 'leaves' }
         };
+
+        // 等待 Three.js 載入後初始化遊戲
+        function startGame() {
+            if (typeof THREE === 'undefined') {
+                console.error('Three.js 未載入');
+                document.getElementById('loading').textContent = '❌ Three.js 載入失敗';
+                return;
+            }
+            
+            console.log('✅ Three.js 載入成功');
+            
+            // 延遲一點確保所有資源都載入
+            setTimeout(() => {
+                try {
+                    initGame();
+                } catch (error) {
+                    console.error('❌ 遊戲初始化錯誤:', error);
+                    document.getElementById('loading').textContent = '❌ 遊戲載入失敗: ' + error.message;
+                }
+            }, 100);
+        }
 
         // 初始化遊戲
         function initGame() {
@@ -1152,6 +1164,14 @@
             updateInventoryUI();
             updateUI();
             alert('✅ 購買成功！');
+        }
+
+        // 頁面載入完成後啟動遊戲
+        window.addEventListener('load', startGame);
+        
+        // 如果頁面已經載入完成，直接啟動
+        if (document.readyState === 'complete') {
+            startGame();
         }
     </script>
 </body>
