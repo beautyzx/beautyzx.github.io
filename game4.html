@@ -24,6 +24,12 @@
             height: 100vh;
         }
 
+        #gameCanvas {
+            display: block;
+            width: 100%;
+            height: 100%;
+        }
+
         #ui {
             position: absolute;
             top: 0;
@@ -162,13 +168,25 @@
             background: linear-gradient(90deg, #ff4444, #ff8888);
             transition: width 0.3s ease;
         }
+
+        .loading {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: white;
+            font-size: 24px;
+            z-index: 1000;
+        }
     </style>
 </head>
 <body>
     <div id="gameContainer">
         <canvas id="gameCanvas"></canvas>
         
-        <div id="ui">
+        <div class="loading" id="loading">🎮 載入中...</div>
+        
+        <div id="ui" style="display: none;">
             <div class="health-bar">
                 <div class="health-fill" id="healthFill" style="width: 100%"></div>
             </div>
@@ -191,7 +209,7 @@
                 <div>滑鼠右鍵 - 放置方塊</div>
                 <div>1-6 - 選擇物品</div>
                 <div>B - 開啟商店</div>
-                <div>滑鼠滾輪 - 縮放視角</div>
+                <div>滑鼠移動 - 轉動視角</div>
             </div>
         </div>
 
@@ -227,6 +245,15 @@
     </div>
 
     <script>
+        // 等待 Three.js 載入
+        if (typeof THREE === 'undefined') {
+            console.error('Three.js 未載入');
+            document.getElementById('loading').textContent = '❌ Three.js 載入失敗';
+        } else {
+            console.log('✅ Three.js 載入成功');
+            initGame();
+        }
+
         // 遊戲狀態
         const gameState = {
             scene: null,
@@ -245,7 +272,7 @@
                 gold: 50,
                 attack: 5
             },
-            worldSize: 50,
+            worldSize: 20,
             blockSize: 1,
             isNight: false,
             dayTime: 0,
@@ -254,119 +281,151 @@
                 target: 'wood',
                 amount: 5,
                 current: 0
-            }
+            },
+            keys: {},
+            mouse: { x: 0, y: 0 },
+            cameraDistance: 8,
+            cameraAngleX: 0,
+            cameraAngleY: 0.3
         };
 
-        // 方塊類型
+        // 方塊類型定義
         const blockTypes = {
-            GRASS: 0,
-            DIRT: 1,
-            STONE: 2,
-            WOOD: 3,
-            LEAVES: 4,
-            WATER: 5
+            GRASS: { color: 0x90EE90, name: 'grass' },
+            DIRT: { color: 0x8B4513, name: 'dirt' },
+            STONE: { color: 0x808080, name: 'stone' },
+            WOOD: { color: 0xA0522D, name: 'wood' },
+            LEAVES: { color: 0x228B22, name: 'leaves' }
         };
 
         // 初始化遊戲
         function initGame() {
-            const canvas = document.getElementById('gameCanvas');
-            
-            // 設置 Three.js
-            gameState.scene = new THREE.Scene();
-            gameState.camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-            gameState.renderer = new THREE.WebGLRenderer({ canvas: canvas, antialias: true });
-            gameState.renderer.setSize(window.innerWidth, window.innerHeight);
-            gameState.renderer.setClearColor(0x87CEEB);
-            gameState.renderer.shadowMap.enabled = true;
-            gameState.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+            try {
+                console.log('🎮 開始初始化遊戲...');
+                
+                // 獲取 canvas
+                const canvas = document.getElementById('gameCanvas');
+                
+                // 設置 Three.js
+                gameState.scene = new THREE.Scene();
+                gameState.camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+                gameState.renderer = new THREE.WebGLRenderer({ 
+                    canvas: canvas, 
+                    antialias: true 
+                });
+                
+                gameState.renderer.setSize(window.innerWidth, window.innerHeight);
+                gameState.renderer.setClearColor(0x87CEEB, 1);
+                gameState.renderer.shadowMap.enabled = true;
+                gameState.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 
-            // 設置光源
+                console.log('✅ Three.js 場景設置完成');
+
+                // 添加光源
+                setupLighting();
+                
+                // 生成世界
+                console.log('🌍 生成世界...');
+                generateWorld();
+                
+                // 創建玩家
+                console.log('👤 創建圈圈人...');
+                createPlayer();
+                
+                // 設置相機
+                setupCamera();
+                
+                // 設置控制
+                console.log('🎮 設置控制系統...');
+                setupControls();
+                
+                // 隱藏載入畫面，顯示UI
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('ui').style.display = 'block';
+                
+                console.log('✅ 遊戲初始化完成！');
+                
+                // 開始遊戲循環
+                gameLoop();
+                
+                // 更新UI
+                updateInventoryUI();
+                updateUI();
+                updateTaskUI();
+                
+            } catch (error) {
+                console.error('❌ 遊戲初始化失敗:', error);
+                document.getElementById('loading').textContent = '❌ 遊戲載入失敗: ' + error.message;
+            }
+        }
+
+        function setupLighting() {
+            // 環境光
             const ambientLight = new THREE.AmbientLight(0x404040, 0.6);
             gameState.scene.add(ambientLight);
 
+            // 太陽光
             const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
-            directionalLight.position.set(10, 20, 10);
+            directionalLight.position.set(20, 50, 20);
             directionalLight.castShadow = true;
-            directionalLight.shadow.mapSize.width = 2048;
-            directionalLight.shadow.mapSize.height = 2048;
+            directionalLight.shadow.mapSize.width = 1024;
+            directionalLight.shadow.mapSize.height = 1024;
+            directionalLight.shadow.camera.near = 0.1;
+            directionalLight.shadow.camera.far = 100;
+            directionalLight.shadow.camera.left = -20;
+            directionalLight.shadow.camera.right = 20;
+            directionalLight.shadow.camera.top = 20;
+            directionalLight.shadow.camera.bottom = -20;
             gameState.scene.add(directionalLight);
-
-            // 創建世界
-            generateWorld();
             
-            // 創建玩家（圈圈人）
-            createPlayer();
-            
-            // 設置相機
-            gameState.camera.position.set(0, 10, 10);
-            gameState.camera.lookAt(0, 0, 0);
-
-            // 事件監聽
-            setupControls();
-            
-            // 開始遊戲循環
-            gameLoop();
+            console.log('💡 光源設置完成');
         }
 
         function generateWorld() {
-            // 清除現有世界
-            gameState.world = [];
+            // 生成簡單的平地和一些結構
+            const size = gameState.worldSize;
             
-            // 生成地形
-            for (let x = -gameState.worldSize/2; x < gameState.worldSize/2; x++) {
-                for (let z = -gameState.worldSize/2; z < gameState.worldSize/2; z++) {
-                    // 使用簡單的噪聲函數生成高度
-                    const height = Math.floor(Math.sin(x * 0.1) * Math.cos(z * 0.1) * 3) + 3;
+            // 生成地面
+            for (let x = -size/2; x < size/2; x += 2) {
+                for (let z = -size/2; z < size/2; z += 2) {
+                    // 基礎高度
+                    const height = Math.floor(Math.sin(x * 0.1) * Math.cos(z * 0.1) * 2) + 2;
                     
-                    // 生成地面
+                    // 生成地面方塊
                     for (let y = 0; y <= height; y++) {
-                        let blockType = blockTypes.DIRT;
-                        if (y === height) blockType = blockTypes.GRASS;
-                        if (y < 2) blockType = blockTypes.STONE;
-                        
+                        let blockType = y === height ? blockTypes.GRASS : blockTypes.DIRT;
+                        if (y === 0) blockType = blockTypes.STONE;
                         createBlock(x, y, z, blockType);
                     }
                     
                     // 隨機生成樹木
-                    if (Math.random() < 0.05 && height > 2) {
+                    if (Math.random() < 0.1 && height >= 2) {
                         createTree(x, height + 1, z);
                     }
                     
                     // 隨機生成石頭
-                    if (Math.random() < 0.02 && height > 2) {
+                    if (Math.random() < 0.05) {
                         createBlock(x, height + 1, z, blockTypes.STONE);
                     }
                 }
             }
+            
+            console.log(`🌍 世界生成完成，共 ${gameState.world.length} 個方塊`);
         }
 
-        function createBlock(x, y, z, type) {
+        function createBlock(x, y, z, blockType) {
             const geometry = new THREE.BoxGeometry(gameState.blockSize, gameState.blockSize, gameState.blockSize);
-            let material;
-            
-            switch (type) {
-                case blockTypes.GRASS:
-                    material = new THREE.MeshLambertMaterial({ color: 0x90EE90 });
-                    break;
-                case blockTypes.DIRT:
-                    material = new THREE.MeshLambertMaterial({ color: 0x8B4513 });
-                    break;
-                case blockTypes.STONE:
-                    material = new THREE.MeshLambertMaterial({ color: 0x808080 });
-                    break;
-                case blockTypes.WOOD:
-                    material = new THREE.MeshLambertMaterial({ color: 0x8B4513 });
-                    break;
-                case blockTypes.LEAVES:
-                    material = new THREE.MeshLambertMaterial({ color: 0x228B22 });
-                    break;
-                default:
-                    material = new THREE.MeshLambertMaterial({ color: 0x90EE90 });
-            }
+            const material = new THREE.MeshLambertMaterial({ color: blockType.color });
             
             const block = new THREE.Mesh(geometry, material);
             block.position.set(x, y, z);
-            block.userData = { type: type, x: x, y: y, z: z };
+            block.userData = { 
+                type: blockType.name, 
+                x: x, 
+                y: y, 
+                z: z 
+            };
+            
             block.castShadow = true;
             block.receiveShadow = true;
             
@@ -376,16 +435,17 @@
 
         function createTree(x, y, z) {
             // 樹幹
-            for (let i = 0; i < 4; i++) {
+            for (let i = 0; i < 3; i++) {
                 createBlock(x, y + i, z, blockTypes.WOOD);
             }
             
             // 樹葉
             for (let dx = -1; dx <= 1; dx++) {
                 for (let dz = -1; dz <= 1; dz++) {
-                    for (let dy = 3; dy <= 5; dy++) {
-                        if (Math.random() < 0.8) {
-                            createBlock(x + dx, y + dy, z + dz, blockTypes.LEAVES);
+                    if (Math.random() < 0.7) {
+                        createBlock(x + dx, y + 3, z + dz, blockTypes.LEAVES);
+                        if (Math.random() < 0.5) {
+                            createBlock(x + dx, y + 4, z + dz, blockTypes.LEAVES);
                         }
                     }
                 }
@@ -393,102 +453,119 @@
         }
 
         function createPlayer() {
-            // 圈圈人風格的玩家
             const group = new THREE.Group();
             
-            // 頭部（圓圈）
-            const headGeometry = new THREE.RingGeometry(0.3, 0.4, 16);
-            const headMaterial = new THREE.MeshLambertMaterial({ color: 0x000000, side: THREE.DoubleSide });
+            // 圈圈人頭部（黑色圓圈）
+            const headGeometry = new THREE.RingGeometry(0.25, 0.35, 32);
+            const headMaterial = new THREE.MeshLambertMaterial({ 
+                color: 0x000000, 
+                side: THREE.DoubleSide 
+            });
             const head = new THREE.Mesh(headGeometry, headMaterial);
             head.position.y = 1.5;
+            head.rotation.x = Math.PI / 2; // 讓圓圈面向前方
             group.add(head);
             
-            // 身體（線條）
-            const bodyGeometry = new THREE.CylinderGeometry(0.05, 0.05, 1, 8);
+            // 身體（黑色線條/細圓柱）
+            const bodyGeometry = new THREE.CylinderGeometry(0.03, 0.03, 1.2, 8);
             const bodyMaterial = new THREE.MeshLambertMaterial({ color: 0x000000 });
             const body = new THREE.Mesh(bodyGeometry, bodyMaterial);
-            body.position.y = 0.5;
+            body.position.y = 0.8;
             group.add(body);
             
-            // 手臂
-            const armGeometry = new THREE.CylinderGeometry(0.03, 0.03, 0.6, 8);
+            // 左手臂
+            const armGeometry = new THREE.CylinderGeometry(0.02, 0.02, 0.6, 8);
             const armMaterial = new THREE.MeshLambertMaterial({ color: 0x000000 });
             
             const leftArm = new THREE.Mesh(armGeometry, armMaterial);
-            leftArm.position.set(-0.3, 0.7, 0);
-            leftArm.rotation.z = Math.PI / 4;
+            leftArm.position.set(-0.3, 1.0, 0);
+            leftArm.rotation.z = Math.PI / 6;
             group.add(leftArm);
             
+            // 右手臂
             const rightArm = new THREE.Mesh(armGeometry, armMaterial);
-            rightArm.position.set(0.3, 0.7, 0);
-            rightArm.rotation.z = -Math.PI / 4;
+            rightArm.position.set(0.3, 1.0, 0);
+            rightArm.rotation.z = -Math.PI / 6;
             group.add(rightArm);
             
-            // 腿
-            const legGeometry = new THREE.CylinderGeometry(0.03, 0.03, 0.8, 8);
+            // 左腿
+            const legGeometry = new THREE.CylinderGeometry(0.02, 0.02, 0.8, 8);
             const legMaterial = new THREE.MeshLambertMaterial({ color: 0x000000 });
             
             const leftLeg = new THREE.Mesh(legGeometry, legMaterial);
-            leftLeg.position.set(-0.2, -0.4, 0);
+            leftLeg.position.set(-0.15, 0.0, 0);
             group.add(leftLeg);
             
+            // 右腿
             const rightLeg = new THREE.Mesh(legGeometry, legMaterial);
-            rightLeg.position.set(0.2, -0.4, 0);
+            rightLeg.position.set(0.15, 0.0, 0);
             group.add(rightLeg);
             
-            group.position.set(0, 5, 0);
+            // 設置初始位置
+            group.position.set(0, 4, 0);
+            group.userData = { 
+                velocityY: 0,
+                onGround: false
+            };
+            
             gameState.scene.add(group);
             gameState.player = group;
+            
+            console.log('👤 圈圈人創建完成');
         }
 
         function createMonster() {
             const group = new THREE.Group();
             
             // 怪物身體（紅色立方體）
-            const bodyGeometry = new THREE.BoxGeometry(0.8, 0.8, 0.8);
-            const bodyMaterial = new THREE.MeshLambertMaterial({ color: 0xff4444 });
+            const bodyGeometry = new THREE.BoxGeometry(0.6, 0.6, 0.6);
+            const bodyMaterial = new THREE.MeshLambertMaterial({ color: 0xff3333 });
             const body = new THREE.Mesh(bodyGeometry, bodyMaterial);
+            body.castShadow = true;
             group.add(body);
             
-            // 眼睛
-            const eyeGeometry = new THREE.SphereGeometry(0.1, 8, 8);
-            const eyeMaterial = new THREE.MeshLambertMaterial({ color: 0xffffff });
+            // 怪物眼睛
+            const eyeGeometry = new THREE.SphereGeometry(0.08, 8, 8);
+            const eyeMaterial = new THREE.MeshLambertMaterial({ color: 0xffff00 });
             
             const leftEye = new THREE.Mesh(eyeGeometry, eyeMaterial);
-            leftEye.position.set(-0.2, 0.2, 0.4);
+            leftEye.position.set(-0.15, 0.1, 0.3);
             group.add(leftEye);
             
             const rightEye = new THREE.Mesh(eyeGeometry, eyeMaterial);
-            rightEye.position.set(0.2, 0.2, 0.4);
+            rightEye.position.set(0.15, 0.1, 0.3);
             group.add(rightEye);
             
             // 隨機位置
-            const x = (Math.random() - 0.5) * gameState.worldSize * 0.8;
-            const z = (Math.random() - 0.5) * gameState.worldSize * 0.8;
+            const angle = Math.random() * Math.PI * 2;
+            const distance = 5 + Math.random() * 10;
+            const x = Math.cos(angle) * distance;
+            const z = Math.sin(angle) * distance;
             const y = getHeightAt(x, z) + 2;
             
             group.position.set(x, y, z);
-            group.userData = { health: 20, maxHealth: 20, speed: 0.02 };
+            group.userData = { 
+                health: 20, 
+                maxHealth: 20, 
+                speed: 0.01,
+                lastAttack: 0
+            };
             
             gameState.scene.add(group);
             gameState.monsters.push(group);
+            
+            console.log('👹 怪物生成於', x.toFixed(1), y.toFixed(1), z.toFixed(1));
         }
 
-        function getHeightAt(x, z) {
-            // 簡單的高度計算
-            return Math.floor(Math.sin(x * 0.1) * Math.cos(z * 0.1) * 3) + 3;
+        function setupCamera() {
+            gameState.camera.position.set(0, 8, 8);
+            gameState.camera.lookAt(0, 2, 0);
         }
-
-        // 控制系統
-        const keys = {};
-        let mousePosition = { x: 0, y: 0 };
-        let cameraDistance = 10;
-        let cameraAngle = 0;
 
         function setupControls() {
             // 鍵盤事件
             document.addEventListener('keydown', (e) => {
-                keys[e.code] = true;
+                gameState.keys[e.code] = true;
                 
                 // 數字鍵選擇物品
                 if (e.code >= 'Digit1' && e.code <= 'Digit6') {
@@ -500,18 +577,47 @@
                 if (e.code === 'KeyB') {
                     toggleShop();
                 }
+                
+                // F鍵使用食物
+                if (e.code === 'KeyF') {
+                    useItem(5);
+                }
+                
+                e.preventDefault();
             });
             
             document.addEventListener('keyup', (e) => {
-                keys[e.code] = false;
+                gameState.keys[e.code] = false;
             });
             
             // 滑鼠事件
-            document.addEventListener('click', (e) => {
+            let isMouseDown = false;
+            
+            document.addEventListener('mousedown', (e) => {
+                isMouseDown = true;
                 if (e.button === 0) { // 左鍵
-                    handleLeftClick();
+                    handleLeftClick(e);
                 } else if (e.button === 2) { // 右鍵
-                    handleRightClick();
+                    handleRightClick(e);
+                }
+                e.preventDefault();
+            });
+            
+            document.addEventListener('mouseup', () => {
+                isMouseDown = false;
+            });
+            
+            document.addEventListener('mousemove', (e) => {
+                gameState.mouse.x = e.clientX;
+                gameState.mouse.y = e.clientY;
+                
+                if (isMouseDown) {
+                    const deltaX = e.movementX || 0;
+                    const deltaY = e.movementY || 0;
+                    
+                    gameState.cameraAngleX -= deltaX * 0.01;
+                    gameState.cameraAngleY -= deltaY * 0.01;
+                    gameState.cameraAngleY = Math.max(-Math.PI/3, Math.min(Math.PI/3, gameState.cameraAngleY));
                 }
             });
             
@@ -519,14 +625,10 @@
                 e.preventDefault();
             });
             
-            document.addEventListener('mousemove', (e) => {
-                mousePosition.x = e.clientX;
-                mousePosition.y = e.clientY;
-            });
-            
             document.addEventListener('wheel', (e) => {
-                cameraDistance += e.deltaY * 0.01;
-                cameraDistance = Math.max(3, Math.min(20, cameraDistance));
+                gameState.cameraDistance += e.deltaY * 0.01;
+                gameState.cameraDistance = Math.max(3, Math.min(20, gameState.cameraDistance));
+                e.preventDefault();
             });
             
             // 視窗大小調整
@@ -537,20 +639,25 @@
             });
         }
 
-        function handleLeftClick() {
-            // 射線檢測
+        function handleLeftClick(e) {
             const raycaster = new THREE.Raycaster();
             const mouse = new THREE.Vector2();
             
-            mouse.x = (mousePosition.x / window.innerWidth) * 2 - 1;
-            mouse.y = -(mousePosition.y / window.innerHeight) * 2 + 1;
+            mouse.x = (e.clientX / window.innerWidth) * 2 - 1;
+            mouse.y = -(e.clientY / window.innerHeight) * 2 + 1;
             
             raycaster.setFromCamera(mouse, gameState.camera);
             
             // 檢查怪物
             const monsterIntersects = raycaster.intersectObjects(gameState.monsters, true);
             if (monsterIntersects.length > 0) {
-                attackMonster(monsterIntersects[0].object.parent || monsterIntersects[0].object);
+                let monster = monsterIntersects[0].object;
+                while (monster.parent && !monster.userData.health) {
+                    monster = monster.parent;
+                }
+                if (monster.userData && monster.userData.health) {
+                    attackMonster(monster);
+                }
                 return;
             }
             
@@ -561,14 +668,14 @@
             }
         }
 
-        function handleRightClick() {
+        function handleRightClick(e) {
             if (gameState.inventory[gameState.selectedSlot] <= 0) return;
             
             const raycaster = new THREE.Raycaster();
             const mouse = new THREE.Vector2();
             
-            mouse.x = (mousePosition.x / window.innerWidth) * 2 - 1;
-            mouse.y = -(mousePosition.y / window.innerHeight) * 2 + 1;
+            mouse.x = (e.clientX / window.innerWidth) * 2 - 1;
+            mouse.y = -(e.clientY / window.innerHeight) * 2 + 1;
             
             raycaster.setFromCamera(mouse, gameState.camera);
             
@@ -589,9 +696,10 @@
                 );
                 
                 if (!occupied && gameState.selectedSlot === 0) { // 方塊
-                    createBlock(pos.x, pos.y, pos.z, blockTypes.GRASS);
+                    createBlock(Math.round(pos.x), Math.round(pos.y), Math.round(pos.z), blockTypes.GRASS);
                     gameState.inventory[0]--;
                     updateInventoryUI();
+                    checkTaskProgress('build', 1);
                 }
             }
         }
@@ -606,15 +714,16 @@
             gameState.world = gameState.world.filter(b => b !== block);
             
             // 給予資源
-            if (blockType === blockTypes.WOOD) {
+            if (blockType === 'wood') {
                 gameState.inventory[1]++; // 木頭
                 checkTaskProgress('wood', 1);
-            } else if (blockType === blockTypes.STONE) {
+            } else if (blockType === 'stone') {
                 gameState.inventory[2]++; // 石頭
                 checkTaskProgress('stone', 1);
             }
             
             updateInventoryUI();
+            console.log('🔨 破壞了', blockType);
         }
 
         function attackMonster(monster) {
@@ -623,16 +732,20 @@
             const damage = gameState.playerStats.attack;
             monster.userData.health -= damage;
             
-            // 怪物受傷效果
-            monster.material = monster.material || monster.children[0].material;
-            const originalColor = monster.material.color.getHex();
-            monster.material.color.setHex(0xffffff);
+            console.log('⚔️ 攻擊怪物，造成', damage, '傷害');
             
-            setTimeout(() => {
-                if (monster.material) {
-                    monster.material.color.setHex(originalColor);
-                }
-            }, 100);
+            // 怪物受傷效果
+            const body = monster.children[0];
+            if (body && body.material) {
+                const originalColor = body.material.color.getHex();
+                body.material.color.setHex(0xffffff);
+                
+                setTimeout(() => {
+                    if (body.material) {
+                        body.material.color.setHex(originalColor);
+                    }
+                }, 100);
+            }
             
             if (monster.userData.health <= 0) {
                 // 怪物死亡
@@ -645,129 +758,19 @@
                 updateUI();
                 
                 checkTaskProgress('monster', 1);
+                console.log('💀 怪物被擊敗！');
             }
         }
 
-        function selectSlot(slot) {
-            document.querySelector('.slot.selected')?.classList.remove('selected');
-            document.querySelector(`[data-slot="${slot}"]`)?.classList.add('selected');
-            gameState.selectedSlot = slot;
-        }
-
-        function updateInventoryUI() {
-            const slots = document.querySelectorAll('.slot');
-            slots.forEach((slot, index) => {
-                const count = slot.querySelector('.count');
-                if (count) {
-                    count.textContent = gameState.inventory[index] || 0;
+        function getHeightAt(x, z) {
+            // 找到該位置的最高方塊
+            let maxHeight = 0;
+            gameState.world.forEach(block => {
+                if (Math.abs(block.position.x - x) < 1 && Math.abs(block.position.z - z) < 1) {
+                    maxHeight = Math.max(maxHeight, block.position.y);
                 }
             });
-        }
-
-        function updateUI() {
-            document.getElementById('playerLevel').textContent = gameState.playerStats.level;
-            document.getElementById('playerExp').textContent = gameState.playerStats.exp;
-            document.getElementById('playerGold').textContent = gameState.playerStats.gold;
-            
-            const healthPercent = (gameState.playerStats.health / gameState.playerStats.maxHealth) * 100;
-            document.getElementById('healthFill').style.width = healthPercent + '%';
-        }
-
-        function gainExp(amount) {
-            gameState.playerStats.exp += amount;
-            const expNeeded = gameState.playerStats.level * 100;
-            
-            if (gameState.playerStats.exp >= expNeeded) {
-                gameState.playerStats.level++;
-                gameState.playerStats.exp = 0;
-                gameState.playerStats.maxHealth += 20;
-                gameState.playerStats.health = gameState.playerStats.maxHealth;
-                gameState.playerStats.attack += 2;
-                
-                alert(`恭喜升級到等級 ${gameState.playerStats.level}！`);
-            }
-        }
-
-        function checkTaskProgress(type, amount) {
-            if (gameState.currentTask.target === type) {
-                gameState.currentTask.current += amount;
-                
-                if (gameState.currentTask.current >= gameState.currentTask.amount) {
-                    completeTask();
-                } else {
-                    updateTaskUI();
-                }
-            }
-        }
-
-        function completeTask() {
-            alert('任務完成！獲得經驗和獎勵！');
-            gainExp(50);
-            gameState.playerStats.gold += 30;
-            
-            // 生成新任務
-            generateNewTask();
-            updateUI();
-            updateTaskUI();
-        }
-
-        function generateNewTask() {
-            const tasks = [
-                { type: 'collect', target: 'wood', amount: 10, description: '收集 10 個木頭' },
-                { type: 'collect', target: 'stone', amount: 15, description: '收集 15 個石頭' },
-                { type: 'kill', target: 'monster', amount: 3, description: '擊敗 3 隻怪物' },
-                { type: 'build', target: 'blocks', amount: 20, description: '放置 20 個方塊' }
-            ];
-            
-            const newTask = tasks[Math.floor(Math.random() * tasks.length)];
-            gameState.currentTask = {
-                ...newTask,
-                current: 0
-            };
-        }
-
-        function updateTaskUI() {
-            const taskText = `${gameState.currentTask.description} (${gameState.currentTask.current}/${gameState.currentTask.amount})`;
-            document.getElementById('currentTask').textContent = taskText;
-        }
-
-        // 商店系統
-        function toggleShop() {
-            const shop = document.getElementById('shop');
-            shop.style.display = shop.style.display === 'none' ? 'block' : 'none';
-        }
-
-        function closeShop() {
-            document.getElementById('shop').style.display = 'none';
-        }
-
-        function buyItem(itemType, cost) {
-            if (gameState.playerStats.gold < cost) {
-                alert('金幣不足！');
-                return;
-            }
-            
-            gameState.playerStats.gold -= cost;
-            
-            switch (itemType) {
-                case 'pickaxe':
-                    gameState.inventory[3]++;
-                    break;
-                case 'sword':
-                    gameState.inventory[4]++;
-                    gameState.playerStats.attack += 3;
-                    break;
-                case 'food':
-                    gameState.inventory[5]++;
-                    break;
-                case 'blocks':
-                    gameState.inventory[0] += 10;
-                    break;
-            }
-            
-            updateInventoryUI();
-            updateUI();
-            alert(`購買成功！`);
+            return maxHeight;
         }
 
         // 遊戲主循環
@@ -791,74 +794,83 @@
         }
 
         function handlePlayerMovement() {
-            const moveSpeed = 0.1;
-            const jumpSpeed = 0.3;
-            
             if (!gameState.player) return;
+            
+            const moveSpeed = 0.1;
+            const jumpForce = 0.15;
             
             const playerPos = gameState.player.position;
             const newPos = playerPos.clone();
             
-            // WASD 移動
-            if (keys['KeyW']) newPos.z -= moveSpeed;
-            if (keys['KeyS']) newPos.z += moveSpeed;
-            if (keys['KeyA']) newPos.x -= moveSpeed;
-            if (keys['KeyD']) newPos.x += moveSpeed;
+            // WASD 移動（相對於相機方向）
+            const forward = new THREE.Vector3();
+            gameState.camera.getWorldDirection(forward);
+            forward.y = 0;
+            forward.normalize();
             
-            // 跳躍
-            if (keys['Space'] && Math.abs(playerPos.y - getHeightAt(playerPos.x, playerPos.z) - 1) < 0.5) {
-                gameState.player.userData = gameState.player.userData || {};
-                gameState.player.userData.velocityY = jumpSpeed;
+            const right = new THREE.Vector3();
+            right.crossVectors(forward, new THREE.Vector3(0, 1, 0));
+            right.normalize();
+            
+            if (gameState.keys['KeyW']) {
+                newPos.add(forward.clone().multiplyScalar(moveSpeed));
+            }
+            if (gameState.keys['KeyS']) {
+                newPos.add(forward.clone().multiplyScalar(-moveSpeed));
+            }
+            if (gameState.keys['KeyA']) {
+                newPos.add(right.clone().multiplyScalar(-moveSpeed));
+            }
+            if (gameState.keys['KeyD']) {
+                newPos.add(right.clone().multiplyScalar(moveSpeed));
             }
             
-            // 重力和碰撞檢測
-            gameState.player.userData = gameState.player.userData || { velocityY: 0 };
-            gameState.player.userData.velocityY -= 0.01; // 重力
+            // 跳躍
+            if (gameState.keys['Space'] && gameState.player.userData.onGround) {
+                gameState.player.userData.velocityY = jumpForce;
+                gameState.player.userData.onGround = false;
+            }
             
+            // 重力
+            gameState.player.userData.velocityY -= 0.008;
             newPos.y += gameState.player.userData.velocityY;
             
-            // 地面碰撞
+            // 地面碰撞檢測
             const groundHeight = getHeightAt(newPos.x, newPos.z) + 1;
             if (newPos.y <= groundHeight) {
                 newPos.y = groundHeight;
                 gameState.player.userData.velocityY = 0;
+                gameState.player.userData.onGround = true;
+            } else {
+                gameState.player.userData.onGround = false;
             }
             
             // 邊界檢測
-            const boundary = gameState.worldSize / 2 - 2;
+            const boundary = gameState.worldSize / 2 - 1;
             newPos.x = Math.max(-boundary, Math.min(boundary, newPos.x));
             newPos.z = Math.max(-boundary, Math.min(boundary, newPos.z));
             
             gameState.player.position.copy(newPos);
-            
-            // 使用食物恢復健康
-            if (keys['KeyF'] && gameState.inventory[5] > 0) {
-                gameState.inventory[5]--;
-                gameState.playerStats.health = Math.min(gameState.playerStats.maxHealth, gameState.playerStats.health + 30);
-                updateInventoryUI();
-                updateUI();
-                keys['KeyF'] = false; // 防止連續使用
-            }
         }
 
         function updateMonsters() {
-            // 生成怪物（夜晚或隨機）
-            if ((gameState.isNight || Math.random() < 0.001) && gameState.monsters.length < 5) {
+            // 隨機生成怪物
+            if (Math.random() < 0.005 && gameState.monsters.length < 3) {
                 createMonster();
             }
             
-            // 更新怪物AI
+            // 更新怪物行為
             gameState.monsters.forEach(monster => {
                 if (!monster.userData) return;
                 
                 const playerPos = gameState.player.position;
                 const monsterPos = monster.position;
-                
-                // 簡單的追蹤AI
                 const distance = playerPos.distanceTo(monsterPos);
-                if (distance < 10 && distance > 1) {
+                
+                // 追蹤玩家
+                if (distance < 15 && distance > 1.2) {
                     const direction = playerPos.clone().sub(monsterPos).normalize();
-                    direction.y = 0; // 不在Y軸移動
+                    direction.y = 0;
                     monster.position.add(direction.multiplyScalar(monster.userData.speed));
                     
                     // 讓怪物面向玩家
@@ -866,23 +878,17 @@
                 }
                 
                 // 攻擊玩家
-                if (distance < 1.5) {
-                    damagePlayer(5);
+                if (distance < 1.2) {
+                    const now = Date.now();
+                    if (now - monster.userData.lastAttack > 1000) { // 每秒攻擊一次
+                        damagePlayer(8);
+                        monster.userData.lastAttack = now;
+                    }
                 }
                 
-                // 隨機移動
-                if (Math.random() < 0.01) {
-                    const randomDir = new THREE.Vector3(
-                        (Math.random() - 0.5) * 0.1,
-                        0,
-                        (Math.random() - 0.5) * 0.1
-                    );
-                    monster.position.add(randomDir);
-                }
-                
-                // 簡單的重力
+                // 重力和地面檢測
                 const groundHeight = getHeightAt(monsterPos.x, monsterPos.z) + 1;
-                if (monsterPos.y > groundHeight) {
+                if (monsterPos.y > groundHeight + 0.1) {
                     monsterPos.y -= 0.05;
                 } else {
                     monsterPos.y = groundHeight;
@@ -890,26 +896,86 @@
             });
         }
 
+        function updateCamera() {
+            if (!gameState.player) return;
+            
+            const playerPos = gameState.player.position;
+            
+            // 計算相機位置
+            const cameraX = playerPos.x + Math.sin(gameState.cameraAngleX) * gameState.cameraDistance * Math.cos(gameState.cameraAngleY);
+            const cameraZ = playerPos.z + Math.cos(gameState.cameraAngleX) * gameState.cameraDistance * Math.cos(gameState.cameraAngleY);
+            const cameraY = playerPos.y + Math.sin(gameState.cameraAngleY) * gameState.cameraDistance + 2;
+            
+            gameState.camera.position.set(cameraX, cameraY, cameraZ);
+            gameState.camera.lookAt(playerPos.x, playerPos.y + 1, playerPos.z);
+        }
+
+        function updateDayNight() {
+            gameState.dayTime += 0.002;
+            if (gameState.dayTime > 1) gameState.dayTime = 0;
+            
+            const wasNight = gameState.isNight;
+            gameState.isNight = gameState.dayTime > 0.5;
+            
+            if (gameState.isNight !== wasNight) {
+                const lights = gameState.scene.children.filter(child => 
+                    child.type === 'AmbientLight' || child.type === 'DirectionalLight'
+                );
+                
+                if (gameState.isNight) {
+                    // 夜晚
+                    gameState.renderer.setClearColor(0x191970);
+                    lights.forEach(light => {
+                        if (light.type === 'AmbientLight') light.intensity = 0.3;
+                        if (light.type === 'DirectionalLight') light.intensity = 0.4;
+                    });
+                    
+                    // 生成更多怪物
+                    for (let i = 0; i < 2; i++) {
+                        if (gameState.monsters.length < 5) {
+                            setTimeout(() => createMonster(), i * 1000);
+                        }
+                    }
+                } else {
+                    // 白天
+                    gameState.renderer.setClearColor(0x87CEEB);
+                    lights.forEach(light => {
+                        if (light.type === 'AmbientLight') light.intensity = 0.6;
+                        if (light.type === 'DirectionalLight') light.intensity = 0.8;
+                    });
+                }
+                
+                console.log(gameState.isNight ? '🌙 夜晚來臨' : '☀️ 白天到來');
+            }
+        }
+
         function damagePlayer(damage) {
             gameState.playerStats.health -= damage;
-            if (gameState.playerStats.health <= 0) {
-                gameState.playerStats.health = 0;
-                gameOver();
-            }
+            if (gameState.playerStats.health < 0) gameState.playerStats.health = 0;
+            
             updateUI();
             
-            // 受傷閃爍效果
+            // 受傷視覺效果
             document.body.style.background = 'rgba(255, 0, 0, 0.3)';
             setTimeout(() => {
                 document.body.style.background = 'linear-gradient(135deg, #87CEEB, #98FB98)';
             }, 200);
+            
+            if (gameState.playerStats.health <= 0) {
+                gameOver();
+            }
+            
+            console.log('💔 玩家受到', damage, '傷害，剩餘血量:', gameState.playerStats.health);
         }
 
         function gameOver() {
-            alert('遊戲結束！你被怪物擊敗了...');
-            // 重置遊戲狀態
+            alert('💀 遊戲結束！你被怪物擊敗了...\n\n點擊確定重新開始');
+            
+            // 重置玩家狀態
             gameState.playerStats.health = gameState.playerStats.maxHealth;
-            gameState.player.position.set(0, 5, 0);
+            gameState.player.position.set(0, 4, 0);
+            gameState.player.userData.velocityY = 0;
+            gameState.player.userData.onGround = false;
             
             // 清除所有怪物
             gameState.monsters.forEach(monster => {
@@ -920,290 +986,173 @@
             updateUI();
         }
 
-        function updateCamera() {
-            if (!gameState.player) return;
-            
-            const playerPos = gameState.player.position;
-            
-            // 第三人稱視角
-            cameraAngle += (mousePosition.x / window.innerWidth - 0.5) * 0.02;
-            const cameraHeight = 3;
-            
-            const cameraX = playerPos.x + Math.sin(cameraAngle) * cameraDistance;
-            const cameraZ = playerPos.z + Math.cos(cameraAngle) * cameraDistance;
-            const cameraY = playerPos.y + cameraHeight;
-            
-            gameState.camera.position.set(cameraX, cameraY, cameraZ);
-            gameState.camera.lookAt(playerPos);
+        // UI 更新函數
+        function selectSlot(slot) {
+            document.querySelector('.slot.selected')?.classList.remove('selected');
+            document.querySelector(`[data-slot="${slot}"]`)?.classList.add('selected');
+            gameState.selectedSlot = slot;
+            console.log('📦 選擇物品欄位', slot + 1);
         }
 
-        function updateDayNight() {
-            gameState.dayTime += 0.001;
-            
-            // 每20秒一個循環
-            if (gameState.dayTime > 1) gameState.dayTime = 0;
-            
-            const isNightTime = gameState.dayTime > 0.5;
-            
-            if (isNightTime !== gameState.isNight) {
-                gameState.isNight = isNightTime;
-                
-                // 改變環境光
-                const ambientLight = gameState.scene.children.find(child => child.type === 'AmbientLight');
-                if (ambientLight) {
-                    ambientLight.intensity = gameState.isNight ? 0.2 : 0.6;
+        function updateInventoryUI() {
+            const items = ['🧱', '🌳', '🪨', '⛏️', '⚔️', '🍖'];
+            document.querySelectorAll('.slot').forEach((slot, index) => {
+                const count = slot.querySelector('.count');
+                if (count) {
+                    count.textContent = gameState.inventory[index] || 0;
                 }
-                
-                // 改變天空顏色
-                const skyColor = gameState.isNight ? 0x191970 : 0x87CEEB;
-                gameState.renderer.setClearColor(skyColor);
-                
-                if (gameState.isNight) {
-                    // 夜晚生成更多怪物
-                    for (let i = 0; i < 3; i++) {
-                        if (gameState.monsters.length < 8) {
-                            createMonster();
-                        }
-                    }
-                }
-            }
-        }
-
-        // 特殊功能
-        function useItem(slotIndex) {
-            const item = gameState.inventory[slotIndex];
-            if (item <= 0) return;
-            
-            switch (slotIndex) {
-                case 5: // 食物
-                    gameState.inventory[5]--;
-                    gameState.playerStats.health = Math.min(gameState.playerStats.maxHealth, gameState.playerStats.health + 30);
-                    updateInventoryUI();
-                    updateUI();
-                    break;
-            }
-        }
-
-        // 添加粒子效果
-        function createParticleEffect(position, color = 0xffffff) {
-            const particles = new THREE.Group();
-            
-            for (let i = 0; i < 10; i++) {
-                const geometry = new THREE.SphereGeometry(0.02, 4, 4);
-                const material = new THREE.MeshBasicMaterial({ color: color });
-                const particle = new THREE.Mesh(geometry, material);
-                
-                particle.position.copy(position);
-                particle.position.add(new THREE.Vector3(
-                    (Math.random() - 0.5) * 0.5,
-                    Math.random() * 0.5,
-                    (Math.random() - 0.5) * 0.5
-                ));
-                
-                particle.userData = {
-                    velocity: new THREE.Vector3(
-                        (Math.random() - 0.5) * 0.02,
-                        Math.random() * 0.02,
-                        (Math.random() - 0.5) * 0.02
-                    ),
-                    life: 60
-                };
-                
-                particles.add(particle);
-            }
-            
-            gameState.scene.add(particles);
-            
-            // 動畫粒子
-            const animateParticles = () => {
-                particles.children.forEach(particle => {
-                    if (particle.userData.life <= 0) {
-                        particles.remove(particle);
-                        return;
-                    }
-                    
-                    particle.position.add(particle.userData.velocity);
-                    particle.userData.velocity.y -= 0.001; // 重力
-                    particle.userData.life--;
-                    
-                    // 淡出效果
-                    particle.material.opacity = particle.userData.life / 60;
-                });
-                
-                if (particles.children.length > 0) {
-                    requestAnimationFrame(animateParticles);
-                } else {
-                    gameState.scene.remove(particles);
-                }
-            };
-            
-            animateParticles();
-        }
-
-        // 音效系統（簡單的視覺反饋）
-        function playSound(type) {
-            const feedback = document.createElement('div');
-            feedback.style.position = 'fixed';
-            feedback.style.top = '50%';
-            feedback.style.left = '50%';
-            feedback.style.transform = 'translate(-50%, -50%)';
-            feedback.style.fontSize = '24px';
-            feedback.style.pointerEvents = 'none';
-            feedback.style.zIndex = '1000';
-            feedback.style.opacity = '0';
-            feedback.style.transition = 'all 0.3s ease';
-            
-            switch (type) {
-                case 'hit':
-                    feedback.textContent = '💥';
-                    feedback.style.color = '#ff4444';
-                    break;
-                case 'collect':
-                    feedback.textContent = '✨';
-                    feedback.style.color = '#44ff44';
-                    break;
-                case 'levelup':
-                    feedback.textContent = '🎉';
-                    feedback.style.color = '#ffff44';
-                    break;
-            }
-            
-            document.body.appendChild(feedback);
-            
-            setTimeout(() => {
-                feedback.style.opacity = '1';
-                feedback.style.transform = 'translate(-50%, -70%)';
-            }, 10);
-            
-            setTimeout(() => {
-                feedback.style.opacity = '0';
-                setTimeout(() => {
-                    document.body.removeChild(feedback);
-                }, 300);
-            }, 1000);
-        }
-
-        // 保存/載入系統（使用內存）
-        function saveGame() {
-            const saveData = {
-                playerStats: gameState.playerStats,
-                inventory: gameState.inventory,
-                playerPosition: gameState.player.position.toArray(),
-                currentTask: gameState.currentTask
-            };
-            
-            // 在實際應用中，這裡會保存到 localStorage 或服務器
-            console.log('遊戲已保存', saveData);
-            alert('遊戲進度已保存！');
-        }
-
-        function loadGame(saveData) {
-            if (saveData) {
-                gameState.playerStats = saveData.playerStats;
-                gameState.inventory = saveData.inventory;
-                gameState.currentTask = saveData.currentTask;
-                
-                if (gameState.player && saveData.playerPosition) {
-                    gameState.player.position.fromArray(saveData.playerPosition);
-                }
-                
-                updateInventoryUI();
-                updateUI();
-                updateTaskUI();
-            }
-        }
-
-        // 成就系統
-        const achievements = {
-            firstKill: { name: '初次戰鬥', description: '擊敗第一隻怪物', completed: false },
-            builder: { name: '建築師', description: '放置100個方塊', completed: false },
-            collector: { name: '收集家', description: '收集50個資源', completed: false },
-            survivor: { name: '生存者', description: '生存過第一個夜晚', completed: false }
-        };
-
-        function checkAchievements() {
-            // 在相應的遊戲事件中調用此函數
-            Object.keys(achievements).forEach(key => {
-                const achievement = achievements[key];
-                if (!achievement.completed) {
-                    // 檢查成就條件
-                    // 如果完成，顯示通知
-                    if (/* 成就條件 */ false) {
-                        achievement.completed = true;
-                        showAchievement(achievement);
-                    }
-                }
+                slot.innerHTML = `${items[index]}<br>x<span class="count">${gameState.inventory[index] || 0}</span>`;
             });
         }
 
-        function showAchievement(achievement) {
-            const notification = document.createElement('div');
-            notification.innerHTML = `
-                <div style="position: fixed; top: 20px; right: 20px; background: rgba(255, 215, 0, 0.9); 
-                           color: black; padding: 15px; border-radius: 10px; z-index: 1000;
-                           border: 2px solid #FFD700; animation: slideIn 0.5s ease;">
-                    <strong>🏆 成就解鎖！</strong><br>
-                    ${achievement.name}<br>
-                    <small>${achievement.description}</small>
-                </div>
-            `;
+        function updateUI() {
+            document.getElementById('playerLevel').textContent = gameState.playerStats.level;
+            document.getElementById('playerExp').textContent = gameState.playerStats.exp;
+            document.getElementById('playerGold').textContent = gameState.playerStats.gold;
             
-            document.body.appendChild(notification);
-            
-            setTimeout(() => {
-                document.body.removeChild(notification);
-            }, 3000);
+            const healthPercent = (gameState.playerStats.health / gameState.playerStats.maxHealth) * 100;
+            document.getElementById('healthFill').style.width = healthPercent + '%';
         }
 
-        // 鍵盤快捷鍵提示
-        function showHelp() {
-            const helpText = `
-            🎮 遊戲操作說明：
-            
-            基本移動：
-            • WASD - 移動角色
-            • 空白鍵 - 跳躍
-            • 滑鼠移動 - 調整視角
-            • 滑鼠滾輪 - 縮放視距
-            
-            互動操作：
-            • 滑鼠左鍵 - 破壞方塊/攻擊怪物
-            • 滑鼠右鍵 - 放置方塊
-            • F鍵 - 使用食物恢復血量
-            
-            界面操作：
-            • 1-6數字鍵 - 選擇背包物品
-            • B鍵 - 開啟/關閉商店
-            
-            遊戲目標：
-            • 完成任務獲得經驗和金幣
-            • 收集資源建造建築
-            • 在夜晚保護自己免受怪物攻擊
-            • 升級裝備提升戰鬥力
-            `;
-            
-            alert(helpText);
+        function updateTaskUI() {
+            const task = gameState.currentTask;
+            const description = `${getTaskDescription(task)} (${task.current}/${task.amount})`;
+            document.getElementById('currentTask').textContent = description;
         }
 
-        // 添加幫助按鈕
-        document.addEventListener('keydown', (e) => {
-            if (e.code === 'KeyH') {
-                showHelp();
+        function getTaskDescription(task) {
+            switch (task.target) {
+                case 'wood': return '收集木頭';
+                case 'stone': return '收集石頭';
+                case 'monster': return '擊敗怪物';
+                case 'build': return '放置方塊';
+                default: return '完成任務';
             }
-            if (e.code === 'KeyP') {
-                saveGame();
-            }
-        });
+        }
 
-        // 初始化遊戲
-        initGame();
-        updateInventoryUI();
-        updateUI();
-        updateTaskUI();
-        
-        console.log('🎮 圈圈人3D冒險遊戲載入完成！');
-        console.log('💡 按 H 鍵查看詳細操作說明');
-        console.log('💾 按 P 鍵保存遊戲進度');
+        function gainExp(amount) {
+            gameState.playerStats.exp += amount;
+            const expNeeded = gameState.playerStats.level * 100;
+            
+            if (gameState.playerStats.exp >= expNeeded) {
+                gameState.playerStats.level++;
+                gameState.playerStats.exp = 0;
+                gameState.playerStats.maxHealth += 20;
+                gameState.playerStats.health = gameState.playerStats.maxHealth;
+                gameState.playerStats.attack += 2;
+                
+                console.log('🎉 升級到等級', gameState.playerStats.level);
+                alert(`🎉 恭喜升級到等級 ${gameState.playerStats.level}！\n血量和攻擊力提升了！`);
+            }
+            
+            updateUI();
+        }
+
+        function checkTaskProgress(type, amount) {
+            if (gameState.currentTask.target === type) {
+                gameState.currentTask.current += amount;
+                
+                if (gameState.currentTask.current >= gameState.currentTask.amount) {
+                    completeTask();
+                } else {
+                    updateTaskUI();
+                }
+            }
+        }
+
+        function completeTask() {
+            console.log('✅ 任務完成！');
+            alert('🎯 任務完成！獲得經驗和獎勵！');
+            
+            gainExp(50);
+            gameState.playerStats.gold += 30;
+            
+            // 生成新任務
+            generateNewTask();
+            updateUI();
+            updateTaskUI();
+        }
+
+        function generateNewTask() {
+            const tasks = [
+                { target: 'wood', amount: 8, description: '收集木頭' },
+                { target: 'stone', amount: 12, description: '收集石頭' },
+                { target: 'monster', amount: 3, description: '擊敗怪物' },
+                { target: 'build', amount: 15, description: '放置方塊' }
+            ];
+            
+            const newTask = tasks[Math.floor(Math.random() * tasks.length)];
+            gameState.currentTask = {
+                ...newTask,
+                current: 0
+            };
+            
+            console.log('📋 新任務:', getTaskDescription(gameState.currentTask));
+        }
+
+        function useItem(slotIndex) {
+            if (gameState.inventory[slotIndex] <= 0) return;
+            
+            switch (slotIndex) {
+                case 5: // 食物
+                    if (gameState.playerStats.health < gameState.playerStats.maxHealth) {
+                        gameState.inventory[5]--;
+                        gameState.playerStats.health = Math.min(
+                            gameState.playerStats.maxHealth, 
+                            gameState.playerStats.health + 30
+                        );
+                        updateInventoryUI();
+                        updateUI();
+                        console.log('🍖 使用食物恢復血量');
+                    }
+                    break;
+            }
+        }
+
+        // 商店系統
+        function toggleShop() {
+            const shop = document.getElementById('shop');
+            const isVisible = shop.style.display !== 'none';
+            shop.style.display = isVisible ? 'none' : 'block';
+            console.log(isVisible ? '🏪 關閉商店' : '🏪 開啟商店');
+        }
+
+        function closeShop() {
+            document.getElementById('shop').style.display = 'none';
+        }
+
+        function buyItem(itemType, cost) {
+            if (gameState.playerStats.gold < cost) {
+                alert('💰 金幣不足！需要 ' + cost + ' 金幣');
+                return;
+            }
+            
+            gameState.playerStats.gold -= cost;
+            
+            switch (itemType) {
+                case 'pickaxe':
+                    gameState.inventory[3]++;
+                    console.log('⛏️ 購買了鐵鎬');
+                    break;
+                case 'sword':
+                    gameState.inventory[4]++;
+                    gameState.playerStats.attack += 3;
+                    console.log('⚔️ 購買了鐵劍，攻擊力提升');
+                    break;
+                case 'food':
+                    gameState.inventory[5]++;
+                    console.log('🍖 購買了食物');
+                    break;
+                case 'blocks':
+                    gameState.inventory[0] += 10;
+                    console.log('🧱 購買了10個方塊');
+                    break;
+            }
+            
+            updateInventoryUI();
+            updateUI();
+            alert('✅ 購買成功！');
+        }
     </script>
 </body>
 </html>
