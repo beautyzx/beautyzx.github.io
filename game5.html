@@ -1,118 +1,299 @@
 <!DOCTYPE html>
-<html>
+<html lang="zh-TW">
 <head>
-  <title>CircleCraft</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>🎮 圈圈人冒險</title>
   <style>
-    body { margin: 0; overflow: hidden; }
+    body { margin: 0; overflow: hidden; font-family: Arial, sans-serif; }
     canvas { display: block; }
+    #loading { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 24px; color: white; }
+    #quest, #player, #controls { 
+      position: absolute; background: rgba(0, 0, 0, 0.7); color: white; padding: 10px; border-radius: 10px; 
+    }
+    #quest { top: 10px; left: 10px; }
+    #player { top: 100px; left: 10px; }
+    #controls { bottom: 10px; left: 10px; font-size: 14px; }
+    #inventory { 
+      position: absolute; bottom: 10px; right: 10px; background: rgba(0, 0, 0, 0.7); 
+      padding: 10px; border-radius: 10px; color: white; text-align: center; 
+    }
+    #inventory div { display: inline-block; margin: 5px; font-size: 16px; }
+    #shop { 
+      display: none; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); 
+      background: #ffeb3b; padding: 20px; border-radius: 15px; text-align: center; 
+    }
+    #shop button { 
+      background: #f44336; color: white; border: none; padding: 10px 20px; margin: 5px; 
+      font-size: 16px; border-radius: 10px; cursor: pointer; 
+    }
+    #shop button:hover { background: #d32f2f; }
   </style>
 </head>
 <body>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-<script>
-  // 場景設置
-  const scene = new THREE.Scene();
-  const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-  const renderer = new THREE.WebGLRenderer();
-  renderer.setSize(window.innerWidth, window.innerHeight);
-  document.body.appendChild(renderer.domElement);
+  <div id="loading">🎮 載入中...</div>
+  <div id="quest">
+    <h3>🎯 任務</h3>
+    <p>收集 5 個木頭 <span id="wood-progress">(0/5)</span></p>
+  </div>
+  <div id="player">
+    <p>等級: <span id="level">1</span></p>
+    <p>經驗: <span id="exp">0/100</span></p>
+    <p>金幣: <span id="gold">50</span></p>
+  </div>
+  <div id="controls">
+    <p>操作說明:</p>
+    <p>WASD - 移動</p>
+    <p>空白鍵 - 跳躍</p>
+    <p>滑鼠左鍵 - 破壞/攻擊</p>
+    <p>滑鼠右鍵 - 放置方塊</p>
+    <p>1-6 - 選擇物品</p>
+    <p>B - 開啟商店</p>
+    <p>滑鼠移動 - 轉動視角</p>
+  </div>
+  <div id="inventory">
+    <div>🧱 <span id="brick">20</span></div>
+    <div>🌳 <span id="wood">0</span></div>
+    <div>🪨 <span id="stone">0</span></div>
+    <div>⛏️ <span id="pickaxe">1</span></div>
+    <div>⚔️ <span id="sword">1</span></div>
+    <div>🍖 <span id="meat">3</span></div>
+  </div>
+  <div id="shop">
+    <h2>🏪 商店</h2>
+    <div>
+      <p>⛏️ 鐵鎬 (挖掘速度+50%)<br>100 金幣</p>
+      <button onclick="buyItem('pickaxe')">購買</button>
+    </div>
+    <div>
+      <p>⚔️ 鐵劍 (攻擊力+3)<br>150 金幣</p>
+      <button onclick="buyItem('sword')">購買</button>
+    </div>
+    <div>
+      <p>🍖 烤肉 (恢復健康)<br>20 金幣</p>
+      <button onclick="buyItem('meat')">購買</button>
+    </div>
+    <div>
+      <p>🧱 石磚 x10<br>30 金幣</p>
+      <button onclick="buyItem('brick')">購買</button>
+    </div>
+    <button onclick="closeShop()">關閉商店</button>
+  </div>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/PointerLockControls.js"></script>
+  <script>
+    // 場景設置
+    const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+    const renderer = new THREE.WebGLRenderer();
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    document.body.appendChild(renderer.domElement);
+    document.getElementById('loading').style.display = 'none';
 
-  // 光源
-  scene.add(new THREE.AmbientLight(0x404040));
-  const directionalLight = new THREE.DirectionalLight(0xffffff, 0.5);
-  directionalLight.position.set(1, 1, 1);
-  scene.add(directionalLight);
+    // 光源
+    scene.add(new THREE.AmbientLight(0x404040));
+    const directionalLight = new THREE.DirectionalLight(0xffffff, 0.7);
+    directionalLight.position.set(1, 1, 1);
+    scene.add(directionalLight);
 
-  // 地圖數據
-  const blocks = {};
-  const blockSize = 1;
-  const blockGeometry = new THREE.BoxGeometry(blockSize, blockSize, blockSize);
-  const grassMaterial = new THREE.MeshPhongMaterial({ color: 0x00ff00 });
-  const stoneMaterial = new THREE.MeshPhongMaterial({ color: 0x808080 });
+    // 玩家控制
+    const controls = new THREE.PointerLockControls(camera, document.body);
+    document.addEventListener('click', () => controls.lock());
+    camera.position.set(0, 5, 10);
+    scene.add(controls.getObject());
 
-  // 生成地圖
-  function generateMap() {
-    // 地面（隨機高度）
-    for (let x = -10; x <= 10; x++) {
-      for (let z = -10; z <= 10; z++) {
-        const height = Math.floor(Math.random() * 5); // 高度 0-4
-        for (let y = 0; y <= height; y++) {
-          addBlock(x, y, z, y === height ? grassMaterial : stoneMaterial);
+    // 移動與跳躍
+    const move = { forward: false, backward: false, left: false, right: false, jump: false };
+    let velocity = new THREE.Vector3();
+    let isOnGround = false;
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'w') move.forward = true;
+      if (e.key === 's') move.backward = true;
+      if (e.key === 'a') move.left = true;
+      if (e.key === 'd') move.right = true;
+      if (e.key === ' ') move.jump = true;
+      if (e.key === 'b') document.getElementById('shop').style.display = 'block';
+      if (e.key >= '1' && e.key <= '6') selectedItem = Object.keys(inventory)[parseInt(e.key) - 1];
+    });
+    document.addEventListener('keyup', (e) => {
+      if (e.key === 'w') move.forward = false;
+      if (e.key === 's') move.backward = false;
+      if (e.key === 'a') move.left = false;
+      if (e.key === 'd') move.right = false;
+      if (e.key === ' ') move.jump = false;
+    });
+
+    // 地圖數據
+    const blocks = {};
+    const blockSize = 1;
+    const blockGeometry = new THREE.BoxGeometry(blockSize, blockSize, blockSize);
+    const grassMaterial = new THREE.MeshPhongMaterial({ color: 0x00ff00 });
+    const stoneMaterial = new THREE.MeshPhongMaterial({ color: 0x808080 });
+    const woodMaterial = new THREE.MeshPhongMaterial({ color: 0x8b4513 });
+    const brickMaterial = new THREE.MeshPhongMaterial({ color: 0x696969 });
+    const floatMaterial = new THREE.MeshPhongMaterial({ color: 0xff69b4 });
+
+    // 生成地圖
+    function generateMap() {
+      // 地面
+      for (let x = -10; x <= 10; x++) {
+        for (let z = -10; z <= 10; z++) {
+          const height = Math.floor(Math.random() * 3) + 1;
+          addBlock(x, height, z, grassMaterial);
+          for (let y = height - 1; y >= 0; y--) {
+            addBlock(x, y, z, stoneMaterial);
+          }
+        }
+      }
+      // 樹木
+      for (let i = 0; i < 5; i++) {
+        const x = Math.floor(Math.random() * 10 - 5);
+        const z = Math.floor(Math.random() * 10 - 5);
+        const height = Math.floor(Math.random() * 3) + 1;
+        addBlock(x, height + 1, z, woodMaterial);
+        addBlock(x, height + 2, z, grassMaterial); // 模擬葉子
+      }
+      // 漂浮島嶼
+      for (let i = 0; i < 4; i++) {
+        const x = Math.floor(Math.random() * 10 - 5);
+        const y = Math.floor(Math.random() * 5 + 10);
+        const z = Math.floor(Math.random() * 10 - 5);
+        addBlock(x, y, z, floatMaterial);
+        addBlock(x + 1, y, z, floatMaterial);
+      }
+    }
+
+    // 添加方塊
+    function addBlock(x, y, z, material) {
+      const block = new THREE.Mesh(blockGeometry, material);
+      block.position.set(x * blockSize, y * blockSize, z * blockSize);
+      scene.add(block);
+      blocks[`${x},${y},${z}`] = { mesh: block, material };
+    }
+
+    // 移除方塊
+    function removeBlock(x, y, z) {
+      const key = `${x},${y},${z}`;
+      if (blocks[key]) {
+        const material = blocks[key].material;
+        scene.remove(blocks[key].mesh);
+        delete blocks[key];
+        if (material === woodMaterial) {
+          inventory.wood += 1;
+          checkQuest();
+        }
+        if (material === stoneMaterial) inventory.stone += 1;
+        updateUI();
+      }
+    }
+
+    // 射線投射
+    const raycaster = new THREE.Raycaster();
+    const mouse = new THREE.Vector2(0, 0);
+    function onMouseClick(event) {
+      if (document.getElementById('shop').style.display === 'block') return;
+      raycaster.setFromCamera(mouse, camera);
+      const intersects = raycaster.intersectObjects(Object.values(blocks).map(b => b.mesh));
+      if (intersects.length > 0) {
+        const intersect = intersects[0];
+        const pos = intersect.object.position;
+        const x = Math.round(pos.x / blockSize);
+        const y = Math.round(pos.y / blockSize);
+        const z = Math.round(pos.z / blockSize);
+        if (event.button === 0 && selectedItem === 'pickaxe') { // 左鍵 + 鎬子
+          removeBlock(x, y, z);
+        } else if (event.button === 2 && selectedItem === 'brick' && inventory.brick > 0) { // 右鍵 + 石磚
+          const normal = intersect.face.normal;
+          addBlock(x + normal.x, y + normal.y, z + normal.z, brickMaterial);
+          inventory.brick -= 1;
+          updateUI();
         }
       }
     }
-    // 空中漂浮島嶼
-    for (let i = 0; i < 5; i++) {
-      const islandX = Math.floor(Math.random() * 20 - 10);
-      const islandY = Math.floor(Math.random() * 10 + 20);
-      const islandZ = Math.floor(Math.random() * 20 - 10);
-      addBlock(islandX, islandY, islandZ, grassMaterial);
-      addBlock(islandX + 1, islandY, islandZ, grassMaterial);
-      addBlock(islandX, islandY - 1, islandZ, stoneMaterial);
+    document.addEventListener('mousedown', onMouseClick);
+
+    // 背包與玩家數據
+    let inventory = { brick: 20, wood: 0, stone: 0, pickaxe: 1, sword: 1, meat: 3 };
+    let player = { level: 1, exp: 0, gold: 50 };
+    let selectedItem = 'pickaxe';
+    function updateUI() {
+      document.getElementById('brick').textContent = inventory.brick;
+      document.getElementById('wood').textContent = inventory.wood;
+      document.getElementById('stone').textContent = inventory.stone;
+      document.getElementById('pickaxe').textContent = inventory.pickaxe;
+      document.getElementById('sword').textContent = inventory.sword;
+      document.getElementById('meat').textContent = inventory.meat;
+      document.getElementById('level').textContent = player.level;
+      document.getElementById('exp').textContent = `${player.exp}/100`;
+      document.getElementById('gold').textContent = player.gold;
+      document.getElementById('wood-progress').textContent = `(${inventory.wood}/5)`;
     }
-  }
 
-  // 添加方塊
-  function addBlock(x, y, z, material) {
-    const block = new THREE.Mesh(blockGeometry, material);
-    block.position.set(x * blockSize, y * blockSize, z * blockSize);
-    scene.add(block);
-    blocks[`${x},${y},${z}`] = block;
-  }
-
-  // 移除方塊
-  function removeBlock(x, y, z) {
-    const key = `${x},${y},${z}`;
-    if (blocks[key]) {
-      scene.remove(blocks[key]);
-      delete blocks[key];
-    }
-  }
-
-  // 射線投射
-  const raycaster = new THREE.Raycaster();
-  const mouse = new THREE.Vector2();
-  function onMouseClick(event) {
-    mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
-    mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
-    raycaster.setFromCamera(mouse, camera);
-    const intersects = raycaster.intersectObjects(Object.values(blocks));
-    if (intersects.length > 0) {
-      const intersect = intersects[0];
-      const pos = intersect.object.position;
-      const x = Math.round(pos.x / blockSize);
-      const y = Math.round(pos.y / blockSize);
-      const z = Math.round(pos.z / blockSize);
-      if (event.button === 0) { // 左鍵：破壞
-        removeBlock(x, y, z);
-      } else if (event.button === 2) { // 右鍵：放置
-        const normal = intersect.face.normal;
-        addBlock(x + normal.x, y + normal.y, z + normal.z, grassMaterial);
+    // 任務
+    function checkQuest() {
+      if (inventory.wood >= 5) {
+        player.exp += 50;
+        player.gold += 20;
+        document.getElementById('quest').innerHTML = '<h3>🎯 任務</h3><p>任務完成！</p>';
+        if (player.exp >= 100) {
+          player.level += 1;
+          player.exp -= 100;
+        }
+        updateUI();
       }
     }
-  }
 
-  // 玩家控制
-  camera.position.set(0, 10, 20);
-  const controls = new THREE.OrbitControls(camera, renderer.domElement); // 臨時使用 OrbitControls
-  window.addEventListener('mousedown', onMouseClick);
+    // 商店
+    function buyItem(item) {
+      const prices = { pickaxe: 100, sword: 150, meat: 20, brick: 30 };
+      if (player.gold >= prices[item]) {
+        player.gold -= prices[item];
+        if (item === 'brick') inventory.brick += 10;
+        else inventory[item] += 1;
+        updateUI();
+        alert('購買成功！');
+      } else {
+        alert('金幣不足！');
+      }
+    }
+    function closeShop() {
+      document.getElementById('shop').style.display = 'none';
+    }
 
-  // 生成地圖
-  generateMap();
+    // 生成地圖
+    generateMap();
 
-  // 渲染循環
-  function animate() {
-    requestAnimationFrame(animate);
-    renderer.render(scene, camera);
-  }
-  animate();
+    // 渲染與物理
+    const clock = new THREE.Clock();
+    function animate() {
+      requestAnimationFrame(animate);
+      const delta = clock.getDelta();
+      const speed = 5 * delta;
+      if (move.forward) controls.moveForward(speed);
+      if (move.backward) controls.moveForward(-speed);
+      if (move.left) controls.moveRight(-speed);
+      if (move.right) controls.moveRight(speed);
+      if (move.jump && isOnGround) {
+        velocity.y = 5;
+        isOnGround = false;
+      }
+      velocity.y -= 9.8 * delta; // 重力
+      controls.getObject().position.y += velocity.y * delta;
+      if (controls.getObject().position.y < 1) {
+        controls.getObject().position.y = 1;
+        velocity.y = 0;
+        isOnGround = true;
+      }
+      renderer.render(scene, camera);
+    }
+    animate();
 
-  // 自適應窗口
-  window.addEventListener('resize', () => {
-    camera.aspect = window.innerWidth / window.innerHeight;
-    camera.updateProjectionMatrix();
-    renderer.setSize(window.innerWidth, window.innerHeight);
-  });
-</script>
+    // 自適應窗口
+    window.addEventListener('resize', () => {
+      camera.aspect = window.innerWidth / window.innerHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(window.innerWidth, window.innerHeight);
+    });
+  </script>
 </body>
 </html>
