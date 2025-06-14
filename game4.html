@@ -3,829 +3,586 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>圈圈人 Minecraft風格 RPG</title>
+    <title>3D圈圈人世界</title>
     <style>
         body {
             margin: 0;
             padding: 0;
-            background: linear-gradient(180deg, #87CEEB 0%, #98FB98 100%);
-            font-family: 'Courier New', monospace;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            min-height: 100vh;
-            color: white;
-        }
-        
-        .game-container {
-            position: relative;
-            margin: 10px;
-        }
-        
-        canvas {
-            border: 4px solid #8B4513;
-            border-radius: 8px;
-            background: linear-gradient(180deg, #87CEEB 0%, #90EE90 70%, #228B22 100%);
-            box-shadow: 0 6px 12px rgba(0,0,0,0.4);
-            cursor: crosshair;
-        }
-        
-        .ui-panel {
-            background: rgba(0,0,0,0.9);
-            color: white;
-            padding: 15px;
-            border-radius: 8px;
-            margin: 10px;
-            width: 780px;
-            display: flex;
-            justify-content: space-between;
-            flex-wrap: wrap;
-            border: 2px solid #654321;
-        }
-        
-        .stats {
-            display: flex;
-            gap: 15px;
-            align-items: center;
-        }
-        
-        .stat-bar {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
-        
-        .bar {
-            width: 70px;
-            height: 12px;
-            background: #333;
-            border: 2px solid #666;
+            background: linear-gradient(135deg, #1e3c72, #2a5298);
+            font-family: Arial, sans-serif;
             overflow: hidden;
-            margin-top: 3px;
+            color: white;
         }
         
-        .bar-fill {
-            height: 100%;
-            transition: width 0.3s;
+        #gameContainer {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
         }
         
-        .hp-bar { background: #e74c3c; }
-        .mp-bar { background: #3498db; }
-        .exp-bar { background: #f39c12; }
-        
-        .resources {
-            display: flex;
-            gap: 12px;
-            align-items: center;
-            font-size: 14px;
-            font-weight: bold;
+        #ui {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            z-index: 100;
+            background: rgba(0,0,0,0.8);
+            padding: 15px;
+            border-radius: 10px;
+            min-width: 200px;
         }
         
         .controls {
-            background: rgba(0,0,0,0.9);
-            color: white;
-            padding: 12px;
-            border-radius: 8px;
-            margin: 10px;
-            text-align: center;
-            border: 2px solid #654321;
-        }
-        
-        .mouse-controls {
-            background: rgba(34,139,34,0.9);
-            color: white;
-            padding: 8px 12px;
-            border-radius: 8px;
-            margin: 5px;
-            font-size: 12px;
-            text-align: center;
-            border: 2px solid #228B22;
-        }
-        
-        .control-section {
-            margin: 8px 0;
-            display: flex;
-            justify-content: center;
-            gap: 8px;
-            flex-wrap: wrap;
-        }
-        
-        .controls button {
-            background: linear-gradient(145deg, #8B4513, #654321);
-            color: white;
-            border: 2px solid #A0522D;
-            padding: 8px 12px;
-            margin: 2px;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 11px;
-            font-family: 'Courier New', monospace;
-            font-weight: bold;
-            transition: all 0.3s;
-            box-shadow: 2px 2px 4px rgba(0,0,0,0.3);
-        }
-        
-        .controls button:hover {
-            background: linear-gradient(145deg, #A0522D, #8B4513);
-            transform: translateY(-1px);
-        }
-        
-        .controls button.active {
-            background: linear-gradient(145deg, #e74c3c, #c0392b);
-            border-color: #e74c3c;
-        }
-        
-        .scene-indicator {
             position: absolute;
-            top: 10px;
-            left: 10px;
+            bottom: 20px;
+            left: 20px;
+            z-index: 100;
             background: rgba(0,0,0,0.8);
+            padding: 15px;
+            border-radius: 10px;
+        }
+        
+        button {
+            background: #4CAF50;
             color: white;
-            padding: 8px 15px;
-            border-radius: 20px;
-            font-weight: bold;
-            border: 2px solid #FFF;
-        }
-        
-        .village-mode { background: rgba(46,125,50,0.9); border-color: #4CAF50; }
-        .dungeon-mode { background: rgba(183,28,28,0.9); border-color: #F44336; }
-        
-        .block-palette {
-            position: absolute;
-            top: 60px;
-            right: 10px;
-            background: rgba(0,0,0,0.9);
-            padding: 10px;
-            border-radius: 8px;
-            border: 2px solid #8B4513;
-            display: grid;
-            grid-template-columns: repeat(4, 40px);
-            gap: 5px;
-        }
-        
-        .block-item {
-            width: 40px;
-            height: 40px;
-            border: 2px solid #666;
+            border: none;
+            padding: 10px 15px;
+            margin: 5px;
+            border-radius: 5px;
             cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 20px;
-            transition: all 0.3s;
+            transition: background 0.3s;
         }
         
-        .block-item:hover {
-            border-color: #FFD700;
-            transform: scale(1.1);
+        button:hover {
+            background: #45a049;
         }
         
-        .block-item.selected {
-            border-color: #FF6B6B;
-            background: rgba(255,107,107,0.3);
+        .info {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            z-index: 100;
+            background: rgba(0,0,0,0.8);
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
         }
         
-        .title {
-            color: #8B4513;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
-            font-family: 'Courier New', monospace;
-            font-weight: bold;
-            margin-bottom: 10px;
+        #loading {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 200;
+            background: rgba(0,0,0,0.9);
+            padding: 30px;
+            border-radius: 15px;
+            text-align: center;
         }
     </style>
 </head>
 <body>
-    <h1 class="title">⛏️ 圈圈人 Minecraft風格 RPG ⛏️</h1>
-    
-    <div class="game-container">
-        <canvas id="gameCanvas" width="800" height="600"></canvas>
-        <div class="scene-indicator village-mode" id="sceneIndicator">🏗️ 建造模式</div>
-        
-        <div class="block-palette" id="blockPalette">
-            <div class="block-item selected" data-block="grass" style="background: #228B22;">🌱</div>
-            <div class="block-item" data-block="stone" style="background: #696969;">🪨</div>
-            <div class="block-item" data-block="wood" style="background: #8B4513;">🪵</div>
-            <div class="block-item" data-block="brick" style="background: #B22222;">🧱</div>
-            <div class="block-item" data-block="sand" style="background: #F4A460;">🏖️</div>
-            <div class="block-item" data-block="water" style="background: #4169E1;">🌊</div>
-            <div class="block-item" data-block="lava" style="background: #FF4500;">🌋</div>
-            <div class="block-item" data-block="gold" style="background: #FFD700;">✨</div>
-        </div>
-    </div>
-    
-    <div class="ui-panel">
-        <div class="stats">
-            <div class="stat-bar">
-                <span>❤️ HP</span>
-                <div class="bar">
-                    <div class="bar-fill hp-bar" id="hpBar" style="width: 100%"></div>
-                </div>
-                <span id="hpText">100/100</span>
-            </div>
-            <div class="stat-bar">
-                <span>💙 MP</span>
-                <div class="bar">
-                    <div class="bar-fill mp-bar" id="mpBar" style="width: 100%"></div>
-                </div>
-                <span id="mpText">50/50</span>
-            </div>
-            <div class="stat-bar">
-                <span>⭐ EXP</span>
-                <div class="bar">
-                    <div class="bar-fill exp-bar" id="expBar" style="width: 0%"></div>
-                </div>
-                <span id="expText">Lv.1</span>
-            </div>
+    <div id="gameContainer">
+        <div id="loading">
+            <h2>🎮 載入3D圈圈人世界...</h2>
+            <p>請稍候</p>
         </div>
         
-        <div class="resources">
-            <span>💰 金幣: <span id="gold">100</span></span>
-            <span>🪵 木材: <span id="wood">50</span></span>
-            <span>🪨 石頭: <span id="stone">30</span></span>
-            <span>⚔️ 攻擊: <span id="attack">10</span></span>
-            <span>🛡️ 防禦: <span id="defense">5</span></span>
-        </div>
-    </div>
-    
-    <div class="mouse-controls">
-        🖱️ <strong>滑鼠操作：</strong> 左鍵放置方塊 | 右鍵移動/攻擊 | 右側選擇方塊類型
-    </div>
-    
-    <div class="controls">
-        <div><strong>鍵盤操作：</strong> WASD移動 | 空白鍵攻擊 | E鍵互動</div>
-        
-        <div class="control-section">
-            <button onclick="switchMode('build')" id="buildBtn" class="active">🏗️ 建造模式</button>
-            <button onclick="switchMode('adventure')" id="adventureBtn">⚔️ 冒險模式</button>
-            <button onclick="clearBlocks()">🧹 清空地圖</button>
+        <div id="ui">
+            <h3>🎮 3D圈圈人</h3>
+            <div>❤️ HP: <span id="hp">100</span>/100</div>
+            <div>💰 金幣: <span id="gold">0</span></div>
+            <div>⭐ 等級: <span id="level">1</span></div>
+            <div>👹 怪物: <span id="monsters">0</span></div>
         </div>
         
-        <div class="control-section">
-            <button onclick="castHeal()">✨ 治療術 (MP20)</button>
-            <button onclick="spawnMonsters()">👹 生成怪物測試</button>
+        <div class="info">
+            <h4>🕹️ 操作說明</h4>
+            <div>WASD - 移動</div>
+            <div>滑鼠 - 視角</div>
+            <div>空白鍵 - 跳躍</div>
+            <div>點擊 - 攻擊</div>
+        </div>
+        
+        <div class="controls">
+            <button onclick="spawnMonster()">👹 生成怪物</button>
+            <button onclick="spawnTreasure()">💎 生成寶箱</button>
+            <button onclick="changeTime()">🌙 切換日夜</button>
+            <button onclick="toggleWireframe()">📐 線框模式</button>
+            <button onclick="resetPlayer()">🏠 重置位置</button>
         </div>
     </div>
 
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script>
-        const canvas = document.getElementById('gameCanvas');
-        const ctx = canvas.getContext('2d');
+        // 遊戲變量
+        let scene, camera, renderer, player, monsters = [], treasures = [];
+        let keys = {}, mouseX = 0, mouseY = 0;
+        let gameStats = { hp: 100, gold: 0, level: 1, monstersCount: 0 };
+        let isWireframe = false, isNight = false;
         
-        // 遊戲狀態
-        let gameState = {
-            mode: 'build', // 'build', 'adventure'
-            selectedBlock: 'grass',
-            blockSize: 20,
-            mouseTarget: null,
-            isMovingToTarget: false,
-            player: {
-                x: 400,
-                y: 300,
-                hp: 100,
-                maxHp: 100,
-                mp: 50,
-                maxMp: 50,
-                level: 1,
-                exp: 0,
-                expToNext: 100,
-                attack: 10,
-                defense: 5,
-                attacking: false,
-                attackCooldown: 0
-            },
-            resources: {
-                gold: 100,
-                wood: 50,
-                stone: 30
-            },
-            world: {
-                blocks: {},
-                width: 40,
-                height: 30
-            },
-            monsters: []
-        };
-        
-        // 方塊類型定義
-        const blockTypes = {
-            grass: { color: '#228B22', icon: '🌱' },
-            stone: { color: '#696969', icon: '🪨' },
-            wood: { color: '#8B4513', icon: '🪵' },
-            brick: { color: '#B22222', icon: '🧱' },
-            sand: { color: '#F4A460', icon: '🏖️' },
-            water: { color: '#4169E1', icon: '🌊' },
-            lava: { color: '#FF4500', icon: '🌋' },
-            gold: { color: '#FFD700', icon: '✨' }
-        };
-        
-        let mousePos = null;
-        
-        // 初始化世界
-        function initWorld() {
-            // 生成基礎地面
-            for (let x = 0; x < gameState.world.width; x++) {
-                for (let y = 25; y < 30; y++) {
-                    const key = `${x},${y}`;
-                    gameState.world.blocks[key] = {
-                        type: y === 25 ? 'grass' : 'stone',
-                        ...blockTypes[y === 25 ? 'grass' : 'stone']
-                    };
-                }
-            }
+        // 初始化3D場景
+        function initThreeJS() {
+            // 創建場景
+            scene = new THREE.Scene();
+            scene.fog = new THREE.Fog(0x87CEEB, 50, 200);
             
-            // 生成一些隨機結構
-            for (let i = 0; i < 5; i++) {
-                const x = Math.floor(Math.random() * 20) + 5;
-                const y = Math.floor(Math.random() * 10) + 10;
-                
-                // 小房子
-                for (let dx = 0; dx < 4; dx++) {
-                    for (let dy = 0; dy < 3; dy++) {
-                        const key = `${x + dx},${y + dy}`;
-                        if (dx === 0 || dx === 3 || dy === 0 || dy === 2) {
-                            gameState.world.blocks[key] = {
-                                type: 'brick',
-                                ...blockTypes.brick
-                            };
-                        }
-                    }
-                }
-            }
+            // 創建攝像機
+            camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+            camera.position.set(0, 5, 10);
+            
+            // 創建渲染器
+            renderer = new THREE.WebGLRenderer({ antialias: true });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.setClearColor(0x87CEEB);
+            renderer.shadowMap.enabled = true;
+            renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+            
+            document.getElementById('gameContainer').appendChild(renderer.domElement);
+            
+            // 創建光線
+            createLights();
+            
+            // 創建地面
+            createGround();
+            
+            // 創建玩家（圈圈人）
+            createPlayer();
+            
+            // 創建一些裝飾
+            createEnvironment();
+            
+            // 隱藏載入畫面
+            document.getElementById('loading').style.display = 'none';
         }
         
-        // 繪製方塊
-        function drawBlock(x, y, block) {
-            const size = gameState.blockSize;
+        // 創建光線
+        function createLights() {
+            // 環境光
+            const ambientLight = new THREE.AmbientLight(0x404040, 0.4);
+            scene.add(ambientLight);
             
-            // 方塊主體
-            ctx.fillStyle = block.color;
-            ctx.fillRect(x, y, size, size);
-            
-            // 方塊邊框
-            ctx.strokeStyle = '#000';
-            ctx.lineWidth = 1;
-            ctx.strokeRect(x, y, size, size);
-            
-            // 高光效果
-            ctx.strokeStyle = 'rgba(255,255,255,0.3)';
-            ctx.beginPath();
-            ctx.moveTo(x, y + size);
-            ctx.lineTo(x, y);
-            ctx.lineTo(x + size, y);
-            ctx.stroke();
-            
-            // 方塊圖標
-            if (block.icon) {
-                ctx.fillStyle = 'rgba(0,0,0,0.7)';
-                ctx.font = '12px Arial';
-                ctx.textAlign = 'center';
-                ctx.fillText(block.icon, x + size/2, y + size/2 + 4);
-            }
+            // 定向光（太陽）
+            const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
+            directionalLight.position.set(10, 10, 5);
+            directionalLight.castShadow = true;
+            directionalLight.shadow.mapSize.width = 2048;
+            directionalLight.shadow.mapSize.height = 2048;
+            scene.add(directionalLight);
         }
         
-        // 繪製圈圈人
-        function drawStickman(x, y, color = '#0066CC', attacking = false) {
-            ctx.strokeStyle = color;
-            ctx.lineWidth = 3;
+        // 創建地面
+        function createGround() {
+            const groundGeometry = new THREE.PlaneGeometry(100, 100);
+            const groundMaterial = new THREE.MeshLambertMaterial({ color: 0x228B22 });
+            const ground = new THREE.Mesh(groundGeometry, groundMaterial);
+            ground.rotation.x = -Math.PI / 2;
+            ground.receiveShadow = true;
+            scene.add(ground);
             
-            // 頭
-            ctx.beginPath();
-            ctx.arc(x, y - 25, 8, 0, Math.PI * 2);
-            ctx.stroke();
+            // 添加格子紋理
+            const gridHelper = new THREE.GridHelper(100, 20, 0x000000, 0x000000);
+            gridHelper.material.opacity = 0.2;
+            gridHelper.material.transparent = true;
+            scene.add(gridHelper);
+        }
+        
+        // 創建3D圈圈人
+        function createPlayer() {
+            player = new THREE.Group();
             
-            // 身體
-            ctx.beginPath();
-            ctx.moveTo(x, y - 17);
-            ctx.lineTo(x, y + 8);
-            ctx.stroke();
+            // 身體（圓柱體）
+            const bodyGeometry = new THREE.CylinderGeometry(0.3, 0.3, 2);
+            const bodyMaterial = new THREE.MeshLambertMaterial({ color: 0x0066CC });
+            const body = new THREE.Mesh(bodyGeometry, bodyMaterial);
+            body.position.y = 1;
+            body.castShadow = true;
+            player.add(body);
+            
+            // 頭（球體）
+            const headGeometry = new THREE.SphereGeometry(0.5);
+            const headMaterial = new THREE.MeshLambertMaterial({ color: 0xFFDBB0 });
+            const head = new THREE.Mesh(headGeometry, headMaterial);
+            head.position.y = 2.5;
+            head.castShadow = true;
+            player.add(head);
+            
+            // 眼睛
+            const eyeGeometry = new THREE.SphereGeometry(0.1);
+            const eyeMaterial = new THREE.MeshLambertMaterial({ color: 0x000000 });
+            
+            const leftEye = new THREE.Mesh(eyeGeometry, eyeMaterial);
+            leftEye.position.set(-0.2, 2.6, 0.4);
+            player.add(leftEye);
+            
+            const rightEye = new THREE.Mesh(eyeGeometry, eyeMaterial);
+            rightEye.position.set(0.2, 2.6, 0.4);
+            player.add(rightEye);
             
             // 手臂
-            ctx.beginPath();
-            if (attacking) {
-                ctx.moveTo(x, y - 8);
-                ctx.lineTo(x + 20, y - 13);
-            } else {
-                ctx.moveTo(x, y - 8);
-                ctx.lineTo(x + 12, y - 3);
-                ctx.moveTo(x, y - 8);
-                ctx.lineTo(x - 12, y - 3);
-            }
-            ctx.stroke();
+            const armGeometry = new THREE.CylinderGeometry(0.1, 0.1, 1.5);
+            const armMaterial = new THREE.MeshLambertMaterial({ color: 0xFFDBB0 });
+            
+            const leftArm = new THREE.Mesh(armGeometry, armMaterial);
+            leftArm.position.set(-0.6, 1.5, 0);
+            leftArm.rotation.z = Math.PI / 6;
+            leftArm.castShadow = true;
+            player.add(leftArm);
+            
+            const rightArm = new THREE.Mesh(armGeometry, armMaterial);
+            rightArm.position.set(0.6, 1.5, 0);
+            rightArm.rotation.z = -Math.PI / 6;
+            rightArm.castShadow = true;
+            player.add(rightArm);
             
             // 腿
-            ctx.beginPath();
-            ctx.moveTo(x, y + 8);
-            ctx.lineTo(x + 10, y + 20);
-            ctx.moveTo(x, y + 8);
-            ctx.lineTo(x - 10, y + 20);
-            ctx.stroke();
+            const legGeometry = new THREE.CylinderGeometry(0.15, 0.15, 1.5);
+            const legMaterial = new THREE.MeshLambertMaterial({ color: 0x000080 });
             
-            // 武器
-            ctx.strokeStyle = '#FFD700';
-            ctx.lineWidth = 3;
-            ctx.beginPath();
-            if (attacking) {
-                ctx.moveTo(x + 20, y - 13);
-                ctx.lineTo(x + 30, y - 20);
-            } else {
-                ctx.moveTo(x + 12, y - 3);
-                ctx.lineTo(x + 22, y - 10);
-            }
-            ctx.stroke();
+            const leftLeg = new THREE.Mesh(legGeometry, legMaterial);
+            leftLeg.position.set(-0.3, -0.25, 0);
+            leftLeg.castShadow = true;
+            player.add(leftLeg);
+            
+            const rightLeg = new THREE.Mesh(legGeometry, legMaterial);
+            rightLeg.position.set(0.3, -0.25, 0);
+            rightLeg.castShadow = true;
+            player.add(rightLeg);
+            
+            // 武器（劍）
+            const swordGeometry = new THREE.CylinderGeometry(0.05, 0.05, 2);
+            const swordMaterial = new THREE.MeshLambertMaterial({ color: 0xC0C0C0 });
+            const sword = new THREE.Mesh(swordGeometry, swordMaterial);
+            sword.position.set(0.8, 2, 0);
+            sword.rotation.z = -Math.PI / 4;
+            sword.castShadow = true;
+            player.add(sword);
+            
+            player.position.set(0, 1, 0);
+            scene.add(player);
         }
         
-        // 繪製怪物
-        function drawMonster(monster) {
-            drawStickman(monster.x, monster.y, '#FF0000', false);
-            
-            // HP條
-            let hpPercent = monster.hp / monster.maxHp;
-            ctx.fillStyle = '#FF0000';
-            ctx.fillRect(monster.x - 15, monster.y - 45, 30 * hpPercent, 4);
-            ctx.strokeStyle = '#000';
-            ctx.lineWidth = 1;
-            ctx.strokeRect(monster.x - 15, monster.y - 45, 30, 4);
-        }
-        
-        // 主渲染函數
-        function render() {
-            // 清空畫布
-            const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
-            gradient.addColorStop(0, '#87CEEB');
-            gradient.addColorStop(0.7, '#98FB98');
-            gradient.addColorStop(1, '#228B22');
-            ctx.fillStyle = gradient;
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
-            
-            // 繪製方塊
-            for (let [key, block] of Object.entries(gameState.world.blocks)) {
-                const [x, y] = key.split(',').map(Number);
-                drawBlock(x * gameState.blockSize, y * gameState.blockSize, block);
+        // 創建環境裝飾
+        function createEnvironment() {
+            // 創建樹木
+            for (let i = 0; i < 10; i++) {
+                createTree(
+                    (Math.random() - 0.5) * 80,
+                    (Math.random() - 0.5) * 80
+                );
             }
             
-            // 繪製怪物
-            gameState.monsters.forEach(monster => drawMonster(monster));
+            // 創建岩石
+            for (let i = 0; i < 15; i++) {
+                createRock(
+                    (Math.random() - 0.5) * 90,
+                    (Math.random() - 0.5) * 90
+                );
+            }
+        }
+        
+        // 創建樹
+        function createTree(x, z) {
+            const tree = new THREE.Group();
             
-            // 繪製玩家
-            drawStickman(
-                gameState.player.x, 
-                gameState.player.y, 
-                '#0066CC',
-                gameState.player.attacking
+            // 樹幹
+            const trunkGeometry = new THREE.CylinderGeometry(0.3, 0.5, 4);
+            const trunkMaterial = new THREE.MeshLambertMaterial({ color: 0x8B4513 });
+            const trunk = new THREE.Mesh(trunkGeometry, trunkMaterial);
+            trunk.position.y = 2;
+            trunk.castShadow = true;
+            tree.add(trunk);
+            
+            // 樹葉
+            const leavesGeometry = new THREE.SphereGeometry(2);
+            const leavesMaterial = new THREE.MeshLambertMaterial({ color: 0x228B22 });
+            const leaves = new THREE.Mesh(leavesGeometry, leavesMaterial);
+            leaves.position.y = 5;
+            leaves.castShadow = true;
+            tree.add(leaves);
+            
+            tree.position.set(x, 0, z);
+            scene.add(tree);
+        }
+        
+        // 創建岩石
+        function createRock(x, z) {
+            const rockGeometry = new THREE.SphereGeometry(Math.random() * 0.5 + 0.3, 8, 6);
+            const rockMaterial = new THREE.MeshLambertMaterial({ color: 0x696969 });
+            const rock = new THREE.Mesh(rockGeometry, rockMaterial);
+            rock.position.set(x, rockGeometry.parameters.radius, z);
+            rock.castShadow = true;
+            rock.receiveShadow = true;
+            scene.add(rock);
+        }
+        
+        // 創建怪物
+        function spawnMonster() {
+            const monster = new THREE.Group();
+            
+            // 怪物身體（紅色圈圈人）
+            const bodyGeometry = new THREE.CylinderGeometry(0.25, 0.25, 1.5);
+            const bodyMaterial = new THREE.MeshLambertMaterial({ color: 0xFF0000 });
+            const body = new THREE.Mesh(bodyGeometry, bodyMaterial);
+            body.position.y = 0.75;
+            body.castShadow = true;
+            monster.add(body);
+            
+            // 頭
+            const headGeometry = new THREE.SphereGeometry(0.4);
+            const headMaterial = new THREE.MeshLambertMaterial({ color: 0xFF4444 });
+            const head = new THREE.Mesh(headGeometry, headMaterial);
+            head.position.y = 1.8;
+            head.castShadow = true;
+            monster.add(head);
+            
+            // 眼睛（發光的紅眼）
+            const eyeGeometry = new THREE.SphereGeometry(0.08);
+            const eyeMaterial = new THREE.MeshBasicMaterial({ color: 0xFFFF00 });
+            
+            const leftEye = new THREE.Mesh(eyeGeometry, eyeMaterial);
+            leftEye.position.set(-0.15, 1.9, 0.35);
+            monster.add(leftEye);
+            
+            const rightEye = new THREE.Mesh(eyeGeometry, eyeMaterial);
+            rightEye.position.set(0.15, 1.9, 0.35);
+            monster.add(rightEye);
+            
+            // 隨機位置
+            monster.position.set(
+                (Math.random() - 0.5) * 40,
+                1,
+                (Math.random() - 0.5) * 40
             );
             
-            // 建造預覽
-            if (gameState.mode === 'build' && mousePos) {
-                const gridX = Math.floor(mousePos.x / gameState.blockSize);
-                const gridY = Math.floor(mousePos.y / gameState.blockSize);
-                const x = gridX * gameState.blockSize;
-                const y = gridY * gameState.blockSize;
-                
-                if (gridX >= 0 && gridX < gameState.world.width && 
-                    gridY >= 0 && gridY < gameState.world.height) {
-                    
-                    ctx.globalAlpha = 0.5;
-                    const blockData = blockTypes[gameState.selectedBlock];
-                    drawBlock(x, y, blockData);
-                    ctx.globalAlpha = 1;
-                    
-                    // 網格線
-                    ctx.strokeStyle = '#FFD700';
-                    ctx.lineWidth = 2;
-                    ctx.strokeRect(x, y, gameState.blockSize, gameState.blockSize);
+            // 添加怪物數據
+            monster.userData = {
+                hp: 50,
+                speed: 0.05,
+                attackCooldown: 0
+            };
+            
+            monsters.push(monster);
+            scene.add(monster);
+            
+            gameStats.monstersCount = monsters.length;
+            updateUI();
+        }
+        
+        // 創建寶箱
+        function spawnTreasure() {
+            const treasureGeometry = new THREE.BoxGeometry(1, 0.6, 0.8);
+            const treasureMaterial = new THREE.MeshLambertMaterial({ color: 0xFFD700 });
+            const treasure = new THREE.Mesh(treasureGeometry, treasureMaterial);
+            
+            treasure.position.set(
+                (Math.random() - 0.5) * 30,
+                0.3,
+                (Math.random() - 0.5) * 30
+            );
+            treasure.castShadow = true;
+            treasure.userData = { type: 'treasure', gold: 20 };
+            
+            treasures.push(treasure);
+            scene.add(treasure);
+        }
+        
+        // 鍵盤事件
+        document.addEventListener('keydown', (event) => {
+            keys[event.code] = true;
+            if (event.code === 'Space') {
+                event.preventDefault();
+                // 跳躍
+                if (player.position.y <= 1.1) {
+                    player.position.y += 3;
+                    setTimeout(() => {
+                        player.position.y = 1;
+                    }, 500);
                 }
             }
-            
-            // 移動指示器
-            if (gameState.isMovingToTarget && gameState.mouseTarget) {
-                ctx.strokeStyle = '#00FF00';
-                ctx.lineWidth = 2;
-                ctx.setLineDash([5, 5]);
-                ctx.beginPath();
-                ctx.arc(gameState.mouseTarget.x, gameState.mouseTarget.y, 15, 0, Math.PI * 2);
-                ctx.stroke();
-                ctx.setLineDash([]);
-            }
-        }
+        });
+        
+        document.addEventListener('keyup', (event) => {
+            keys[event.code] = false;
+        });
         
         // 滑鼠事件
-        canvas.addEventListener('mousemove', (e) => {
-            const rect = canvas.getBoundingClientRect();
-            mousePos = {
-                x: e.clientX - rect.left,
-                y: e.clientY - rect.top
-            };
+        document.addEventListener('mousemove', (event) => {
+            mouseX = (event.clientX / window.innerWidth) * 2 - 1;
+            mouseY = -(event.clientY / window.innerHeight) * 2 + 1;
         });
         
-        // 左鍵點擊 - 放置方塊或移動
-        canvas.addEventListener('click', (e) => {
-            const rect = canvas.getBoundingClientRect();
-            const clickX = e.clientX - rect.left;
-            const clickY = e.clientY - rect.top;
+        document.addEventListener('click', (event) => {
+            // 攻擊最近的怪物
+            let closestMonster = null;
+            let closestDistance = Infinity;
             
-            if (gameState.mode === 'build') {
-                placeBlock(clickX, clickY);
-            } else {
-                gameState.mouseTarget = { x: clickX, y: clickY };
-                gameState.isMovingToTarget = true;
-            }
-        });
-        
-        // 右鍵點擊 - 移除方塊或攻擊
-        canvas.addEventListener('contextmenu', (e) => {
-            e.preventDefault();
+            monsters.forEach((monster, index) => {
+                const distance = player.position.distanceTo(monster.position);
+                if (distance < 5 && distance < closestDistance) {
+                    closestDistance = distance;
+                    closestMonster = { monster, index };
+                }
+            });
             
-            const rect = canvas.getBoundingClientRect();
-            const clickX = e.clientX - rect.left;
-            const clickY = e.clientY - rect.top;
-            
-            if (gameState.mode === 'build') {
-                removeBlock(clickX, clickY);
-            } else {
-                attack();
-            }
-        });
-        
-        // 放置方塊
-        function placeBlock(x, y) {
-            const gridX = Math.floor(x / gameState.blockSize);
-            const gridY = Math.floor(y / gameState.blockSize);
-            
-            if (gridX >= 0 && gridX < gameState.world.width && 
-                gridY >= 0 && gridY < gameState.world.height) {
+            if (closestMonster) {
+                const { monster, index } = closestMonster;
+                monster.userData.hp -= 25;
                 
-                const key = `${gridX},${gridY}`;
-                gameState.world.blocks[key] = {
-                    type: gameState.selectedBlock,
-                    ...blockTypes[gameState.selectedBlock]
-                };
-            }
-        }
-        
-        // 移除方塊
-        function removeBlock(x, y) {
-            const gridX = Math.floor(x / gameState.blockSize);
-            const gridY = Math.floor(y / gameState.blockSize);
-            const key = `${gridX},${gridY}`;
-            
-            if (gameState.world.blocks[key]) {
-                const blockType = gameState.world.blocks[key].type;
-                delete gameState.world.blocks[key];
+                // 怪物受擊效果
+                monster.rotation.y += 0.5;
                 
-                // 獲得資源
-                if (blockType === 'wood') {
-                    gameState.resources.wood++;
-                } else if (blockType === 'stone') {
-                    gameState.resources.stone++;
+                if (monster.userData.hp <= 0) {
+                    scene.remove(monster);
+                    monsters.splice(index, 1);
+                    gameStats.gold += 10;
+                    gameStats.monstersCount = monsters.length;
+                    updateUI();
                 }
             }
-        }
-        
-        // 方塊選擇
-        document.querySelectorAll('.block-item').forEach(item => {
-            item.addEventListener('click', () => {
-                document.querySelectorAll('.block-item').forEach(b => b.classList.remove('selected'));
-                item.classList.add('selected');
-                gameState.selectedBlock = item.dataset.block;
-            });
-        });
-        
-        // 模式切換
-        function switchMode(mode) {
-            gameState.mode = mode;
-            
-            const indicator = document.getElementById('sceneIndicator');
-            const palette = document.getElementById('blockPalette');
-            
-            if (mode === 'build') {
-                indicator.textContent = '🏗️ 建造模式';
-                indicator.className = 'scene-indicator village-mode';
-                palette.style.display = 'grid';
-            } else {
-                indicator.textContent = '⚔️ 冒險模式';
-                indicator.className = 'scene-indicator dungeon-mode';
-                palette.style.display = 'none';
-            }
-            
-            document.querySelectorAll('.controls button').forEach(btn => btn.classList.remove('active'));
-            document.getElementById(mode + 'Btn').classList.add('active');
-        }
-        
-        // 清空地圖
-        function clearBlocks() {
-            if (confirm('確定要清空所有方塊嗎？')) {
-                gameState.world.blocks = {};
-            }
-        }
-        
-        // 生成怪物測試
-        function spawnMonsters() {
-            for (let i = 0; i < 3; i++) {
-                gameState.monsters.push({
-                    x: Math.random() * 700 + 50,
-                    y: Math.random() * 500 + 50,
-                    hp: 50,
-                    maxHp: 50,
-                    attack: 10,
-                    speed: 1,
-                    lastAttack: 0
-                });
-            }
-        }
-        
-        // 鍵盤控制
-        const keys = {};
-        
-        document.addEventListener('keydown', (e) => {
-            keys[e.key.toLowerCase()] = true;
-            
-            if (e.key === ' ') {
-                e.preventDefault();
-                attack();
-            }
-        });
-        
-        document.addEventListener('keyup', (e) => {
-            keys[e.key.toLowerCase()] = false;
         });
         
         // 玩家移動
         function updatePlayer() {
-            const speed = 3;
+            const speed = 0.2;
             
-            // 鍵盤移動
-            if (keys['w'] || keys['arrowup']) {
-                gameState.player.y = Math.max(20, gameState.player.y - speed);
-                gameState.isMovingToTarget = false;
+            if (keys['KeyW'] || keys['ArrowUp']) {
+                player.position.z -= speed;
             }
-            if (keys['s'] || keys['arrowdown']) {
-                gameState.player.y = Math.min(580, gameState.player.y + speed);
-                gameState.isMovingToTarget = false;
+            if (keys['KeyS'] || keys['ArrowDown']) {
+                player.position.z += speed;
             }
-            if (keys['a'] || keys['arrowleft']) {
-                gameState.player.x = Math.max(20, gameState.player.x - speed);
-                gameState.isMovingToTarget = false;
+            if (keys['KeyA'] || keys['ArrowLeft']) {
+                player.position.x -= speed;
+                player.rotation.y = Math.PI / 2;
             }
-            if (keys['d'] || keys['arrowright']) {
-                gameState.player.x = Math.min(780, gameState.player.x + speed);
-                gameState.isMovingToTarget = false;
+            if (keys['KeyD'] || keys['ArrowRight']) {
+                player.position.x += speed;
+                player.rotation.y = -Math.PI / 2;
             }
             
-            // 滑鼠移動
-            if (gameState.isMovingToTarget && gameState.mouseTarget) {
-                const dx = gameState.mouseTarget.x - gameState.player.x;
-                const dy = gameState.mouseTarget.y - gameState.player.y;
-                const distance = Math.sqrt(dx * dx + dy * dy);
-                
-                if (distance > 5) {
-                    gameState.player.x += (dx / distance) * speed;
-                    gameState.player.y += (dy / distance) * speed;
-                } else {
-                    gameState.isMovingToTarget = false;
-                    gameState.mouseTarget = null;
-                }
-                
-                gameState.player.x = Math.max(20, Math.min(780, gameState.player.x));
-                gameState.player.y = Math.max(20, Math.min(580, gameState.player.y));
+            // 重置旋轉
+            if (!keys['KeyA'] && !keys['KeyD']) {
+                player.rotation.y = 0;
             }
             
-            if (gameState.player.attackCooldown > 0) {
-                gameState.player.attackCooldown--;
-            } else {
-                gameState.player.attacking = false;
-            }
+            // 邊界限制
+            player.position.x = Math.max(-45, Math.min(45, player.position.x));
+            player.position.z = Math.max(-45, Math.min(45, player.position.z));
         }
         
-        // 攻擊系統
-        function attack() {
-            if (gameState.player.attackCooldown > 0) return;
-            
-            gameState.player.attacking = true;
-            gameState.player.attackCooldown = 20;
-            
-            gameState.monsters.forEach((monster, index) => {
-                const distance = Math.sqrt(
-                    Math.pow(monster.x - gameState.player.x, 2) + 
-                    Math.pow(monster.y - gameState.player.y, 2)
-                );
+        // 更新怪物AI
+        function updateMonsters() {
+            monsters.forEach(monster => {
+                // 向玩家移動
+                const direction = new THREE.Vector3()
+                    .subVectors(player.position, monster.position)
+                    .normalize();
                 
-                if (distance < 50) {
-                    const damage = gameState.player.attack + Math.random() * 10;
-                    monster.hp -= damage;
-                    
-                    if (monster.hp <= 0) {
-                        gameState.monsters.splice(index, 1);
-                        gameState.resources.gold += 10;
-                        gameState.player.exp += 15;
-                        checkLevelUp();
+                monster.position.add(direction.multiplyScalar(monster.userData.speed));
+                
+                // 面向玩家
+                monster.lookAt(player.position);
+                
+                // 攻擊玩家
+                const distance = monster.position.distanceTo(player.position);
+                if (distance < 2) {
+                    monster.userData.attackCooldown--;
+                    if (monster.userData.attackCooldown <= 0) {
+                        gameStats.hp = Math.max(0, gameStats.hp - 5);
+                        monster.userData.attackCooldown = 60;
+                        updateUI();
                     }
                 }
             });
         }
         
-        // 治療術
-        function castHeal() {
-            if (gameState.player.mp < 20) {
-                alert('魔力不足！');
-                return;
-            }
+        // 更新攝像機跟隨玩家
+        function updateCamera() {
+            const idealPosition = new THREE.Vector3(
+                player.position.x,
+                player.position.y + 5,
+                player.position.z + 10
+            );
             
-            gameState.player.mp -= 20;
-            gameState.player.hp = Math.min(gameState.player.maxHp, gameState.player.hp + 40);
+            camera.position.lerp(idealPosition, 0.1);
+            camera.lookAt(player.position);
         }
         
-        // 升級檢查
-        function checkLevelUp() {
-            while (gameState.player.exp >= gameState.player.expToNext) {
-                gameState.player.exp -= gameState.player.expToNext;
-                gameState.player.level++;
-                gameState.player.maxHp += 20;
-                gameState.player.hp = gameState.player.maxHp;
-                gameState.player.maxMp += 10;
-                gameState.player.mp = gameState.player.maxMp;
-                gameState.player.attack += 5;
-                gameState.player.defense += 3;
-                gameState.player.expToNext = Math.floor(gameState.player.expToNext * 1.5);
-                
-                alert(`升級了！等級 ${gameState.player.level}`);
+        // 切換日夜
+        function changeTime() {
+            isNight = !isNight;
+            if (isNight) {
+                scene.fog.color.setHex(0x191970);
+                renderer.setClearColor(0x191970);
+                scene.children.forEach(child => {
+                    if (child.type === 'DirectionalLight') {
+                        child.intensity = 0.3;
+                    }
+                });
+            } else {
+                scene.fog.color.setHex(0x87CEEB);
+                renderer.setClearColor(0x87CEEB);
+                scene.children.forEach(child => {
+                    if (child.type === 'DirectionalLight') {
+                        child.intensity = 0.8;
+                    }
+                });
             }
         }
         
-        // 怪物AI
-        function updateMonsters() {
-            gameState.monsters.forEach(monster => {
-                const dx = gameState.player.x - monster.x;
-                const dy = gameState.player.y - monster.y;
-                const distance = Math.sqrt(dx * dx + dy * dy);
-                
-                if (distance > 10) {
-                    monster.x += (dx / distance) * monster.speed;
-                    monster.y += (dy / distance) * monster.speed;
-                }
-                
-                if (distance < 35 && Date.now() - monster.lastAttack > 1000) {
-                    const damage = Math.max(1, monster.attack - gameState.player.defense);
-                    gameState.player.hp = Math.max(0, gameState.player.hp - damage);
-                    monster.lastAttack = Date.now();
+        // 切換線框模式
+        function toggleWireframe() {
+            isWireframe = !isWireframe;
+            scene.traverse((child) => {
+                if (child.isMesh) {
+                    child.material.wireframe = isWireframe;
                 }
             });
         }
         
+        // 重置玩家位置
+        function resetPlayer() {
+            player.position.set(0, 1, 0);
+            gameStats.hp = 100;
+            updateUI();
+        }
+        
         // 更新UI
         function updateUI() {
-            const hpPercent = (gameState.player.hp / gameState.player.maxHp) * 100;
-            document.getElementById('hpBar').style.width = hpPercent + '%';
-            document.getElementById('hpText').textContent = `${Math.floor(gameState.player.hp)}/${gameState.player.maxHp}`;
-            
-            const mpPercent = (gameState.player.mp / gameState.player.maxMp) * 100;
-            document.getElementById('mpBar').style.width = mpPercent + '%';
-            document.getElementById('mpText').textContent = `${Math.floor(gameState.player.mp)}/${gameState.player.maxMp}`;
-            
-            const expPercent = (gameState.player.exp / gameState.player.expToNext) * 100;
-            document.getElementById('expBar').style.width = expPercent + '%';
-            document.getElementById('expText').textContent = `Lv.${gameState.player.level}`;
-            
-            document.getElementById('gold').textContent = gameState.resources.gold;
-            document.getElementById('wood').textContent = gameState.resources.wood;
-            document.getElementById('stone').textContent = gameState.resources.stone;
-            document.getElementById('attack').textContent = gameState.player.attack;
-            document.getElementById('defense').textContent = gameState.player.defense;
+            document.getElementById('hp').textContent = gameStats.hp;
+            document.getElementById('gold').textContent = gameStats.gold;
+            document.getElementById('level').textContent = gameStats.level;
+            document.getElementById('monsters').textContent = gameStats.monstersCount;
         }
         
-        // 自動回復
-        function autoRegeneration() {
-            if (gameState.player.mp < gameState.player.maxMp) {
-                gameState.player.mp = Math.min(gameState.player.maxMp, gameState.player.mp + 0.1);
-            }
-            
-            if (gameState.player.hp < gameState.player.maxHp) {
-                gameState.player.hp = Math.min(gameState.player.maxHp, gameState.player.hp + 0.05);
-            }
-        }
+        // 處理視窗大小改變
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
         
         // 遊戲循環
-        function gameLoop() {
+        function animate() {
+            requestAnimationFrame(animate);
+            
             updatePlayer();
             updateMonsters();
-            autoRegeneration();
+            updateCamera();
             
-            if (gameState.player.hp <= 0) {
-                alert('你死了！已復活。');
-                gameState.player.hp = gameState.player.maxHp / 2;
-                gameState.monsters = [];
-            }
+            // 旋轉寶箱
+            treasures.forEach(treasure => {
+                treasure.rotation.y += 0.02;
+            });
             
-            render();
-            updateUI();
-            
-            requestAnimationFrame(gameLoop);
+            renderer.render(scene, camera);
         }
         
         // 初始化遊戲
-        console.log('初始化遊戲...');
-        initWorld();
-        updateUI();
-        gameLoop();
-        console.log('遊戲啟動完成！');
+        initThreeJS();
+        animate();
+        
+        console.log('3D圈圈人遊戲已啟動！');
     </script>
 </body>
 </html>
