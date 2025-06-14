@@ -479,21 +479,48 @@
             console.log('🎮 初始化 Minecraft 世界...');
             
             try {
+                console.log('1️⃣ 設置 Three.js...');
                 setupThreeJS();
+                
+                console.log('2️⃣ 設置光源...');
                 setupLighting();
+                
+                console.log('3️⃣ 設置相機...');
                 setupCamera();
+                
+                console.log('4️⃣ 設置控制...');
                 setupControls();
+                
+                console.log('5️⃣ 生成世界...');
                 generateWorld();
+                
+                console.log('6️⃣ 創建圈圈人...');
                 createPlayer();
+                
+                console.log('7️⃣ 創建村莊...');
                 createVillage();
                 
+                // 確保玩家被正確創建後再顯示UI
+                if (!gameState.player) {
+                    throw new Error('玩家角色創建失敗');
+                }
+                
+                console.log('8️⃣ 顯示遊戲界面...');
                 document.getElementById('loading').style.display = 'none';
                 document.getElementById('ui').style.display = 'block';
                 
+                console.log('9️⃣ 啟動遊戲循環...');
                 startGameLoop();
+                
+                console.log('🔟 更新UI...');
                 updateUI();
                 
-                console.log('✅ 遊戲初始化完成！');
+                console.log('✅ 遊戲初始化完成！圈圈人已準備好！');
+                
+                // 顯示歡迎訊息
+                setTimeout(() => {
+                    showMessage('🎉 歡迎來到 Minecraft 世界！使用 WASD 移動，滑鼠控制視角');
+                }, 1000);
                 
             } catch (error) {
                 console.error('❌ 遊戲初始化失敗:', error);
@@ -615,10 +642,42 @@
         function generateWorld() {
             console.log('🌍 生成世界地形...');
             
-            // 生成初始區塊
-            for (let chunkX = -2; chunkX <= 2; chunkX++) {
-                for (let chunkZ = -2; chunkZ <= 2; chunkZ++) {
-                    generateChunk(chunkX, chunkZ);
+            // 生成一個較小的初始區域確保快速載入
+            for (let x = -16; x <= 16; x += 2) {
+                for (let z = -16; z <= 16; z += 2) {
+                    const height = Math.floor(Math.sin(x * 0.1) * Math.cos(z * 0.1) * 4) + 32;
+                    
+                    // 生成地面層
+                    for (let y = 30; y <= height; y++) {
+                        let blockType = BlockType.DIRT;
+                        if (y === height) blockType = BlockType.GRASS;
+                        if (y <= 31) blockType = BlockType.STONE;
+                        
+                        createBlock(x, y, z, blockType);
+                    }
+                    
+                    // 隨機生成一些樹木
+                    if (Math.random() < 0.08 && height > 32) {
+                        generateSimpleTree(x, height + 1, z);
+                    }
+                }
+            }
+            
+            console.log(`✅ 世界生成完成，共 ${gameState.world.length} 個方塊`);
+        }
+
+        function generateSimpleTree(x, y, z) {
+            // 簡單的樹木生成
+            for (let i = 0; i < 3; i++) {
+                createBlock(x, y + i, z, BlockType.WOOD);
+            }
+            
+            // 樹葉
+            for (let dx = -1; dx <= 1; dx++) {
+                for (let dz = -1; dz <= 1; dz++) {
+                    if (Math.random() < 0.7) {
+                        createBlock(x + dx, y + 3, z + dz, BlockType.LEAVES);
+                    }
                 }
             }
         }
@@ -673,35 +732,42 @@
         function createVillage() {
             console.log('🏘️ 生成村莊...');
             
-            const villageX = 20;
-            const villageZ = 20;
-            const villageSize = 10;
-            
-            // 平整地面
-            for (let x = villageX - villageSize; x <= villageX + villageSize; x++) {
-                for (let z = villageZ - villageSize; z <= villageZ + villageSize; z++) {
-                    const height = getHeight(x, z);
-                    
-                    // 清除現有方塊
-                    for (let y = height + 1; y <= height + 10; y++) {
-                        removeBlock(x, y, z);
+            try {
+                const villageX = 10;
+                const villageZ = 10;
+                const villageSize = 8;
+                
+                // 建造一個簡單的商店
+                buildSimpleShop(villageX, 36, villageZ);
+                
+                // 創建商店NPC
+                createShopNPC(villageX, 37, villageZ);
+                
+                console.log('✅ 村莊創建完成');
+                
+            } catch (error) {
+                console.error('村莊創建錯誤:', error);
+            }
+        }
+
+        function buildSimpleShop(x, y, z) {
+            // 建造一個簡單的3x3商店
+            for (let dx = -1; dx <= 1; dx++) {
+                for (let dz = -1; dz <= 1; dz++) {
+                    for (let dy = 0; dy <= 2; dy++) {
+                        if (dx === -1 || dx === 1 || dz === -1 || dz === 1) {
+                            createBlock(x + dx, y + dy, z + dz, BlockType.COBBLESTONE);
+                        }
                     }
-                    
-                    // 鋪設地面
-                    createBlock(x, height, z, BlockType.COBBLESTONE);
                 }
             }
             
-            // 建造房屋
-            buildHouse(villageX - 5, getHeight(villageX - 5, villageZ - 5) + 1, villageZ - 5);
-            buildHouse(villageX + 5, getHeight(villageX + 5, villageZ - 5) + 1, villageZ - 5);
-            buildHouse(villageX - 5, getHeight(villageX - 5, villageZ + 5) + 1, villageZ + 5);
-            
-            // 建造商店
-            buildShop(villageX, getHeight(villageX, villageZ) + 1, villageZ);
-            
-            // 創建商店NPC
-            createShopNPC(villageX, getHeight(villageX, villageZ) + 2, villageZ);
+            // 屋頂
+            for (let dx = -1; dx <= 1; dx++) {
+                for (let dz = -1; dz <= 1; dz++) {
+                    createBlock(x + dx, y + 3, z + dz, BlockType.WOOD);
+                }
+            }
         }
 
         function buildHouse(x, y, z) {
@@ -833,51 +899,58 @@
         }
 
         function createPlayer() {
-            console.log('👤 創建玩家...');
+            console.log('👤 創建圈圈人角色...');
             
             const group = new THREE.Group();
             
-            // 身體
-            const bodyGeometry = new THREE.BoxGeometry(0.6, 1.2, 0.3);
-            const bodyMaterial = new THREE.MeshLambertMaterial({ color: 0x4CAF50 });
+            // 圈圈人頭部（圓圈）
+            const headGeometry = new THREE.RingGeometry(0.25, 0.35, 32);
+            const headMaterial = new THREE.MeshLambertMaterial({ 
+                color: 0x000000, 
+                side: THREE.DoubleSide 
+            });
+            const head = new THREE.Mesh(headGeometry, headMaterial);
+            head.position.y = 1.6;
+            head.rotation.x = Math.PI / 2; // 讓圓圈朝前
+            group.add(head);
+            
+            // 身體（黑色線條）
+            const bodyGeometry = new THREE.CylinderGeometry(0.03, 0.03, 1.2, 8);
+            const bodyMaterial = new THREE.MeshLambertMaterial({ color: 0x000000 });
             const body = new THREE.Mesh(bodyGeometry, bodyMaterial);
             body.position.y = 0.6;
             group.add(body);
             
-            // 頭部
-            const headGeometry = new THREE.BoxGeometry(0.5, 0.5, 0.5);
-            const headMaterial = new THREE.MeshLambertMaterial({ color: 0xFFDBB5 });
-            const head = new THREE.Mesh(headGeometry, headMaterial);
-            head.position.y = 1.5;
-            group.add(head);
-            
-            // 手臂
-            const armGeometry = new THREE.BoxGeometry(0.2, 1, 0.2);
-            const armMaterial = new THREE.MeshLambertMaterial({ color: 0xFFDBB5 });
+            // 左手臂
+            const armGeometry = new THREE.CylinderGeometry(0.02, 0.02, 0.7, 8);
+            const armMaterial = new THREE.MeshLambertMaterial({ color: 0x000000 });
             
             const leftArm = new THREE.Mesh(armGeometry, armMaterial);
-            leftArm.position.set(-0.5, 0.5, 0);
+            leftArm.position.set(-0.4, 0.8, 0);
+            leftArm.rotation.z = Math.PI / 4;
             group.add(leftArm);
             
+            // 右手臂
             const rightArm = new THREE.Mesh(armGeometry, armMaterial);
-            rightArm.position.set(0.5, 0.5, 0);
+            rightArm.position.set(0.4, 0.8, 0);
+            rightArm.rotation.z = -Math.PI / 4;
             group.add(rightArm);
             
-            // 腿
-            const legGeometry = new THREE.BoxGeometry(0.2, 1, 0.2);
-            const legMaterial = new THREE.MeshLambertMaterial({ color: 0x2196F3 });
+            // 左腿
+            const legGeometry = new THREE.CylinderGeometry(0.02, 0.02, 0.8, 8);
+            const legMaterial = new THREE.MeshLambertMaterial({ color: 0x000000 });
             
             const leftLeg = new THREE.Mesh(legGeometry, legMaterial);
-            leftLeg.position.set(-0.2, -0.5, 0);
+            leftLeg.position.set(-0.15, -0.4, 0);
             group.add(leftLeg);
             
+            // 右腿
             const rightLeg = new THREE.Mesh(legGeometry, legMaterial);
-            rightLeg.position.set(0.2, -0.5, 0);
+            rightLeg.position.set(0.15, -0.4, 0);
             group.add(rightLeg);
             
-            // 設置初始位置
-            const spawnHeight = getHeight(0, 0) + 3;
-            group.position.set(0, spawnHeight, 0);
+            // 設置初始位置在安全的地面上
+            group.position.set(0, 40, 0); // 確保在地面之上
             group.userData = { 
                 velocityY: 0,
                 onGround: false,
@@ -887,6 +960,8 @@
             group.castShadow = true;
             gameState.scene.add(group);
             gameState.player = group;
+            
+            console.log('✅ 圈圈人角色創建完成');
         }
 
         function getTargetedBlock() {
@@ -1146,22 +1221,37 @@
         }
 
         function startGameLoop() {
+            console.log('🎬 開始遊戲主循環...');
+            
             function gameLoop() {
-                requestAnimationFrame(gameLoop);
-                
-                // 更新武器冷卻
-                if (gameState.weaponCooldown > 0) {
-                    gameState.weaponCooldown -= 16; // 假設60FPS
+                try {
+                    requestAnimationFrame(gameLoop);
+                    
+                    // 更新武器冷卻
+                    if (gameState.weaponCooldown > 0) {
+                        gameState.weaponCooldown -= 16; // 假設60FPS
+                    }
+                    
+                    // 確保玩家存在才更新
+                    if (gameState.player) {
+                        updatePlayer();
+                        updateCamera();
+                        highlightBlock();
+                    }
+                    
+                    // 動態載入區塊（降低頻率）
+                    if (Math.random() < 0.01) { // 1% 機率執行，減少性能負擔
+                        loadNearbyChunks();
+                    }
+                    
+                    // 渲染場景
+                    if (gameState.renderer && gameState.scene && gameState.camera) {
+                        gameState.renderer.render(gameState.scene, gameState.camera);
+                    }
+                    
+                } catch (error) {
+                    console.error('遊戲循環錯誤:', error);
                 }
-                
-                updatePlayer();
-                updateCamera();
-                highlightBlock();
-                
-                // 動態載入區塊
-                loadNearbyChunks();
-                
-                gameState.renderer.render(gameState.scene, gameState.camera);
             }
             
             gameLoop();
