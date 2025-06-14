@@ -1,25 +1,15 @@
-// 繪製法術效果
-        function drawSpellEffects() {
-            if (gameState.player.castingSpell) {
-                // 魔法光圈
-                ctx.strokeStyle = '#00BFFF';
-                ctx.lineWidth = 3;
-                ctx.beginPath();
-                ctx.arc(gameState.player.x, gameState.player.y - 20, 25 + Math.sin(Date.now() * 0.01) * 5, 0, Math.PI * 2);
-                ctx.stroke();
-            }
-        }<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>圈圈人綜合RPG</title>
+    <title>圈圈人 Minecraft風格 RPG</title>
     <style>
         body {
             margin: 0;
             padding: 0;
-            background: linear-gradient(135deg, #2c3e50, #3498db);
-            font-family: Arial, sans-serif;
+            background: linear-gradient(180deg, #87CEEB 0%, #98FB98 100%);
+            font-family: 'Courier New', monospace;
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -33,22 +23,26 @@
         }
         
         canvas {
-            border: 3px solid #34495e;
-            border-radius: 10px;
-            background: #ecf0f1;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+            border: 4px solid #8B4513;
+            border-radius: 8px;
+            background: linear-gradient(180deg, #87CEEB 0%, #90EE90 70%, #228B22 100%);
+            box-shadow: 0 6px 12px rgba(0,0,0,0.4);
+            image-rendering: pixelated;
+            image-rendering: -moz-crisp-edges;
+            image-rendering: crisp-edges;
         }
         
         .ui-panel {
             background: rgba(0,0,0,0.9);
             color: white;
             padding: 15px;
-            border-radius: 10px;
+            border-radius: 8px;
             margin: 10px;
             width: 780px;
             display: flex;
             justify-content: space-between;
             flex-wrap: wrap;
+            border: 2px solid #654321;
         }
         
         .stats {
@@ -65,9 +59,9 @@
         
         .bar {
             width: 70px;
-            height: 10px;
+            height: 12px;
             background: #333;
-            border-radius: 5px;
+            border: 2px solid #666;
             overflow: hidden;
             margin-top: 3px;
         }
@@ -86,25 +80,28 @@
             gap: 12px;
             align-items: center;
             font-size: 14px;
+            font-weight: bold;
         }
         
         .controls {
             background: rgba(0,0,0,0.9);
             color: white;
-            padding: 10px;
+            padding: 12px;
             border-radius: 8px;
             margin: 10px;
             text-align: center;
+            border: 2px solid #654321;
         }
         
         .mouse-controls {
-            background: rgba(0,100,0,0.8);
+            background: rgba(34,139,34,0.9);
             color: white;
             padding: 8px 12px;
             border-radius: 8px;
             margin: 5px;
             font-size: 12px;
             text-align: center;
+            border: 2px solid #228B22;
         }
         
         .control-section {
@@ -116,23 +113,28 @@
         }
         
         .controls button {
-            background: #3498db;
+            background: linear-gradient(145deg, #8B4513, #654321);
             color: white;
-            border: none;
+            border: 2px solid #A0522D;
             padding: 8px 12px;
             margin: 2px;
             border-radius: 4px;
             cursor: pointer;
             font-size: 11px;
-            transition: background 0.3s;
+            font-family: 'Courier New', monospace;
+            font-weight: bold;
+            transition: all 0.3s;
+            box-shadow: 2px 2px 4px rgba(0,0,0,0.3);
         }
         
         .controls button:hover {
-            background: #2980b9;
+            background: linear-gradient(145deg, #A0522D, #8B4513);
+            transform: translateY(-1px);
         }
         
         .controls button.active {
-            background: #e74c3c;
+            background: linear-gradient(145deg, #e74c3c, #c0392b);
+            border-color: #e74c3c;
         }
         
         .scene-indicator {
@@ -144,47 +146,56 @@
             padding: 8px 15px;
             border-radius: 20px;
             font-weight: bold;
+            border: 2px solid #FFF;
         }
         
-        .village-mode { background: rgba(46,125,50,0.9); }
-        .dungeon-mode { background: rgba(183,28,28,0.9); }
-        .shop-mode { background: rgba(245,124,0,0.9); }
+        .village-mode { background: rgba(46,125,50,0.9); border-color: #4CAF50; }
+        .dungeon-mode { background: rgba(183,28,28,0.9); border-color: #F44336; }
         
         .inventory {
             position: absolute;
             top: 10px;
             right: 10px;
-            background: rgba(0,0,0,0.8);
+            background: rgba(0,0,0,0.9);
+            padding: 12px;
+            border-radius: 8px;
+            border: 2px solid #8B4513;
+            min-width: 140px;
+        }
+        
+        .block-palette {
+            position: absolute;
+            top: 60px;
+            right: 10px;
+            background: rgba(0,0,0,0.9);
             padding: 10px;
             border-radius: 8px;
-            min-width: 120px;
+            border: 2px solid #8B4513;
+            display: grid;
+            grid-template-columns: repeat(4, 40px);
+            gap: 5px;
         }
         
-        .shop-panel {
-            position: absolute;
-            top: 50px;
-            left: 50px;
-            background: rgba(0,0,0,0.9);
-            padding: 20px;
-            border-radius: 10px;
-            border: 2px solid #f39c12;
-            display: none;
-            max-width: 300px;
-        }
-        
-        .shop-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 8px;
-            margin: 5px 0;
-            background: rgba(255,255,255,0.1);
-            border-radius: 5px;
+        .block-item {
+            width: 40px;
+            height: 40px;
+            border: 2px solid #666;
             cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            transition: all 0.3s;
         }
         
-        .shop-item:hover {
-            background: rgba(255,255,255,0.2);
+        .block-item:hover {
+            border-color: #FFD700;
+            transform: scale(1.1);
+        }
+        
+        .block-item.selected {
+            border-color: #FF6B6B;
+            background: rgba(255,107,107,0.3);
         }
         
         .dungeon-info {
@@ -194,16 +205,25 @@
             background: rgba(0,0,0,0.8);
             padding: 8px 12px;
             border-radius: 8px;
+            border: 2px solid #8B0000;
             font-size: 12px;
+        }
+        
+        .title {
+            color: #8B4513;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+            font-family: 'Courier New', monospace;
+            font-weight: bold;
+            margin-bottom: 10px;
         }
     </style>
 </head>
 <body>
-    <h1 style="color: #ecf0f1; text-shadow: 2px 2px 4px rgba(0,0,0,0.5);">⚔️ 圈圈人綜合RPG - 冒險與經營</h1>
+    <h1 class="title">⛏️ 圈圈人 Minecraft風格 RPG ⛏️</h1>
     
     <div class="game-container">
         <canvas id="gameCanvas" width="800" height="600"></canvas>
-        <div class="scene-indicator village-mode" id="sceneIndicator">🏘️ 村莊</div>
+        <div class="scene-indicator village-mode" id="sceneIndicator">🏗️ 建造模式</div>
         
         <div class="inventory" id="inventory">
             <div><strong>🎒 背包</strong></div>
@@ -212,24 +232,15 @@
             <div>🔑 鑰匙: <span id="keys">0</span></div>
         </div>
         
-        <div class="shop-panel" id="shopPanel">
-            <h3>🏪 商店</h3>
-            <div class="shop-item" onclick="buyItem('sword', 50)">
-                <span>⚔️ 鐵劍 (+10攻擊)</span>
-                <span>💰50</span>
-            </div>
-            <div class="shop-item" onclick="buyItem('armor', 80)">
-                <span>🛡️ 鐵甲 (+15防禦)</span>
-                <span>💰80</span>
-            </div>
-            <div class="shop-item" onclick="buyItem('potion', 20)">
-                <span>🧪 治療藥水 (+50HP)</span>
-                <span>💰20</span>
-            </div>
-            <div class="shop-item" onclick="buyItem('key', 30)">
-                <span>🔑 地牢鑰匙</span>
-                <span>💰30</span>
-            </div>
+        <div class="block-palette" id="blockPalette">
+            <div class="block-item selected" data-block="grass" style="background: #228B22;">🌱</div>
+            <div class="block-item" data-block="stone" style="background: #696969;">🪨</div>
+            <div class="block-item" data-block="wood" style="background: #8B4513;">🪵</div>
+            <div class="block-item" data-block="brick" style="background: #B22222;">🧱</div>
+            <div class="block-item" data-block="sand" style="background: #F4A460;">🏖️</div>
+            <div class="block-item" data-block="water" style="background: #4169E1;">🌊</div>
+            <div class="block-item" data-block="lava" style="background: #FF4500;">🌋</div>
+            <div class="block-item" data-block="gold" style="background: #FFD700;">✨</div>
         </div>
         
         <div class="dungeon-info" id="dungeonInfo" style="display: none;">
@@ -265,36 +276,31 @@
         
         <div class="resources">
             <span>💰 金幣: <span id="gold">100</span></span>
-            <span>🪵 木材: <span id="wood">10</span></span>
-            <span>🪨 石頭: <span id="stone">5</span></span>
+            <span>🪵 木材: <span id="wood">50</span></span>
+            <span>🪨 石頭: <span id="stone">30</span></span>
             <span>⚔️ 攻擊: <span id="attack">10</span></span>
             <span>🛡️ 防禦: <span id="defense">5</span></span>
         </div>
     </div>
     
     <div class="mouse-controls">
-        🖱️ <strong>滑鼠操作：</strong> 左鍵點擊移動 | 右鍵攻擊/互動 | 滾輪切換技能
+        🖱️ <strong>滑鼠操作：</strong> 左鍵放置方塊 | 右鍵移動/攻擊 | 滾輪切換技能 | 右側選擇方塊類型
     </div>
     
     <div class="controls">
         <div><strong>鍵盤操作：</strong> WASD移動 | 空白鍵攻擊 | E鍵互動 | Q鍵技能</div>
         
         <div class="control-section">
-            <button onclick="switchScene('village')" id="villageBtn">🏘️ 回到村莊</button>
+            <button onclick="switchMode('build')" id="buildBtn">🏗️ 建造模式</button>
+            <button onclick="switchMode('adventure')" id="adventureBtn">⚔️ 冒險模式</button>
             <button onclick="switchScene('dungeon')" id="dungeonBtn">🏰 進入地牢</button>
-            <button onclick="toggleShop()" id="shopBtn">🏪 商店</button>
-        </div>
-        
-        <div class="control-section" id="villageControls">
-            <button onclick="toggleBuildMode('house')">建造房屋 (🪵5 🪨3)</button>
-            <button onclick="toggleBuildMode('shop')">建造商店 (🪵8 🪨5)</button>
-            <button onclick="toggleBuildMode('wall')">建造城牆 (🪨3)</button>
         </div>
         
         <div class="control-section" id="playerControls">
             <button onclick="usePotion()">🧪 喝藥水</button>
             <button onclick="castHeal()">✨ 治療術 (MP20)</button>
             <button onclick="castFireball()">🔥 火球術 (MP15)</button>
+            <button onclick="clearBlocks()">🧹 清空地圖</button>
         </div>
     </div>
 
@@ -304,12 +310,14 @@
         
         // 遊戲狀態
         let gameState = {
-            scene: 'village', // 'village', 'dungeon', 'shop'
-            buildMode: null,
+            mode: 'build', // 'build', 'adventure'
+            scene: 'village', // 'village', 'dungeon'
+            selectedBlock: 'grass',
             dungeonLevel: 1,
-            mouseTarget: null, // 滑鼠目標位置
+            mouseTarget: null,
             isMovingToTarget: false,
-            selectedSkill: 'attack', // 'attack', 'heal', 'fireball'
+            selectedSkill: 'attack',
+            blockSize: 20, // 方塊大小
             player: {
                 x: 400,
                 y: 300,
@@ -330,89 +338,124 @@
             },
             resources: {
                 gold: 100,
-                wood: 10,
-                stone: 5,
+                wood: 50,
+                stone: 30,
                 keys: 0,
                 potions: 3
             },
-            buildings: [],
-            monsters: [],
-            treasures: [],
-            trees: [],
-            rocks: [],
-            dungeonData: {
-                rooms: [],
-                currentRoom: 0,
-                cleared: false
-            }
-        };
-        
-        // 武器和裝備數據
-        const equipment = {
-            weapons: {
-                wood_sword: { name: '木劍', attack: 10, price: 0 },
-                iron_sword: { name: '鐵劍', attack: 20, price: 50 },
-                steel_sword: { name: '鋼劍', attack: 35, price: 150 }
+            world: {
+                blocks: {}, // 格式: "x,y": {type: "grass", color: "#228B22"}
+                width: 40,  // 世界寬度（方塊數量）
+                height: 30  // 世界高度（方塊數量）
             },
-            armors: {
-                cloth: { name: '布衣', defense: 5, price: 0 },
-                leather: { name: '皮甲', defense: 15, price: 80 },
-                iron: { name: '鐵甲', defense: 25, price: 200 }
-            }
+            monsters: [],
+            treasures: []
         };
         
-        // 初始化村莊資源
-        function initVillageResources() {
-            gameState.trees = [];
-            gameState.rocks = [];
-            
-            for (let i = 0; i < 6; i++) {
-                gameState.trees.push({
-                    x: Math.random() * 700 + 50,
-                    y: Math.random() * 500 + 50,
-                    hp: 3,
-                    maxHp: 3
-                });
+        // 方塊類型定義
+        const blockTypes = {
+            grass: { color: '#228B22', icon: '🌱', solid: true },
+            stone: { color: '#696969', icon: '🪨', solid: true },
+            wood: { color: '#8B4513', icon: '🪵', solid: true },
+            brick: { color: '#B22222', icon: '🧱', solid: true },
+            sand: { color: '#F4A460', icon: '🏖️', solid: true },
+            water: { color: '#4169E1', icon: '🌊', solid: false },
+            lava: { color: '#FF4500', icon: '🌋', solid: false },
+            gold: { color: '#FFD700', icon: '✨', solid: true }
+        };
+        
+        // 初始化世界（生成一些基礎地形）
+        function initWorld() {
+            // 生成基礎地面
+            for (let x = 0; x < gameState.world.width; x++) {
+                for (let y = 25; y < 30; y++) {
+                    const key = `${x},${y}`;
+                    gameState.world.blocks[key] = {
+                        type: y === 25 ? 'grass' : 'stone',
+                        ...blockTypes[y === 25 ? 'grass' : 'stone']
+                    };
+                }
             }
             
-            for (let i = 0; i < 4; i++) {
-                gameState.rocks.push({
-                    x: Math.random() * 700 + 50,
-                    y: Math.random() * 500 + 50,
-                    hp: 2,
-                    maxHp: 2
-                });
+            // 生成一些隨機結構
+            for (let i = 0; i < 10; i++) {
+                const x = Math.floor(Math.random() * 30) + 5;
+                const y = Math.floor(Math.random() * 15) + 5;
+                
+                // 小房子
+                for (let dx = 0; dx < 4; dx++) {
+                    for (let dy = 0; dy < 3; dy++) {
+                        const key = `${x + dx},${y + dy}`;
+                        if (dx === 0 || dx === 3 || dy === 0 || dy === 2) {
+                            gameState.world.blocks[key] = {
+                                type: 'brick',
+                                ...blockTypes.brick
+                            };
+                        }
+                    }
+                }
             }
         }
         
-        // 初始化地牢
-        function initDungeon() {
-            gameState.monsters = [];
-            gameState.treasures = [];
+        // 繪製方塊世界
+        function drawWorld() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
             
-            // 生成怪物
-            const monsterCount = 3 + gameState.dungeonLevel;
-            for (let i = 0; i < monsterCount; i++) {
-                gameState.monsters.push({
-                    x: Math.random() * 700 + 50,
-                    y: Math.random() * 500 + 50,
-                    hp: 30 + gameState.dungeonLevel * 10,
-                    maxHp: 30 + gameState.dungeonLevel * 10,
-                    attack: 5 + gameState.dungeonLevel * 2,
-                    speed: 1,
-                    lastAttack: 0,
-                    type: Math.random() > 0.7 ? 'elite' : 'normal'
-                });
+            // 繪製天空背景
+            const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
+            if (gameState.scene === 'village') {
+                gradient.addColorStop(0, '#87CEEB');
+                gradient.addColorStop(0.7, '#98FB98');
+                gradient.addColorStop(1, '#228B22');
+            } else {
+                gradient.addColorStop(0, '#2C3E50');
+                gradient.addColorStop(1, '#34495E');
             }
+            ctx.fillStyle = gradient;
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
             
-            // 生成寶箱
-            for (let i = 0; i < 2; i++) {
-                gameState.treasures.push({
-                    x: Math.random() * 700 + 50,
-                    y: Math.random() * 500 + 50,
-                    opened: false,
-                    type: 'chest'
-                });
+            // 繪製方塊
+            for (let [key, block] of Object.entries(gameState.world.blocks)) {
+                const [x, y] = key.split(',').map(Number);
+                drawBlock(x * gameState.blockSize, y * gameState.blockSize, block);
+            }
+        }
+        
+        // 繪製單個方塊
+        function drawBlock(x, y, block) {
+            const size = gameState.blockSize;
+            
+            // 方塊主體
+            ctx.fillStyle = block.color;
+            ctx.fillRect(x, y, size, size);
+            
+            // 方塊邊框（3D效果）
+            ctx.strokeStyle = '#000';
+            ctx.lineWidth = 1;
+            ctx.strokeRect(x, y, size, size);
+            
+            // 高光效果
+            ctx.strokeStyle = 'rgba(255,255,255,0.3)';
+            ctx.beginPath();
+            ctx.moveTo(x, y + size);
+            ctx.lineTo(x, y);
+            ctx.lineTo(x + size, y);
+            ctx.stroke();
+            
+            // 陰影效果
+            ctx.strokeStyle = 'rgba(0,0,0,0.3)';
+            ctx.beginPath();
+            ctx.moveTo(x + size, y);
+            ctx.lineTo(x + size, y + size);
+            ctx.lineTo(x, y + size);
+            ctx.stroke();
+            
+            // 方塊圖標（較小）
+            if (block.icon) {
+                ctx.fillStyle = '#000';
+                ctx.font = '12px Arial';
+                ctx.textAlign = 'center';
+                ctx.fillText(block.icon, x + size/2, y + size/2 + 4);
             }
         }
         
@@ -428,34 +471,34 @@
             
             // 頭
             ctx.beginPath();
-            ctx.arc(x, y - 30, 8, 0, Math.PI * 2);
+            ctx.arc(x, y - 25, 8, 0, Math.PI * 2);
             ctx.stroke();
             
             // 身體
             ctx.beginPath();
-            ctx.moveTo(x, y - 22);
-            ctx.lineTo(x, y + 10);
+            ctx.moveTo(x, y - 17);
+            ctx.lineTo(x, y + 8);
             ctx.stroke();
             
             // 手臂
             ctx.beginPath();
             if (attacking) {
-                ctx.moveTo(x, y - 10);
-                ctx.lineTo(x + 25, y - 15);
+                ctx.moveTo(x, y - 8);
+                ctx.lineTo(x + 20, y - 13);
             } else {
-                ctx.moveTo(x, y - 10);
-                ctx.lineTo(x + 15, y - 5);
-                ctx.moveTo(x, y - 10);
-                ctx.lineTo(x - 15, y - 5);
+                ctx.moveTo(x, y - 8);
+                ctx.lineTo(x + 12, y - 3);
+                ctx.moveTo(x, y - 8);
+                ctx.lineTo(x - 12, y - 3);
             }
             ctx.stroke();
             
             // 腿
             ctx.beginPath();
-            ctx.moveTo(x, y + 10);
-            ctx.lineTo(x + 12, y + 25);
-            ctx.moveTo(x, y + 10);
-            ctx.lineTo(x - 12, y + 25);
+            ctx.moveTo(x, y + 8);
+            ctx.lineTo(x + 10, y + 20);
+            ctx.moveTo(x, y + 8);
+            ctx.lineTo(x - 10, y + 20);
             ctx.stroke();
             
             // 武器
@@ -464,30 +507,16 @@
                 ctx.lineWidth = 3;
                 ctx.beginPath();
                 if (attacking) {
-                    ctx.moveTo(x + 25, y - 15);
-                    ctx.lineTo(x + 40, y - 25);
+                    ctx.moveTo(x + 20, y - 13);
+                    ctx.lineTo(x + 30, y - 20);
                 } else {
-                    ctx.moveTo(x + 15, y - 5);
-                    ctx.lineTo(x + 30, y - 15);
+                    ctx.moveTo(x + 12, y - 3);
+                    ctx.lineTo(x + 22, y - 10);
                 }
                 ctx.stroke();
             }
             
             ctx.restore();
-        }
-        
-        // 繪製建築
-        function drawBuilding(building) {
-            ctx.fillStyle = building.color;
-            ctx.fillRect(building.x, building.y, building.width, building.height);
-            ctx.strokeStyle = '#000';
-            ctx.lineWidth = 2;
-            ctx.strokeRect(building.x, building.y, building.width, building.height);
-            
-            ctx.fillStyle = '#000';
-            ctx.font = '20px Arial';
-            ctx.textAlign = 'center';
-            ctx.fillText(building.icon, building.x + building.width/2, building.y + building.height/2 + 7);
         }
         
         // 繪製怪物
@@ -499,18 +528,10 @@
             // HP條
             let hpPercent = monster.hp / monster.maxHp;
             ctx.fillStyle = '#FF0000';
-            ctx.fillRect(monster.x - 20, monster.y - 55, 40 * hpPercent, 5);
+            ctx.fillRect(monster.x - 15, monster.y - 45, 30 * hpPercent, 4);
             ctx.strokeStyle = '#000';
             ctx.lineWidth = 1;
-            ctx.strokeRect(monster.x - 20, monster.y - 55, 40, 5);
-            
-            // 精英怪標記
-            if (monster.type === 'elite') {
-                ctx.fillStyle = '#FFD700';
-                ctx.font = '12px Arial';
-                ctx.textAlign = 'center';
-                ctx.fillText('★', monster.x, monster.y - 60);
-            }
+            ctx.strokeRect(monster.x - 15, monster.y - 45, 30, 4);
         }
         
         // 繪製寶箱
@@ -518,111 +539,47 @@
             if (treasure.opened) return;
             
             ctx.fillStyle = '#8B4513';
-            ctx.fillRect(treasure.x - 15, treasure.y - 10, 30, 20);
+            ctx.fillRect(treasure.x - 12, treasure.y - 8, 24, 16);
             ctx.fillStyle = '#FFD700';
-            ctx.fillRect(treasure.x - 12, treasure.y - 7, 24, 14);
+            ctx.fillRect(treasure.x - 10, treasure.y - 6, 20, 12);
             
             ctx.fillStyle = '#000';
-            ctx.font = '16px Arial';
+            ctx.font = '14px Arial';
             ctx.textAlign = 'center';
-            ctx.fillText('💰', treasure.x, treasure.y + 5);
+            ctx.fillText('💰', treasure.x, treasure.y + 4);
         }
         
-        // 繪製樹木和石頭
-        function drawTree(tree) {
-            if (tree.hp <= 0) return;
-            
-            ctx.fillStyle = '#8B4513';
-            ctx.fillRect(tree.x - 4, tree.y - 5, 8, 25);
-            
-            ctx.fillStyle = '#228B22';
-            ctx.beginPath();
-            ctx.arc(tree.x, tree.y - 15, 18, 0, Math.PI * 2);
-            ctx.fill();
-        }
-        
-        function drawRock(rock) {
-            if (rock.hp <= 0) return;
-            
-            ctx.fillStyle = '#696969';
-            ctx.beginPath();
-            ctx.arc(rock.x, rock.y, 15, 0, Math.PI * 2);
-            ctx.fill();
-            
-            ctx.strokeStyle = '#000';
-            ctx.lineWidth = 2;
-            ctx.stroke();
-        }
-        
-        // 繪製滑鼠目標和技能指示器
-        function drawMouseIndicators() {
-            // 繪製移動目標
-            if (gameState.mouseTarget && gameState.isMovingToTarget) {
-                ctx.strokeStyle = '#00FF00';
-                ctx.lineWidth = 2;
-                ctx.setLineDash([5, 5]);
-                ctx.beginPath();
-                ctx.arc(gameState.mouseTarget.x, gameState.mouseTarget.y, 15, 0, Math.PI * 2);
-                ctx.stroke();
-                ctx.setLineDash([]);
+        // 繪製建造預覽
+        function drawBuildPreview() {
+            if (gameState.mode === 'build' && mousePos) {
+                const gridX = Math.floor(mousePos.x / gameState.blockSize);
+                const gridY = Math.floor(mousePos.y / gameState.blockSize);
+                const x = gridX * gameState.blockSize;
+                const y = gridY * gameState.blockSize;
+                
+                if (gridX >= 0 && gridX < gameState.world.width && 
+                    gridY >= 0 && gridY < gameState.world.height) {
+                    
+                    ctx.globalAlpha = 0.5;
+                    const blockData = blockTypes[gameState.selectedBlock];
+                    drawBlock(x, y, blockData);
+                    ctx.globalAlpha = 1;
+                    
+                    // 網格線
+                    ctx.strokeStyle = '#FFD700';
+                    ctx.lineWidth = 2;
+                    ctx.strokeRect(x, y, gameState.blockSize, gameState.blockSize);
+                }
             }
-            
-            // 繪製滑鼠游標範圍指示
-            if (mousePos) {
-                const range = gameState.selectedSkill === 'fireball' ? 100 : 50;
-                ctx.strokeStyle = gameState.selectedSkill === 'attack' ? '#FF6B6B' : 
-                                 gameState.selectedSkill === 'heal' ? '#4ECDC4' : '#FF8E53';
-                ctx.lineWidth = 1;
-                ctx.setLineDash([3, 3]);
-                ctx.beginPath();
-                ctx.arc(gameState.player.x, gameState.player.y, range, 0, Math.PI * 2);
-                ctx.stroke();
-                ctx.setLineDash([]);
-            }
-            
-            // 技能指示器
-            const skillIcons = {
-                attack: '⚔️',
-                heal: '✨',
-                fireball: '🔥'
-            };
-            
-            ctx.fillStyle = 'rgba(0,0,0,0.8)';
-            ctx.fillRect(10, canvas.height - 50, 120, 35);
-            ctx.strokeStyle = '#FFF';
-            ctx.lineWidth = 2;
-            ctx.strokeRect(10, canvas.height - 50, 120, 35);
-            
-            ctx.fillStyle = '#FFF';
-            ctx.font = '16px Arial';
-            ctx.textAlign = 'left';
-            ctx.fillText(`技能: ${skillIcons[gameState.selectedSkill]}`, 20, canvas.height - 25);
         }
         
         // 主渲染函數
         function render() {
-            // 清空畫布
-            if (gameState.scene === 'village') {
-                ctx.fillStyle = '#90EE90';
-            } else {
-                ctx.fillStyle = '#2F2F2F';
-            }
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            drawWorld();
             
-            if (gameState.scene === 'village') {
-                // 村莊場景
-                gameState.buildings.forEach(building => drawBuilding(building));
-                gameState.trees.forEach(tree => drawTree(tree));
-                gameState.rocks.forEach(rock => drawRock(rock));
-            } else if (gameState.scene === 'dungeon') {
-                // 地牢場景
+            if (gameState.scene === 'dungeon') {
                 gameState.monsters.forEach(monster => drawMonster(monster));
                 gameState.treasures.forEach(treasure => drawTreasure(treasure));
-                
-                // 地牢牆壁
-                ctx.strokeStyle = '#8B4513';
-                ctx.lineWidth = 8;
-                ctx.strokeRect(20, 20, canvas.width - 40, canvas.height - 40);
             }
             
             // 繪製玩家
@@ -634,24 +591,18 @@
                 gameState.player.attacking
             );
             
-            // 法術效果
-            drawSpellEffects();
-            
-            // 滑鼠指示器
-            drawMouseIndicators();
-            
             // 建造預覽
-            if (gameState.buildMode && mousePos && gameState.scene === 'village') {
-                ctx.globalAlpha = 0.5;
-                let buildingData = getBuildingData(gameState.buildMode);
-                ctx.fillStyle = buildingData.color;
-                ctx.fillRect(
-                    Math.floor(mousePos.x / 40) * 40,
-                    Math.floor(mousePos.y / 40) * 40,
-                    buildingData.width,
-                    buildingData.height
-                );
-                ctx.globalAlpha = 1;
+            drawBuildPreview();
+            
+            // 移動指示器
+            if (gameState.isMovingToTarget && gameState.mouseTarget) {
+                ctx.strokeStyle = '#00FF00';
+                ctx.lineWidth = 2;
+                ctx.setLineDash([5, 5]);
+                ctx.beginPath();
+                ctx.arc(gameState.mouseTarget.x, gameState.mouseTarget.y, 15, 0, Math.PI * 2);
+                ctx.stroke();
+                ctx.setLineDash([]);
             }
         }
         
@@ -666,104 +617,105 @@
             };
         });
         
-        // 左鍵點擊 - 移動
+        // 左鍵點擊 - 放置方塊或移動
         canvas.addEventListener('click', (e) => {
             const rect = canvas.getBoundingClientRect();
             const clickX = e.clientX - rect.left;
             const clickY = e.clientY - rect.top;
             
-            if (gameState.buildMode && gameState.scene === 'village') {
-                // 建造模式
-                const x = Math.floor(clickX / 40) * 40;
-                const y = Math.floor(clickY / 40) * 40;
-                
-                const buildingData = getBuildingData(gameState.buildMode);
-                
-                // 檢查資源
-                let canBuild = true;
-                for (let resource in buildingData.cost) {
-                    if (gameState.resources[resource] < buildingData.cost[resource]) {
-                        canBuild = false;
-                        break;
-                    }
-                }
-                
-                if (canBuild) {
-                    for (let resource in buildingData.cost) {
-                        gameState.resources[resource] -= buildingData.cost[resource];
-                    }
-                    
-                    gameState.buildings.push({
-                        x: x,
-                        y: y,
-                        type: gameState.buildMode,
-                        ...buildingData
-                    });
-                    
-                    gameState.buildMode = null;
-                    document.querySelectorAll('.controls button').forEach(btn => btn.classList.remove('active'));
-                } else {
-                    alert('資源不足！');
-                }
+            if (gameState.mode === 'build') {
+                placeBlock(clickX, clickY);
             } else {
-                // 移動模式
+                // 冒險模式 - 移動
                 gameState.mouseTarget = { x: clickX, y: clickY };
                 gameState.isMovingToTarget = true;
             }
         });
         
-        // 右鍵點擊 - 攻擊/互動
+        // 右鍵點擊 - 移動或攻擊
         canvas.addEventListener('contextmenu', (e) => {
-            e.preventDefault(); // 防止右鍵選單
+            e.preventDefault();
             
             const rect = canvas.getBoundingClientRect();
             const clickX = e.clientX - rect.left;
             const clickY = e.clientY - rect.top;
             
-            // 根據選擇的技能執行不同動作
-            switch(gameState.selectedSkill) {
-                case 'attack':
-                    attack();
-                    break;
-                case 'heal':
-                    castHeal();
-                    break;
-                case 'fireball':
-                    castFireball();
-                    break;
-                default:
-                    // 嘗試互動
-                    interact();
-            }
-        });
-        
-        // 滾輪切換技能
-        canvas.addEventListener('wheel', (e) => {
-            e.preventDefault();
-            
-            const skills = ['attack', 'heal', 'fireball'];
-            let currentIndex = skills.indexOf(gameState.selectedSkill);
-            
-            if (e.deltaY > 0) {
-                currentIndex = (currentIndex + 1) % skills.length;
+            if (gameState.mode === 'build') {
+                removeBlock(clickX, clickY);
             } else {
-                currentIndex = (currentIndex - 1 + skills.length) % skills.length;
+                // 冒險模式 - 攻擊或移動
+                if (gameState.scene === 'dungeon' && gameState.monsters.length > 0) {
+                    attack();
+                } else {
+                    gameState.mouseTarget = { x: clickX, y: clickY };
+                    gameState.isMovingToTarget = true;
+                }
             }
-            
-            gameState.selectedSkill = skills[currentIndex];
-            updateSkillIndicator();
         });
         
-        // 更新技能指示器
-        function updateSkillIndicator() {
-            const skillNames = {
-                attack: '⚔️ 攻擊',
-                heal: '✨ 治療',
-                fireball: '🔥 火球'
-            };
+        // 放置方塊
+        function placeBlock(x, y) {
+            const gridX = Math.floor(x / gameState.blockSize);
+            const gridY = Math.floor(y / gameState.blockSize);
             
-            // 在畫布上顯示當前技能
-            // 這個會在render函數中繪製
+            if (gridX >= 0 && gridX < gameState.world.width && 
+                gridY >= 0 && gridY < gameState.world.height) {
+                
+                const key = `${gridX},${gridY}`;
+                gameState.world.blocks[key] = {
+                    type: gameState.selectedBlock,
+                    ...blockTypes[gameState.selectedBlock]
+                };
+            }
+        }
+        
+        // 移除方塊
+        function removeBlock(x, y) {
+            const gridX = Math.floor(x / gameState.blockSize);
+            const gridY = Math.floor(y / gameState.blockSize);
+            const key = `${gridX},${gridY}`;
+            
+            if (gameState.world.blocks[key]) {
+                delete gameState.world.blocks[key];
+                
+                // 獲得資源
+                const blockType = gameState.world.blocks[key]?.type;
+                if (blockType === 'wood') {
+                    gameState.resources.wood++;
+                } else if (blockType === 'stone') {
+                    gameState.resources.stone++;
+                }
+            }
+        }
+        
+        // 方塊選擇
+        document.querySelectorAll('.block-item').forEach(item => {
+            item.addEventListener('click', () => {
+                document.querySelectorAll('.block-item').forEach(b => b.classList.remove('selected'));
+                item.classList.add('selected');
+                gameState.selectedBlock = item.dataset.block;
+            });
+        });
+        
+        // 模式切換
+        function switchMode(mode) {
+            gameState.mode = mode;
+            
+            const indicator = document.getElementById('sceneIndicator');
+            const palette = document.getElementById('blockPalette');
+            
+            if (mode === 'build') {
+                indicator.textContent = '🏗️ 建造模式';
+                indicator.className = 'scene-indicator village-mode';
+                palette.style.display = 'grid';
+            } else {
+                indicator.textContent = '⚔️ 冒險模式';
+                indicator.className = 'scene-indicator dungeon-mode';
+                palette.style.display = 'none';
+            }
+            
+            document.querySelectorAll('.controls button').forEach(btn => btn.classList.remove('active'));
+            document.getElementById(mode + 'Btn').classList.add('active');
         }
         
         // 場景切換
@@ -776,123 +728,48 @@
             if (scene === 'dungeon') {
                 gameState.resources.keys--;
                 initDungeon();
+                gameState.mode = 'adventure';
+                switchMode('adventure');
             }
             
             gameState.scene = scene;
-            gameState.buildMode = null;
-            
-            // 更新UI
-            const indicator = document.getElementById('sceneIndicator');
-            const dungeonInfo = document.getElementById('dungeonInfo');
-            const villageControls = document.getElementById('villageControls');
-            
-            if (scene === 'village') {
-                indicator.className = 'scene-indicator village-mode';
-                indicator.textContent = '🏘️ 村莊';
-                dungeonInfo.style.display = 'none';
-                villageControls.style.display = 'flex';
-            } else if (scene === 'dungeon') {
-                indicator.className = 'scene-indicator dungeon-mode';
-                indicator.textContent = '🏰 地牢';
-                dungeonInfo.style.display = 'block';
-                villageControls.style.display = 'none';
-                updateDungeonInfo();
-            }
-            
-            document.querySelectorAll('.controls button').forEach(btn => btn.classList.remove('active'));
         }
         
-        // 商店系統
-        function toggleShop() {
-            const shopPanel = document.getElementById('shopPanel');
-            shopPanel.style.display = shopPanel.style.display === 'none' ? 'block' : 'none';
-        }
-        
-        function buyItem(item, price) {
-            if (gameState.resources.gold < price) {
-                alert('金幣不足！');
-                return;
-            }
+        // 初始化地牢
+        function initDungeon() {
+            gameState.monsters = [];
+            gameState.treasures = [];
             
-            gameState.resources.gold -= price;
-            
-            switch(item) {
-                case 'sword':
-                    gameState.player.weapon = 'iron_sword';
-                    gameState.player.attack = 20;
-                    break;
-                case 'armor':
-                    gameState.player.armor = 'leather';
-                    gameState.player.defense = 15;
-                    break;
-                case 'potion':
-                    gameState.resources.potions++;
-                    break;
-                case 'key':
-                    gameState.resources.keys++;
-                    break;
-            }
-            
-            updateUI();
-        }
-        
-        // 建造系統
-        function getBuildingData(type) {
-            const buildings = {
-                house: { width: 60, height: 40, color: '#8B4513', icon: '🏠', cost: {wood: 5, stone: 3} },
-                shop: { width: 80, height: 50, color: '#FFD700', icon: '🏪', cost: {wood: 8, stone: 5} },
-                wall: { width: 20, height: 40, color: '#696969', icon: '🧱', cost: {stone: 3} }
-            };
-            return buildings[type];
-        }
-        
-        function toggleBuildMode(type) {
-            if (gameState.buildMode === type) {
-                gameState.buildMode = null;
-                document.querySelectorAll('.controls button').forEach(btn => btn.classList.remove('active'));
-            } else {
-                gameState.buildMode = type;
-                document.querySelectorAll('.controls button').forEach(btn => btn.classList.remove('active'));
-                event.target.classList.add('active');
-            }
-        }
-        
-        canvas.addEventListener('click', (e) => {
-            if (!gameState.buildMode || gameState.scene !== 'village') return;
-            
-            const rect = canvas.getBoundingClientRect();
-            const x = Math.floor((e.clientX - rect.left) / 40) * 40;
-            const y = Math.floor((e.clientY - rect.top) / 40) * 40;
-            
-            const buildingData = getBuildingData(gameState.buildMode);
-            
-            // 檢查資源
-            let canBuild = true;
-            for (let resource in buildingData.cost) {
-                if (gameState.resources[resource] < buildingData.cost[resource]) {
-                    canBuild = false;
-                    break;
-                }
-            }
-            
-            if (canBuild) {
-                for (let resource in buildingData.cost) {
-                    gameState.resources[resource] -= buildingData.cost[resource];
-                }
-                
-                gameState.buildings.push({
-                    x: x,
-                    y: y,
-                    type: gameState.buildMode,
-                    ...buildingData
+            const monsterCount = 3 + gameState.dungeonLevel;
+            for (let i = 0; i < monsterCount; i++) {
+                gameState.monsters.push({
+                    x: Math.random() * 700 + 50,
+                    y: Math.random() * 500 + 50,
+                    hp: 30 + gameState.dungeonLevel * 10,
+                    maxHp: 30 + gameState.dungeonLevel * 10,
+                    attack: 5 + gameState.dungeonLevel * 2,
+                    speed: 1,
+                    lastAttack: 0,
+                    type: Math.random() > 0.7 ? 'elite' : 'normal'
                 });
-                
-                gameState.buildMode = null;
-                document.querySelectorAll('.controls button').forEach(btn => btn.classList.remove('active'));
-            } else {
-                alert('資源不足！');
             }
-        });
+            
+            for (let i = 0; i < 2; i++) {
+                gameState.treasures.push({
+                    x: Math.random() * 700 + 50,
+                    y: Math.random() * 500 + 50,
+                    opened: false,
+                    type: 'chest'
+                });
+            }
+        }
+        
+        // 清空地圖
+        function clearBlocks() {
+            if (confirm('確定要清空所有方塊嗎？')) {
+                gameState.world.blocks = {};
+            }
+        }
         
         // 鍵盤控制
         const keys = {};
@@ -918,29 +795,29 @@
             keys[e.key.toLowerCase()] = false;
         });
         
-        // 玩家移動（支援滑鼠和鍵盤）
+        // 玩家移動
         function updatePlayer() {
             const speed = 3;
             let moved = false;
             
             // 鍵盤移動
             if (keys['w'] || keys['arrowup']) {
-                gameState.player.y = Math.max(40, gameState.player.y - speed);
+                gameState.player.y = Math.max(20, gameState.player.y - speed);
                 moved = true;
-                gameState.isMovingToTarget = false; // 取消滑鼠移動
+                gameState.isMovingToTarget = false;
             }
             if (keys['s'] || keys['arrowdown']) {
-                gameState.player.y = Math.min(560, gameState.player.y + speed);
+                gameState.player.y = Math.min(580, gameState.player.y + speed);
                 moved = true;
                 gameState.isMovingToTarget = false;
             }
             if (keys['a'] || keys['arrowleft']) {
-                gameState.player.x = Math.max(40, gameState.player.x - speed);
+                gameState.player.x = Math.max(20, gameState.player.x - speed);
                 moved = true;
                 gameState.isMovingToTarget = false;
             }
             if (keys['d'] || keys['arrowright']) {
-                gameState.player.x = Math.min(760, gameState.player.x + speed);
+                gameState.player.x = Math.min(780, gameState.player.x + speed);
                 moved = true;
                 gameState.isMovingToTarget = false;
             }
@@ -960,9 +837,8 @@
                     gameState.mouseTarget = null;
                 }
                 
-                // 邊界檢查
-                gameState.player.x = Math.max(40, Math.min(760, gameState.player.x));
-                gameState.player.y = Math.max(40, Math.min(560, gameState.player.y));
+                gameState.player.x = Math.max(20, Math.min(780, gameState.player.x));
+                gameState.player.y = Math.max(20, Math.min(580, gameState.player.y));
             }
             
             if (gameState.player.attackCooldown > 0) {
@@ -993,7 +869,6 @@
                         if (monster.hp <= 0) {
                             gameState.monsters.splice(index, 1);
                             
-                            // 獲得獎勵
                             const goldReward = monster.type === 'elite' ? 20 : 10;
                             const expReward = monster.type === 'elite' ? 25 : 15;
                             
@@ -1027,7 +902,6 @@
             gameState.player.mp -= 15;
             gameState.player.castingSpell = true;
             
-            // 火球攻擊範圍內所有怪物
             gameState.monsters.forEach((monster, index) => {
                 const distance = Math.sqrt(
                     Math.pow(monster.x - gameState.player.x, 2) + 
@@ -1085,46 +959,7 @@
         
         // 互動系統
         function interact() {
-            if (gameState.scene === 'village') {
-                // 收集樹木
-                gameState.trees.forEach((tree) => {
-                    const distance = Math.sqrt(
-                        Math.pow(tree.x - gameState.player.x, 2) + 
-                        Math.pow(tree.y - gameState.player.y, 2)
-                    );
-                    
-                    if (distance < 40 && tree.hp > 0) {
-                        tree.hp--;
-                        gameState.resources.wood++;
-                        
-                        if (tree.hp <= 0) {
-                            setTimeout(() => {
-                                tree.hp = tree.maxHp;
-                            }, 20000);
-                        }
-                    }
-                });
-                
-                // 收集石頭
-                gameState.rocks.forEach((rock) => {
-                    const distance = Math.sqrt(
-                        Math.pow(rock.x - gameState.player.x, 2) + 
-                        Math.pow(rock.y - gameState.player.y, 2)
-                    );
-                    
-                    if (distance < 40 && rock.hp > 0) {
-                        rock.hp--;
-                        gameState.resources.stone++;
-                        
-                        if (rock.hp <= 0) {
-                            setTimeout(() => {
-                                rock.hp = rock.maxHp;
-                            }, 30000);
-                        }
-                    }
-                });
-            } else if (gameState.scene === 'dungeon') {
-                // 開啟寶箱
+            if (gameState.scene === 'dungeon') {
                 gameState.treasures.forEach((treasure) => {
                     const distance = Math.sqrt(
                         Math.pow(treasure.x - gameState.player.x, 2) + 
@@ -1136,7 +971,6 @@
                         const goldReward = 30 + Math.random() * 50;
                         gameState.resources.gold += Math.floor(goldReward);
                         
-                        // 隨機獲得物品
                         if (Math.random() < 0.3) {
                             gameState.resources.potions++;
                         }
@@ -1155,7 +989,6 @@
             if (gameState.scene !== 'dungeon') return;
             
             gameState.monsters.forEach(monster => {
-                // 向玩家移動
                 const dx = gameState.player.x - monster.x;
                 const dy = gameState.player.y - monster.y;
                 const distance = Math.sqrt(dx * dx + dy * dy);
@@ -1165,7 +998,6 @@
                     monster.y += (dy / distance) * monster.speed;
                 }
                 
-                // 攻擊玩家
                 if (distance < 35 && Date.now() - monster.lastAttack > 1000) {
                     const damage = Math.max(1, monster.attack - gameState.player.defense);
                     gameState.player.hp = Math.max(0, gameState.player.hp - damage);
@@ -1173,65 +1005,52 @@
                 }
             });
             
-            // 檢查地牢完成條件
-            if (gameState.monsters.length === 0 && !gameState.dungeonData.cleared) {
-                gameState.dungeonData.cleared = true;
+            if (gameState.monsters.length === 0) {
                 gameState.dungeonLevel++;
-                alert(`地牢第 ${gameState.dungeonLevel - 1} 層完成！獲得額外獎勵！`);
+                alert(`地牢第 ${gameState.dungeonLevel - 1} 層完成！`);
                 gameState.resources.gold += 100;
                 gainExp(50);
+                gameState.scene = 'village';
+                switchMode('build');
             }
-        }
-        
-        // 更新地牢信息
-        function updateDungeonInfo() {
-            document.getElementById('dungeonLevel').textContent = gameState.dungeonLevel;
-            document.getElementById('monstersLeft').textContent = gameState.monsters.length;
         }
         
         // 更新UI
         function updateUI() {
-            // 血量條
             const hpPercent = (gameState.player.hp / gameState.player.maxHp) * 100;
             document.getElementById('hpBar').style.width = hpPercent + '%';
             document.getElementById('hpText').textContent = `${Math.floor(gameState.player.hp)}/${gameState.player.maxHp}`;
             
-            // 魔力條
             const mpPercent = (gameState.player.mp / gameState.player.maxMp) * 100;
             document.getElementById('mpBar').style.width = mpPercent + '%';
             document.getElementById('mpText').textContent = `${Math.floor(gameState.player.mp)}/${gameState.player.maxMp}`;
             
-            // 經驗條
             const expPercent = (gameState.player.exp / gameState.player.expToNext) * 100;
             document.getElementById('expBar').style.width = expPercent + '%';
             document.getElementById('expText').textContent = `Lv.${gameState.player.level}`;
             
-            // 資源
             document.getElementById('gold').textContent = gameState.resources.gold;
             document.getElementById('wood').textContent = gameState.resources.wood;
             document.getElementById('stone').textContent = gameState.resources.stone;
             document.getElementById('attack').textContent = gameState.player.attack;
             document.getElementById('defense').textContent = gameState.player.defense;
-            
-            // 背包
-            document.getElementById('weaponName').textContent = equipment.weapons[gameState.player.weapon].name;
-            document.getElementById('armorName').textContent = equipment.armors[gameState.player.armor].name;
             document.getElementById('keys').textContent = gameState.resources.keys;
             
-            // 地牢信息
             if (gameState.scene === 'dungeon') {
-                updateDungeonInfo();
+                document.getElementById('dungeonInfo').style.display = 'block';
+                document.getElementById('dungeonLevel').textContent = gameState.dungeonLevel;
+                document.getElementById('monstersLeft').textContent = gameState.monsters.length;
+            } else {
+                document.getElementById('dungeonInfo').style.display = 'none';
             }
         }
         
-        // 自動回復系統
+        // 自動回復
         function autoRegeneration() {
-            // MP自動回復
             if (gameState.player.mp < gameState.player.maxMp) {
                 gameState.player.mp = Math.min(gameState.player.maxMp, gameState.player.mp + 0.1);
             }
             
-            // 村莊中HP緩慢回復
             if (gameState.scene === 'village' && gameState.player.hp < gameState.player.maxHp) {
                 gameState.player.hp = Math.min(gameState.player.maxHp, gameState.player.hp + 0.05);
             }
@@ -1243,12 +1062,11 @@
             updateMonsters();
             autoRegeneration();
             
-            // 檢查死亡
             if (gameState.player.hp <= 0) {
                 alert('你死了！回到村莊復活。');
                 gameState.player.hp = gameState.player.maxHp / 2;
                 gameState.scene = 'village';
-                switchScene('village');
+                switchMode('build');
             }
             
             render();
@@ -1258,9 +1076,6 @@
         }
         
         // 初始化遊戲
-        initVillageResources();
+        initWorld();
         updateUI();
         gameLoop();
-    </script>
-</body>
-</html>
