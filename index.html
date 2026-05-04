@@ -1,1156 +1,468 @@
 <!DOCTYPE html>
-<html lang="zh-TW">
+<html lang="zh-Hant">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>小軟的馬卡龍部落格</title>
-    <link rel="icon" href="favicon.ico" type="image/x-icon">
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: 'Arial', '微軟正黑體', sans-serif;
-            background: linear-gradient(135deg, #ffeef8, #f0f8ff);
-            min-height: 100vh;
-        }
-
-        .container {
-            display: flex;
-            min-height: 100vh;
-        }
-
-        /* 左側選單 */
-        .sidebar {
-            width: 280px;
-            background: rgba(255, 255, 255, 0.9);
-            backdrop-filter: blur(10px);
-            box-shadow: 2px 0 20px rgba(0,0,0,0.1);
-            padding: 30px 0;
-            position: fixed;
-            height: 100vh;
-            overflow-y: auto;
-        }
-
-        .logo {
-            text-align: center;
-            margin-bottom: 40px;
-            padding: 0 20px;
-        }
-
-        .logo h1 {
-            background: linear-gradient(45deg, #ff9a9e, #fecfef, #fecfef);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            font-size: 24px;
-            font-weight: bold;
-        }
-
-        .logo .subtitle {
-            font-size: 12px;
-            color: #999;
-            margin-top: 5px;
-        }
-
-        .menu-item {
-            display: block;
-            padding: 15px 25px;
-            text-decoration: none;
-            color: #666;
-            transition: all 0.3s ease;
-            border-left: 4px solid transparent;
-            margin: 5px 0;
-        }
-
-        .menu-item:hover {
-            background: rgba(255, 182, 193, 0.2);
-            border-left-color: #ffb6c1;
-            transform: translateX(5px);
-        }
-
-        .menu-item.active {
-            background: linear-gradient(90deg, rgba(255, 182, 193, 0.3), transparent);
-            border-left-color: #ff9a9e;
-            color: #ff6b8a;
-        }
-
-        .menu-item .icon {
-            display: inline-block;
-            width: 20px;
-            height: 20px;
-            margin-right: 10px;
-            border-radius: 50%;
-            vertical-align: middle;
-        }
-
-        .icon-home { background: linear-gradient(45deg, #ffb6c1, #ffc0cb); }
-        .icon-calendar { background: linear-gradient(45deg, #fff2b3, #ffe4b5); }
-        .icon-blog { background: linear-gradient(45deg, #b3d9ff, #c7ecff); }
-        .icon-gallery { background: linear-gradient(45deg, #e6b3ff, #f0c7ff); }
-        .icon-xunxun { background: linear-gradient(45deg, #87ceeb, #add8e6); }
-        .icon-linlin { background: linear-gradient(45deg, #ffb347, #ffd700); }
-        .icon-ai { background: linear-gradient(45deg, #667eea, #764ba2); }
-        .icon-chat { background: linear-gradient(45deg, #f093fb, #f5576c); }
-        .icon-about { background: linear-gradient(45deg, #b3ffb3, #c7ffc7); }
-        .icon-contact { background: linear-gradient(45deg, #ffcc99, #ffd9b3); }
-
-        /* 主要內容區 */
-        .main-content {
-            margin-left: 280px;
-            flex: 1;
-            padding: 40px;
-        }
-
-        .header {
-            background: rgba(255, 255, 255, 0.8);
-            backdrop-filter: blur(10px);
-            border-radius: 20px;
-            padding: 30px;
-            margin-bottom: 30px;
-            box-shadow: 0 8px 32px rgba(0,0,0,0.1);
-        }
-
-        .header h2 {
-            color: #ff6b8a;
-            font-size: 28px;
-            margin-bottom: 10px;
-        }
-
-        .header p {
-            color: #666;
-            font-size: 16px;
-        }
-
-        .content-cards {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 25px;
-        }
-
-        .card {
-            background: rgba(255, 255, 255, 0.9);
-            backdrop-filter: blur(10px);
-            border-radius: 20px;
-            padding: 25px;
-            box-shadow: 0 8px 32px rgba(0,0,0,0.1);
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
-            border: 1px solid rgba(255, 255, 255, 0.2);
-        }
-
-        .card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 15px 40px rgba(0,0,0,0.15);
-        }
-
-        .card-header {
-            display: flex;
-            align-items: center;
-            margin-bottom: 15px;
-        }
-
-        .card-icon {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            margin-right: 15px;
-        }
-
-        .card h3 {
-            color: #555;
-            font-size: 18px;
-        }
-
-        .card p {
-            color: #777;
-            line-height: 1.6;
-        }
-
-        .calendar-highlight {
-            background: linear-gradient(135deg, #fff2b3, #ffe4b5);
-            border: 2px solid #ffd700;
-        }
-
-        .calendar-highlight h3 {
-            color: #cc9900;
-        }
-
-        /* 響應式設計 */
-        @media (max-width: 768px) {
-            .sidebar {
-                width: 100%;
-                height: auto;
-                position: relative;
-            }
-            
-            .main-content {
-                margin-left: 0;
-                padding: 20px;
-            }
-            
-            .container {
-                flex-direction: column;
-            }
-        }
-
-        /* 裝飾性元素 */
-        .floating-shapes {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            pointer-events: none;
-            z-index: -1;
-        }
-
-        .shape {
-            position: absolute;
-            border-radius: 50%;
-            opacity: 0.1;
-            animation: float 6s ease-in-out infinite;
-        }
-
-        .shape1 {
-            width: 80px;
-            height: 80px;
-            background: #ffb6c1;
-            top: 20%;
-            left: 10%;
-            animation-delay: 0s;
-        }
-
-        .shape2 {
-            width: 60px;
-            height: 60px;
-            background: #b3d9ff;
-            top: 60%;
-            right: 15%;
-            animation-delay: 2s;
-        }
-
-        .shape3 {
-            width: 100px;
-            height: 100px;
-            background: #e6b3ff;
-            bottom: 20%;
-            left: 20%;
-            animation-delay: 4s;
-        }
-
-        @keyframes float {
-            0%, 100% { transform: translateY(0px); }
-            50% { transform: translateY(-20px); }
-        }
-
-        .page-content {
-            width: 100%;
-        }
-
-        .page-content iframe {
-            box-shadow: 0 8px 32px rgba(0,0,0,0.1);
-        }
-
-        /* 勳勳的小世界 - 遊戲樣式 */
-        .game-container {
-            display: flex;
-            justify-content: center;
-            padding: 20px;
-        }
-
-        .game-card {
-            background: rgba(255, 255, 255, 0.9);
-            backdrop-filter: blur(10px);
-            border-radius: 20px;
-            padding: 30px;
-            box-shadow: 0 8px 32px rgba(0,0,0,0.1);
-            text-align: center;
-        }
-
-        .game-card h3 {
-            color: #4a90e2;
-            margin-bottom: 20px;
-            font-size: 24px;
-        }
-
-        #tetris-game {
-            display: flex;
-            gap: 30px;
-            align-items: flex-start;
-        }
-
-        #tetrisCanvas {
-            border: 3px solid #4a90e2;
-            border-radius: 10px;
-            background: #000;
-        }
-
-        .game-controls {
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
-            min-width: 200px;
-        }
-
-        .score-display {
-            background: linear-gradient(135deg, #87ceeb, #add8e6);
-            color: white;
-            padding: 15px;
-            border-radius: 15px;
-            font-weight: bold;
-        }
-
-        .score-display div {
-            margin: 5px 0;
-        }
-
-        .game-buttons {
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-        }
-
-        .game-btn {
-            background: linear-gradient(135deg, #4ecdc4, #44a08d);
-            color: white;
-            border: none;
-            padding: 12px 20px;
-            border-radius: 25px;
-            cursor: pointer;
-            font-size: 14px;
-            transition: all 0.3s ease;
-        }
-
-        .game-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(68, 160, 141, 0.3);
-        }
-
-        .game-instructions {
-            background: rgba(255, 255, 255, 0.8);
-            padding: 15px;
-            border-radius: 15px;
-            font-size: 12px;
-            text-align: left;
-        }
-
-        /* 麟麟的小天地 - 塗鴉樣式 */
-        .drawing-container {
-            display: flex;
-            gap: 20px;
-            padding: 20px;
-        }
-
-        .drawing-tools {
-            background: rgba(255, 255, 255, 0.9);
-            backdrop-filter: blur(10px);
-            border-radius: 20px;
-            padding: 25px;
-            box-shadow: 0 8px 32px rgba(0,0,0,0.1);
-            min-width: 250px;
-            height: fit-content;
-        }
-
-        .tool-section {
-            margin-bottom: 25px;
-        }
-
-        .tool-section h4 {
-            color: #ff6b8a;
-            margin-bottom: 15px;
-            font-size: 16px;
-        }
-
-        .color-palette {
-            display: grid;
-            grid-template-columns: repeat(7, 1fr);
-            gap: 8px;
-        }
-
-        .color-btn {
-            width: 30px;
-            height: 30px;
-            border-radius: 50%;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            border: 2px solid transparent;
-        }
-
-        .color-btn:hover {
-            transform: scale(1.1);
-        }
-
-        .color-btn.active {
-            border-color: #ff6b8a;
-            transform: scale(1.2);
-        }
-
-        .brush-slider {
-            width: 100%;
-            margin-bottom: 10px;
-        }
-
-        #brushSizeDisplay {
-            color: #666;
-            font-weight: bold;
-        }
-
-        .drawing-buttons {
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-        }
-
-        .draw-btn {
-            background: linear-gradient(135deg, #ff9a9e, #fecfef);
-            color: white;
-            border: none;
-            padding: 10px 15px;
-            border-radius: 20px;
-            cursor: pointer;
-            font-size: 12px;
-            transition: all 0.3s ease;
-        }
-
-        .draw-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(255, 154, 158, 0.3);
-        }
-
-        .draw-btn.active {
-            background: linear-gradient(135deg, #ff6b6b, #ff8e8e);
-        }
-
-        .canvas-container {
-            flex: 1;
-        }
-
-        #drawingCanvas {
-            border: 3px solid #ff9a9e;
-            border-radius: 15px;
-            background: white;
-            cursor: crosshair;
-            box-shadow: 0 8px 32px rgba(0,0,0,0.1);
-            max-width: 100%;
-        }
-
-        /* 響應式設計 */
-        @media (max-width: 768px) {
-            #tetris-game {
-                flex-direction: column;
-                align-items: center;
-            }
-            
-            .drawing-container {
-                flex-direction: column;
-            }
-            
-            .drawing-tools {
-                min-width: auto;
-            }
-            
-            .color-palette {
-                grid-template-columns: repeat(7, 1fr);
-            }
-        }
-
-        /* 小軟會說話功能 */
-        #xiaoruan-btn {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            z-index: 1000;
-            width: 150px;
-            height: 150px;
-            border-radius: 50%;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            background: linear-gradient(135deg, #fff2e6, #ffe4b5);
-            border: 3px solid rgba(255, 255, 255, 0.8);
-            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
-            overflow: hidden;
-        }
-
-        #xiaoruan-btn img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-
-        #xiaoruan-btn:hover {
-            transform: scale(1.1);
-            box-shadow: 0 12px 35px rgba(0,0,0,0.2);
-        }
-
-        #xiaoruan-bubble {
-            position: fixed;
-            bottom: 190px;
-            right: 20px;
-            max-width: 320px;
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(10px);
-            color: #555;
-            padding: 20px 24px;
-            font-size: 15px;
-            line-height: 1.7;
-            font-family: "Microsoft JhengHei", "微軟正黑體", sans-serif;
-            border-radius: 20px 20px 5px 20px;
-            box-shadow: 0 8px 32px rgba(0,0,0,0.15);
-            border: 2px solid rgba(255, 182, 193, 0.3);
-            display: none;
-            z-index: 1001;
-            animation: bubbleAppear 0.3s ease-out;
-        }
-
-        #xiaoruan-bubble::after {
-            content: '';
-            position: absolute;
-            bottom: -8px;
-            right: 15px;
-            width: 0;
-            height: 0;
-            border-left: 8px solid transparent;
-            border-right: 8px solid transparent;
-            border-top: 8px solid rgba(255, 255, 255, 0.95);
-        }
-
-        @keyframes bubbleAppear {
-            0% {
-                opacity: 0;
-                transform: translateY(10px) scale(0.8);
-            }
-            100% {
-                opacity: 1;
-                transform: translateY(0) scale(1);
-            }
-        }
-
-        /* 小軟按鈕呼吸動畫 */
-        @keyframes breathe {
-            0%, 100% { 
-                transform: scale(1);
-                box-shadow: 0 8px 25px rgba(0,0,0,0.15);
-            }
-            50% { 
-                transform: scale(1.05);
-                box-shadow: 0 10px 30px rgba(255, 182, 193, 0.3);
-            }
-        }
-
-        #xiaoruan-btn {
-            animation: breathe 3s ease-in-out infinite;
-        }
-    </style>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Beauty's Quiet Garden</title>
+<meta name="description" content="一個放音樂、寫字、養貓、追劇，順便觀察這個荒謬世界的角落。" />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;1,400;1,500&family=Noto+Sans+TC:wght@300;400;500&family=Noto+Serif+TC:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    min-height: 100vh;
+    color: #4b4a43;
+    font-family: 'Noto Serif TC', 'Songti TC', Georgia, serif;
+    background:
+      radial-gradient(circle at 82% 78%, rgba(111, 139, 122, 0.15), transparent 22rem),
+      radial-gradient(circle at 18% 12%, rgba(216, 200, 186, 0.22), transparent 18rem),
+      linear-gradient(135deg, #fbf7ef, #f5efe3);
+    overflow-x: hidden;
+    line-height: 1.7;
+  }
+  body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    background-image:
+      linear-gradient(rgba(255, 255, 255, 0.25) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255, 255, 255, 0.18) 1px, transparent 1px);
+    background-size: 54px 54px;
+    opacity: 0.35;
+    z-index: 0;
+  }
+  .container { position: relative; max-width: 1100px; margin: 0 auto; padding: 60px 40px 100px; z-index: 1; }
+  .signature {
+    position: absolute; top: 20px; left: -10px;
+    font-family: 'Brush Script MT', 'Snell Roundhand', cursive;
+    font-size: clamp(60px, 8vw, 96px);
+    color: rgba(111, 139, 122, 0.16);
+    transform: rotate(-5deg);
+    pointer-events: none; user-select: none;
+  }
+  .blog-link {
+    color: #4e6d5e; text-decoration: none;
+    border: 1px solid rgba(78, 109, 94, 0.2);
+    border-radius: 999px; padding: 9px 16px;
+    background: rgba(255, 255, 255, 0.4);
+    font-size: 14px; transition: all 0.25s ease; display: inline-block;
+  }
+  .blog-link:hover { background: rgba(111, 139, 122, 0.18); transform: translateY(-2px); }
+  header {
+    padding: 60px 0 32px;
+    border-bottom: 1px solid rgba(92, 87, 75, 0.14);
+    position: relative;
+  }
+  .eyebrow {
+    color: #4e6d5e; font-size: 13px; letter-spacing: 0.22em;
+    text-transform: uppercase; margin-bottom: 18px;
+  }
+  h1 {
+    margin: 0;
+    font-size: clamp(38px, 6vw, 56px);
+    line-height: 1.1; font-weight: 500; letter-spacing: 0.02em;
+    color: #4b4a43;
+  }
+  .intro {
+    margin-top: 22px; max-width: 580px;
+    color: #8f8a7d; font-size: 16px; line-height: 1.9;
+    font-family: 'Noto Sans TC', sans-serif;
+  }
+  nav { display: flex; gap: 10px; margin-top: 28px; flex-wrap: wrap; }
+
+  .main-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 280px;
+    gap: 60px; margin-top: 44px;
+  }
+  .section-head {
+    display: flex; justify-content: space-between; align-items: baseline;
+    margin-bottom: 16px; padding-bottom: 14px;
+    border-bottom: 0.5px solid rgba(78, 109, 94, 0.3);
+  }
+  #section-title {
+    font-family: 'Cormorant Garamond', 'Noto Serif TC', serif;
+    font-size: 26px; font-weight: 400; margin: 0;
+    font-style: italic; color: #4b4a43;
+  }
+  #post-count {
+    font-size: 11px; letter-spacing: 2.5px;
+    color: #6f8b7a; text-transform: uppercase;
+    font-family: 'Noto Sans TC', sans-serif;
+  }
+  .post-row {
+    display: grid; grid-template-columns: 110px 1fr;
+    gap: 32px; align-items: start; padding: 28px 0;
+    border-bottom: 0.5px solid rgba(92, 87, 75, 0.1);
+    transition: opacity 0.4s ease, padding 0.3s ease, max-height 0.5s ease;
+    overflow: hidden;
+  }
+  .post-row:hover { padding-left: 8px; }
+  .post-row:hover .post-title { color: #4e6d5e; }
+  .post-date {
+    font-family: 'Cormorant Garamond', 'Noto Serif TC', serif; color: #6f8b7a;
+  }
+  .post-date-main { font-style: italic; font-size: 16px; letter-spacing: 1px; }
+  .post-date-year { font-size: 12px; color: #b8b8b8; margin-top: 2px; }
+  .post-tag {
+    font-size: 10px; letter-spacing: 2.5px; color: #c9a8a0;
+    text-transform: uppercase; margin-bottom: 10px;
+    font-family: 'Noto Sans TC', sans-serif;
+  }
+  .post-title {
+    font-family: 'Cormorant Garamond', 'Noto Serif TC', serif;
+    font-size: 24px; font-weight: 500;
+    margin: 0 0 10px; color: #4b4a43;
+    line-height: 1.4; transition: color 0.25s ease;
+  }
+  .post-excerpt {
+    font-size: 14px; color: #6b675d; line-height: 1.85;
+    margin: 0; font-family: 'Noto Sans TC', sans-serif;
+  }
+  .filter-chip {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 6px 14px; background: rgba(111, 139, 122, 0.15);
+    color: #4e6d5e; border-radius: 999px;
+    font-size: 12px; letter-spacing: 1px;
+    font-family: 'Noto Sans TC', sans-serif; margin-right: 6px;
+  }
+  .filter-chip-close {
+    cursor: pointer; color: #6f8b7a; transition: color 0.2s;
+  }
+  .filter-chip-close:hover { color: #c9a8a0; }
+  .empty-state {
+    text-align: center; padding: 60px 0;
+    color: #b8b8b8; font-style: italic;
+    font-family: 'Cormorant Garamond', 'Noto Serif TC', serif;
+    font-size: 18px;
+  }
+
+  aside {
+    position: sticky; top: 28px; align-self: start;
+    padding: 24px;
+    border: 1px solid rgba(92, 87, 75, 0.14);
+    border-radius: 22px;
+    background: rgba(255, 255, 255, 0.45);
+    backdrop-filter: blur(12px);
+  }
+  aside h3 {
+    margin: 0 0 10px;
+    font-size: 15px; font-weight: 500;
+    color: #4b4a43; font-family: 'Noto Sans TC', sans-serif;
+  }
+  .search-input {
+    width: 100%; padding: 8px 12px;
+    border: 0.5px solid rgba(78, 109, 94, 0.25);
+    border-radius: 10px; background: rgba(255, 255, 255, 0.5);
+    font-family: 'Noto Sans TC', sans-serif;
+    font-size: 13px; color: #4b4a43;
+    transition: all 0.2s; box-sizing: border-box;
+    margin-bottom: 22px;
+  }
+  .search-input:focus {
+    outline: none; border-color: rgba(78, 109, 94, 0.5);
+    background: rgba(255, 255, 255, 0.8);
+  }
+  .cat-item {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 8px 12px; margin: 0 -12px;
+    border-radius: 8px; cursor: pointer;
+    transition: all 0.2s ease;
+    color: #8f8a7d; font-size: 13px;
+    font-family: 'Noto Sans TC', sans-serif;
+  }
+  .cat-item:hover { background: rgba(111, 139, 122, 0.1); color: #4b4a43; }
+  .cat-item.active {
+    background: rgba(111, 139, 122, 0.18);
+    color: #4e6d5e; font-weight: 500;
+  }
+  .cat-count {
+    font-size: 11px; color: #b8b8b8;
+    font-family: 'Cormorant Garamond', serif; font-style: italic;
+  }
+  .now-block {
+    margin-bottom: 22px; padding: 14px;
+    background: rgba(111, 139, 122, 0.08);
+    border-radius: 14px;
+  }
+  .now-pill {
+    display: inline-block; font-size: 10px;
+    letter-spacing: 0.18em; color: #6f8b7a;
+    text-transform: uppercase;
+    background: rgba(111, 139, 122, 0.12);
+    padding: 3px 10px; border-radius: 999px;
+    margin-bottom: 8px;
+  }
+  .now-list {
+    font-size: 13px; color: #4b4a43; line-height: 1.85;
+    font-family: 'Noto Sans TC', sans-serif;
+  }
+  .now-list div { margin-bottom: 4px; }
+  .find-list { display: flex; flex-direction: column; gap: 6px; font-size: 13px; font-family: 'Noto Sans TC', sans-serif; }
+  .find-list a { color: #4e6d5e; text-decoration: none; }
+  .find-list a:hover { text-decoration: underline; }
+
+  footer {
+    margin-top: 80px; padding-top: 32px;
+    border-top: 1px solid rgba(92, 87, 75, 0.14);
+    color: rgba(75, 74, 67, 0.55);
+    font-size: 13px; text-align: center;
+    font-family: 'Noto Sans TC', sans-serif;
+  }
+  .corner-rose {
+    position: absolute; right: 30px; bottom: 60px;
+    opacity: 0.5; pointer-events: none;
+  }
+
+  @media (max-width: 760px) {
+    .container { padding: 30px 20px 60px; }
+    .main-grid { grid-template-columns: 1fr; gap: 40px; }
+    aside { position: static; }
+    .corner-rose { width: 120px; height: auto; right: 0; bottom: 0; opacity: 0.3; }
+    .post-row { grid-template-columns: 80px 1fr; gap: 16px; }
+    h1 { font-size: 36px; }
+  }
+</style>
 </head>
 <body>
-    <!-- 裝飾性浮動形狀 -->
-    <div class="floating-shapes">
-        <div class="shape shape1"></div>
-        <div class="shape shape2"></div>
-        <div class="shape shape3"></div>
-    </div>
+<div class="container">
+  <div class="signature">Beauty</div>
 
-    <div class="container">
-        <!-- 左側選單 -->
-        <nav class="sidebar">
-            <div class="logo">
-                <h1>🌸 Beauty部落格 🌸</h1>
-                <div class="subtitle">小軟貓咪的美麗世界</div>
-            </div>
-            
-            <a href="#" class="menu-item active">
-                <span class="icon icon-home"></span>
-                首頁
-            </a>
-            
-            <a href="#" class="menu-item" data-page="calendar">
-                <span class="icon icon-calendar"></span>
-                小軟2025行事曆 🐱
-            </a>
-            
-            <a href="#" class="menu-item">
-                <span class="icon icon-blog"></span>
-                部落格文章
-            </a>
-            
-            <a href="#" class="menu-item">
-                <span class="icon icon-gallery"></span>
-                相片集
-            </a>
+  <header>
+    <div class="eyebrow">quiet notes · soft chaos · personal blog</div>
+    <h1>在溫柔背景裡，<br>寫一點不太溫柔的生活。</h1>
+    <p class="intro">這裡放日常、創作、遊戲、AI 工具、貓，以及那些半夜突然覺得「欸這件事其實很荒謬」的腦內筆記。背景要淡，文字要準，人生已經夠吵了，網頁就別再像百貨公司週年慶。</p>
+    <nav>
+      <a href="#posts" class="blog-link">文章</a>
+      <a href="#about" class="blog-link">關於</a>
+      <a href="#" class="blog-link">碎念</a>
+      <a href="https://github.com/" class="blog-link" target="_blank" rel="noopener">GitHub</a>
+    </nav>
+  </header>
 
-            <a href="#" class="menu-item" data-page="xunxun">
-                <span class="icon icon-xunxun"></span>
-                勳勳的小世界 🎮
-            </a>
+  <div class="main-grid">
+    <section id="posts">
+      <div class="section-head">
+        <h2 id="section-title">Recent Words</h2>
+        <span id="post-count">5 articles</span>
+      </div>
+      <div id="filter-status" style="margin-bottom: 16px; min-height: 28px;"></div>
+      <div id="post-list"></div>
+      <div id="empty-state" class="empty-state" style="display:none;">— 找不到符合的文章 —</div>
+    </section>
 
-            <a href="#" class="menu-item" data-page="linlin">
-                <span class="icon icon-linlin"></span>
-                麟麟的小天地 🎨
-            </a>
-            
-            <a href="#" class="menu-item" data-page="ai">
-                <span class="icon icon-ai"></span>
-                AI創作 🤖
-            </a>
+    <aside id="about">
+      <svg width="100%" height="60" viewBox="0 0 200 60" style="display:block; margin: -8px 0 12px;">
+        <g stroke="#6f8b7a" stroke-width="0.8" fill="none" stroke-linecap="round">
+          <path d="M100 8 Q100 30 100 52"/>
+          <path d="M100 16 Q86 14 78 22 Q88 26 100 24" fill="#a8bfae" fill-opacity="0.4"/>
+          <path d="M100 16 Q114 14 122 22 Q112 26 100 24" fill="#a8bfae" fill-opacity="0.4"/>
+          <path d="M100 32 Q82 30 72 40 Q86 44 100 42" fill="#9cb5a3" fill-opacity="0.4"/>
+          <path d="M100 32 Q118 30 128 40 Q114 44 100 42" fill="#9cb5a3" fill-opacity="0.4"/>
+        </g>
+        <g fill="#d8c8ba">
+          <circle cx="100" cy="52" r="5" fill-opacity="0.7"/>
+          <circle cx="98" cy="51" r="2.5" fill="#c9b3a4"/>
+        </g>
+      </svg>
 
-            <a href="#" class="menu-item" data-page="xiaoruan-chat">
-                <span class="icon icon-chat"></span>
-                小軟即時通 💬
-            </a>
-            
-            <a href="#" class="menu-item">
-                <span class="icon icon-about"></span>
-                關於我
-            </a>
-            
-            <a href="#" class="menu-item">
-                <span class="icon icon-contact"></span>
-                聯絡方式
-            </a>
-        </nav>
+      <h3>搜尋</h3>
+      <input type="text" class="search-input" id="search" placeholder="輸入關鍵字..." />
 
-        <!-- 主要內容 -->
-        <main class="main-content">
-            <!-- 首頁內容 -->
-            <div id="home-content" class="page-content">
-                <header class="header">
-                    <h2>歡迎來到Beauty的馬卡龍世界 🐱✨</h2>
-                    <p>跟著小軟貓咪一起探索美麗生活，記錄每一個可愛的瞬間</p>
-                </header>
+      <h3>分類</h3>
+      <div id="category-list" style="margin-bottom: 22px;"></div>
 
-                <div class="content-cards">
-                    <div class="card calendar-highlight">
-                        <div class="card-header">
-                            <div class="card-icon" style="background: linear-gradient(45deg, #fff2b3, #ffe4b5);"></div>
-                            <h3>🗓️ 小軟2025行事曆</h3>
-                        </div>
-                        <p>記錄小軟貓咪2025年的重要日程！包含疫苗時間、美容預約、生日慶祝，還有那些值得紀念的可愛時光。</p>
-                    </div>
+      <div class="now-block">
+        <div class="now-pill">currently</div>
+        <div class="now-list">
+          <div>🎧 Suno · 林月如 demo v3</div>
+          <div>📺 進擊的巨人 二刷</div>
+          <div>🎮 D2R Ladder S9</div>
+        </div>
+      </div>
 
-                    <div class="card">
-                        <div class="card-header">
-                            <div class="card-icon icon-blog"></div>
-                            <h3>📝 Beauty日記</h3>
-                        </div>
-                        <p>分享小軟的日常生活趣事，美容保養心得、可愛瞬間記錄，還有那些讓人融化的貓咪日常。</p>
-                    </div>
+      <h3>Find me</h3>
+      <div class="find-list">
+        <a href="https://x.com/Beauty2025a" target="_blank" rel="noopener">X · @Beauty2025a</a>
+        <a href="https://steamcommunity.com/id/badbeauty" target="_blank" rel="noopener">Steam · badbeauty</a>
+        <a href="#">RSS</a>
+      </div>
+    </aside>
+  </div>
 
-                    <div class="card">
-                        <div class="card-header">
-                            <div class="card-icon icon-gallery"></div>
-                            <h3>📸 小軟寫真集</h3>
-                        </div>
-                        <p>捕捉小軟最美的瞬間！從慵懶的午後時光到調皮的玩耍模樣，每一張照片都是珍貴的回憶。</p>
-                    </div>
+  <footer>
+    <svg width="50" height="36" viewBox="0 0 50 36" style="display:block; margin: 0 auto 12px;">
+      <g stroke="#6f8b7a" stroke-width="0.8" fill="none" stroke-linecap="round">
+        <path d="M25 6 Q25 18 25 30"/>
+        <path d="M25 12 Q18 11 14 16 Q19 18 25 17" fill="#a8bfae" fill-opacity="0.4"/>
+        <path d="M25 12 Q32 11 36 16 Q31 18 25 17" fill="#a8bfae" fill-opacity="0.4"/>
+        <circle cx="25" cy="30" r="3" fill="#d8c8ba" fill-opacity="0.7"/>
+      </g>
+    </svg>
+    © 2026 Beauty · 用 HTML + CSS 養的一座小花園
+  </footer>
 
-                    <div class="card">
-                        <div class="card-header">
-                            <div class="card-icon icon-about"></div>
-                            <h3>💫 關於小軟</h3>
-                        </div>
-                        <p>認識我們家的小帥哥！小軟是一隻充滿魅力的男子漢貓咪，擁有獨特的個性和帥氣的魅力。</p>
-                    </div>
-                </div>
-            </div>
+  <svg class="corner-rose" width="180" height="160" viewBox="0 0 180 160">
+    <g stroke="#6f8b7a" stroke-width="1" fill="none" stroke-linecap="round">
+      <path d="M90 40 Q90 90 90 140"/>
+      <path d="M90 60 Q60 56 42 70 Q60 78 90 76" fill="#a8bfae" fill-opacity="0.55"/>
+      <path d="M90 60 Q120 56 138 70 Q120 78 90 76" fill="#a8bfae" fill-opacity="0.55"/>
+      <path d="M90 95 Q56 92 36 110 Q60 118 90 114" fill="#9cb5a3" fill-opacity="0.5"/>
+      <path d="M90 95 Q124 92 144 110 Q120 118 90 114" fill="#9cb5a3" fill-opacity="0.5"/>
+    </g>
+    <g>
+      <circle cx="90" cy="135" r="22" fill="#dac9ba" fill-opacity="0.85"/>
+      <circle cx="84" cy="130" r="11" fill="#c9b3a4" fill-opacity="0.7"/>
+      <circle cx="96" cy="138" r="13" fill="#e7dace" fill-opacity="0.85"/>
+      <circle cx="90" cy="135" r="5" fill="#b89a86" fill-opacity="0.6"/>
+    </g>
+  </svg>
+</div>
 
-            <!-- 行事曆內容 -->
-            <div id="calendar-content" class="page-content" style="display: none;">
-                <iframe src="calendar.html" style="width: 100%; height: 800px; border: none; border-radius: 15px;"></iframe>
-            </div>
+<script>
+// ========================================
+// 文章資料 — 妳之後新增文章只要在這裡加一筆
+// ========================================
+const posts = [
+  {
+    date: 'May 04', year: '2026',
+    category: '生活碎片',
+    tag: 'DAILY · WRITING',
+    title: '把生活寫成部落格，像是替混亂做一點排版',
+    excerpt: '有些事情放在腦子裡會發霉，寫下來至少會變成有版面的發霉。人類文明走到今天，終於把碎念部署到 GitHub Pages，科技真是令人沉默。'
+  },
+  {
+    date: 'May 03', year: '2026',
+    category: '貓咪治理學',
+    tag: 'DAILY · CAT',
+    title: '小軟觀察報告:一隻貓如何用毛量治理家庭',
+    excerpt: '小軟的存在證明了柔軟也是一種權力。他不需要發表政策，只要躺在走道中央，整個家的人流動線就會自動重劃。這不是貓，是白色長毛版都市計畫委員會。'
+  },
+  {
+    date: 'May 02', year: '2026',
+    category: 'AI 工具筆記',
+    tag: 'ESSAY · AI',
+    title: 'AI、遊戲與半夜不睡:現代人的精神雜技',
+    excerpt: '一邊研究 OpenClaw，一邊想玩 Diablo，一邊打開 Suno 做歌，一邊看 Garmin 嘲笑自己的 Body Battery。這不是效率工具，是把大腦改裝成夜市攤位。'
+  },
+  {
+    date: 'Apr 28', year: '2026',
+    category: '生活碎片',
+    tag: 'ESSAY · THINKING',
+    title: '看完《進擊的巨人》之後，我想了三天的牆',
+    excerpt: '所謂自由不是逃離一道牆，而是發現自己一直站在另一道更大的牆裡面。艾倫的悲劇不在於他選錯了路，而在於——他從來沒有別的路可以選。'
+  },
+  {
+    date: 'Apr 20', year: '2026',
+    category: 'AI 工具筆記',
+    tag: 'MUSIC · SUNO',
+    title: '替 Tifa 寫一首她不會唱的歌',
+    excerpt: '第一人稱寫她，比第三人稱觀察她更難——你必須假裝知道她到底想不想說。沒有戰鬥、沒有任務，只有一個女人在擦杯子。'
+  },
+  {
+    date: 'Apr 15', year: '2026',
+    category: '遊戲與模組',
+    tag: 'GAME · D2R',
+    title: 'Diablo II Resurrected 第九賽季的私心建議',
+    excerpt: '今季開放符文之語的調整意外地溫柔，新手可以無痛上手。先衝戰士再轉電爪德魯伊，比你想的舒服。'
+  },
+  {
+    date: 'Apr 08', year: '2026',
+    category: '貓咪治理學',
+    tag: 'DAILY · CAT',
+    title: '小軟在沙發上的領土宣示週記',
+    excerpt: '他每天會用屁股在沙發上劃定一個圓形管轄區，半徑不可侵犯。這套主權邏輯比任何國際法都清晰。'
+  }
+];
 
-            <!-- 勳勳的小世界 -->
-            <div id="xunxun-content" class="page-content" style="display: none;">
-                <iframe src="xunxun-game.html" style="width: 100%; height: 1000px; border: none; border-radius: 15px;"></iframe>
-            </div>
+// ========================================
+// 以下不用動 — 篩選邏輯
+// ========================================
+let activeCategory = null;
+let searchKeyword = '';
 
-            <!-- 麟麟的小天地 -->
-            <div id="linlin-content" class="page-content" style="display: none;">
-                <iframe src="linlin-drawing.html" style="width: 100%; height: 1000px; border: none; border-radius: 15px;"></iframe>
-            </div>
+function renderCategories() {
+  const counts = {};
+  posts.forEach(p => { counts[p.category] = (counts[p.category] || 0) + 1; });
+  const cats = Object.keys(counts).sort();
 
-            <!-- AI創作 -->
-            <div id="ai-content" class="page-content" style="display: none;">
-                <iframe src="ai-creator.html" style="width: 100%; height: 1000px; border: none; border-radius: 15px;"></iframe>
-            </div>
+  const container = document.getElementById('category-list');
+  let html = '<div class="cat-item ' + (activeCategory === null ? 'active' : '') + '" data-cat="all"><span>全部文章</span><span class="cat-count">' + posts.length + '</span></div>';
+  cats.forEach(c => {
+    html += '<div class="cat-item ' + (activeCategory === c ? 'active' : '') + '" data-cat="' + c + '"><span>' + c + '</span><span class="cat-count">' + counts[c] + '</span></div>';
+  });
+  container.innerHTML = html;
 
-            <!-- 小軟即時通 -->
-            <div id="xiaoruan-chat-content" class="page-content" style="display: none;">
-                <iframe src="xiaoruan-chat.html" style="width: 100%; height: 1000px; border: none; border-radius: 15px;"></iframe>
-            </div>
-        </main>
-    </div>
+  container.querySelectorAll('.cat-item').forEach(el => {
+    el.addEventListener('click', () => {
+      const cat = el.getAttribute('data-cat');
+      activeCategory = (cat === 'all') ? null : cat;
+      renderCategories();
+      renderPosts();
+    });
+  });
+}
 
-    <!-- 小軟會說話功能 -->
-    <div id="xiaoruan-bubble"></div>
-    <div id="xiaoruan-btn">
-        <img src="https://beautyzx.github.io/images/xiaoruan.png" alt="小軟" />
-    </div>
+function escapeHtml(s) {
+  return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
 
-    <script>
-        // 選單互動效果
-        document.querySelectorAll('.menu-item').forEach(item => {
-            item.addEventListener('click', function(e) {
-                e.preventDefault();
-                
-                // 移除所有active狀態
-                document.querySelectorAll('.menu-item').forEach(link => {
-                    link.classList.remove('active');
-                });
-                
-                // 添加active到點擊的項目
-                this.classList.add('active');
-                
-                // 獲取頁面類型
-                const pageType = this.getAttribute('data-page');
-                
-                // 隱藏所有頁面內容
-                document.querySelectorAll('.page-content').forEach(page => {
-                    page.style.display = 'none';
-                });
-                
-                // 顯示對應的頁面內容
-                if (pageType === 'calendar') {
-                    document.getElementById('calendar-content').style.display = 'block';
-                } else if (pageType === 'xunxun') {
-                    document.getElementById('xunxun-content').style.display = 'block';
-                } else if (pageType === 'linlin') {
-                    document.getElementById('linlin-content').style.display = 'block';
-                } else if (pageType === 'ai') {
-                    document.getElementById('ai-content').style.display = 'block';
-                } else if (pageType === 'xiaoruan-chat') {
-                    document.getElementById('xiaoruan-chat-content').style.display = 'block';
-                } else {
-                    document.getElementById('home-content').style.display = 'block';
-                }
-                
-                // 更新主要內容標題（僅首頁需要）
-                if (!pageType || pageType === 'home') {
-                    const itemText = this.textContent.trim();
-                    const header = document.querySelector('#home-content .header h2');
-                    const description = document.querySelector('#home-content .header p');
-                    
-                    switch(itemText) {
-                        case '首頁':
-                            header.textContent = '歡迎來到Beauty的馬卡龍世界 🐱✨';
-                            description.textContent = '跟著小軟貓咪一起探索美麗生活，記錄每一個可愛的瞬間';
-                            break;
-                        case '部落格文章':
-                            header.textContent = '📝 Beauty日記';
-                            description.textContent = '分享小軟的日常趣事和美麗生活點滴';
-                            break;
-                        case '相片集':
-                            header.textContent = '📸 小軟寫真集';
-                            description.textContent = '用鏡頭捕捉小軟貓咪最美的瞬間';
-                            break;
-                        case '關於我':
-                            header.textContent = '💫 關於小軟';
-                            description.textContent = '認識我們家的小帥哥，了解小軟貓咪的帥氣故事';
-                            break;
-                        case '聯絡方式':
-                            header.textContent = '📧 聯絡方式';
-                            description.textContent = '歡迎與我們交流，一起分享關於貓咪的美好時光';
-                            break;
-                    }
-                }
-            });
-        });
+function renderPosts() {
+  const list = document.getElementById('post-list');
+  const filtered = posts.filter(p => {
+    const matchCat = !activeCategory || p.category === activeCategory;
+    const k = searchKeyword.toLowerCase();
+    const matchSearch = !k ||
+      p.title.toLowerCase().includes(k) ||
+      p.excerpt.toLowerCase().includes(k) ||
+      p.category.toLowerCase().includes(k);
+    return matchCat && matchSearch;
+  });
 
-        // 卡片懸停效果
-        document.querySelectorAll('.card').forEach(card => {
-            card.addEventListener('mouseenter', function() {
-                this.style.transform = 'translateY(-5px) scale(1.02)';
-            });
-            
-            card.addEventListener('mouseleave', function() {
-                this.style.transform = 'translateY(0) scale(1)';
-            });
-        });
+  let html = '';
+  filtered.forEach(p => {
+    html += '<div class="post-row">' +
+      '<div class="post-date"><div class="post-date-main">' + escapeHtml(p.date) + '</div><div class="post-date-year">' + escapeHtml(p.year) + '</div></div>' +
+      '<div><div class="post-tag">' + escapeHtml(p.tag) + '</div>' +
+      '<h3 class="post-title">' + escapeHtml(p.title) + '</h3>' +
+      '<p class="post-excerpt">' + escapeHtml(p.excerpt) + '</p></div>' +
+      '</div>';
+  });
+  list.innerHTML = html;
 
-        // 小軟會說話功能
-        const xiaoruanBtn = document.getElementById('xiaoruan-btn');
-        const bubble = document.getElementById('xiaoruan-bubble');
-        const quotes = [
-            "這個世界太喧囂，我只想靜靜地陪妳。",
-            "若妳迷路了，我會是妳的方向。",
-            "我不是路過，是為妳停下的。",
-            "我不會問為什麼不說，只會陪妳沉默。",
-            "即使妳不說，我也會留在這裡。",
-            "這城市再大，也找得到妳。",
-            "如果風太冷，我可以是妳的風衣。",
-            "放心吧，我不會走丟，就算妳先離開。"
-        ];
+  document.getElementById('post-count').textContent = filtered.length + (filtered.length === 1 ? ' article' : ' articles');
+  document.getElementById('empty-state').style.display = filtered.length === 0 ? 'block' : 'none';
 
-        xiaoruanBtn.addEventListener('click', () => {
-            const message = quotes[Math.floor(Math.random() * quotes.length)];
-            bubble.innerText = message;
-            bubble.style.display = 'block';
-            
-            // 添加點擊動畫效果
-            xiaoruanBtn.style.transform = 'scale(0.9)';
-            setTimeout(() => {
-                xiaoruanBtn.style.transform = 'scale(1)';
-            }, 100);
-            
-            setTimeout(() => {
-                bubble.style.display = 'none';
-            }, 5000);
-        });
+  const title = document.getElementById('section-title');
+  if (activeCategory && searchKeyword) title.textContent = '「' + activeCategory + '」搜尋結果';
+  else if (activeCategory) title.textContent = activeCategory;
+  else if (searchKeyword) title.textContent = '搜尋結果';
+  else title.textContent = 'Recent Words';
 
-        // 俄羅斯方塊遊戲
-        let tetrisInitialized = false;
-        function initTetris() {
-            if (tetrisInitialized) return;
-            tetrisInitialized = true;
+  const status = document.getElementById('filter-status');
+  let chips = '';
+  if (activeCategory) chips += '<span class="filter-chip">分類：' + escapeHtml(activeCategory) + ' <span class="filter-chip-close" data-act="cat">×</span></span>';
+  if (searchKeyword) chips += '<span class="filter-chip">搜尋：' + escapeHtml(searchKeyword) + ' <span class="filter-chip-close" data-act="search">×</span></span>';
+  status.innerHTML = chips;
+  status.querySelectorAll('.filter-chip-close').forEach(el => {
+    el.addEventListener('click', () => {
+      if (el.getAttribute('data-act') === 'cat') { activeCategory = null; renderCategories(); }
+      else { searchKeyword = ''; document.getElementById('search').value = ''; }
+      renderPosts();
+    });
+  });
+}
 
-            const canvas = document.getElementById('tetrisCanvas');
-            const ctx = canvas.getContext('2d');
-            const scoreElement = document.getElementById('score');
-            const levelElement = document.getElementById('level');
-            const linesElement = document.getElementById('lines');
+document.getElementById('search').addEventListener('input', e => {
+  searchKeyword = e.target.value.trim();
+  renderPosts();
+});
 
-            const ROWS = 20;
-            const COLS = 10;
-            const BLOCK_SIZE = 30;
-
-            let board = Array(ROWS).fill().map(() => Array(COLS).fill(0));
-            let score = 0;
-            let level = 1;
-            let lines = 0;
-            let gameRunning = false;
-            let currentPiece = null;
-            let gameLoop = null;
-
-            const colors = ['#000', '#ff6b6b', '#4ecdc4', '#45b7d1', '#96ceb4', '#ffeaa7', '#dda0dd', '#98d8c8'];
-
-            const tetrominoes = [
-                [[1,1,1,1]], // I
-                [[1,1],[1,1]], // O
-                [[0,1,0],[1,1,1]], // T
-                [[0,1,1],[1,1,0]], // S
-                [[1,1,0],[0,1,1]], // Z
-                [[1,0,0],[1,1,1]], // J
-                [[0,0,1],[1,1,1]]  // L
-            ];
-
-            function drawBlock(x, y, color) {
-                ctx.fillStyle = colors[color];
-                ctx.fillRect(x * BLOCK_SIZE, y * BLOCK_SIZE, BLOCK_SIZE, BLOCK_SIZE);
-                ctx.strokeStyle = '#fff';
-                ctx.strokeRect(x * BLOCK_SIZE, y * BLOCK_SIZE, BLOCK_SIZE, BLOCK_SIZE);
-            }
-
-            function drawBoard() {
-                ctx.clearRect(0, 0, canvas.width, canvas.height);
-                for (let y = 0; y < ROWS; y++) {
-                    for (let x = 0; x < COLS; x++) {
-                        if (board[y][x]) {
-                            drawBlock(x, y, board[y][x]);
-                        }
-                    }
-                }
-            }
-
-            function createPiece() {
-                const type = Math.floor(Math.random() * tetrominoes.length);
-                return {
-                    shape: tetrominoes[type],
-                    x: Math.floor(COLS / 2) - Math.floor(tetrominoes[type][0].length / 2),
-                    y: 0,
-                    color: type + 1
-                };
-            }
-
-            function drawPiece(piece) {
-                for (let y = 0; y < piece.shape.length; y++) {
-                    for (let x = 0; x < piece.shape[y].length; x++) {
-                        if (piece.shape[y][x]) {
-                            drawBlock(piece.x + x, piece.y + y, piece.color);
-                        }
-                    }
-                }
-            }
-
-            function isValidMove(piece, dx, dy, rotation = null) {
-                const shape = rotation || piece.shape;
-                for (let y = 0; y < shape.length; y++) {
-                    for (let x = 0; x < shape[y].length; x++) {
-                        if (shape[y][x]) {
-                            const newX = piece.x + x + dx;
-                            const newY = piece.y + y + dy;
-                            if (newX < 0 || newX >= COLS || newY >= ROWS || (newY >= 0 && board[newY][newX])) {
-                                return false;
-                            }
-                        }
-                    }
-                }
-                return true;
-            }
-
-            function placePiece(piece) {
-                for (let y = 0; y < piece.shape.length; y++) {
-                    for (let x = 0; x < piece.shape[y].length; x++) {
-                        if (piece.shape[y][x]) {
-                            board[piece.y + y][piece.x + x] = piece.color;
-                        }
-                    }
-                }
-            }
-
-            function clearLines() {
-                let linesCleared = 0;
-                for (let y = ROWS - 1; y >= 0; y--) {
-                    if (board[y].every(cell => cell !== 0)) {
-                        board.splice(y, 1);
-                        board.unshift(Array(COLS).fill(0));
-                        linesCleared++;
-                        y++;
-                    }
-                }
-                if (linesCleared > 0) {
-                    lines += linesCleared;
-                    score += linesCleared * 100 * level;
-                    level = Math.floor(lines / 10) + 1;
-                    updateScore();
-                }
-            }
-
-            function updateScore() {
-                scoreElement.textContent = score;
-                levelElement.textContent = level;
-                linesElement.textContent = lines;
-            }
-
-            function rotatePiece(piece) {
-                const rotated = piece.shape[0].map((_, i) => 
-                    piece.shape.map(row => row[i]).reverse()
-                );
-                return rotated;
-            }
-
-            function gameStep() {
-                if (!currentPiece) {
-                    currentPiece = createPiece();
-                    if (!isValidMove(currentPiece, 0, 0)) {
-                        gameOver();
-                        return;
-                    }
-                }
-
-                if (isValidMove(currentPiece, 0, 1)) {
-                    currentPiece.y++;
-                } else {
-                    placePiece(currentPiece);
-                    clearLines();
-                    currentPiece = null;
-                }
-
-                drawBoard();
-                if (currentPiece) {
-                    drawPiece(currentPiece);
-                }
-            }
-
-            function gameOver() {
-                gameRunning = false;
-                clearInterval(gameLoop);
-                alert(`遊戲結束！\n得分: ${score}\n等級: ${level}\n清除行數: ${lines}`);
-            }
-
-            function startGame() {
-                if (gameRunning) return;
-                gameRunning = true;
-                board = Array(ROWS).fill().map(() => Array(COLS).fill(0));
-                score = 0;
-                level = 1;
-                lines = 0;
-                currentPiece = null;
-                updateScore();
-                gameLoop = setInterval(gameStep, Math.max(100, 500 - level * 50));
-            }
-
-            function pauseGame() {
-                if (!gameRunning) return;
-                clearInterval(gameLoop);
-                gameRunning = false;
-            }
-
-            function resetGame() {
-                clearInterval(gameLoop);
-                gameRunning = false;
-                board = Array(ROWS).fill().map(() => Array(COLS).fill(0));
-                score = 0;
-                level = 1;
-                lines = 0;
-                currentPiece = null;
-                updateScore();
-                drawBoard();
-            }
-
-            // 控制按鍵
-            document.addEventListener('keydown', (e) => {
-                if (!gameRunning || !currentPiece) return;
-                
-                switch(e.key) {
-                    case 'ArrowLeft':
-                        if (isValidMove(currentPiece, -1, 0)) {
-                            currentPiece.x--;
-                        }
-                        break;
-                    case 'ArrowRight':
-                        if (isValidMove(currentPiece, 1, 0)) {
-                            currentPiece.x++;
-                        }
-                        break;
-                    case 'ArrowDown':
-                        if (isValidMove(currentPiece, 0, 1)) {
-                            currentPiece.y++;
-                        }
-                        break;
-                    case 'ArrowUp':
-                        const rotated = rotatePiece(currentPiece);
-                        if (isValidMove(currentPiece, 0, 0, rotated)) {
-                            currentPiece.shape = rotated;
-                        }
-                        break;
-                }
-                drawBoard();
-                if (currentPiece) {
-                    drawPiece(currentPiece);
-                }
-            });
-
-            // 按鈕事件
-            document.getElementById('startBtn').addEventListener('click', startGame);
-            document.getElementById('pauseBtn').addEventListener('click', pauseGame);
-            document.getElementById('resetBtn').addEventListener('click', resetGame);
-
-            drawBoard();
-        }
-
-        // 塗鴉功能
-        let drawingInitialized = false;
-        function initDrawing() {
-            if (drawingInitialized) return;
-            drawingInitialized = true;
-
-            const canvas = document.getElementById('drawingCanvas');
-            const ctx = canvas.getContext('2d');
-            let isDrawing = false;
-            let currentColor = '#000000';
-            let currentSize = 5;
-            let isEraser = false;
-
-            // 設置canvas背景
-            ctx.fillStyle = 'white';
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-            // 顏色選擇
-            document.querySelectorAll('.color-btn').forEach(btn => {
-                btn.addEventListener('click', () => {
-                    document.querySelectorAll('.color-btn').forEach(b => b.classList.remove('active'));
-                    btn.classList.add('active');
-                    currentColor = btn.dataset.color;
-                    isEraser = false;
-                    document.getElementById('eraserMode').classList.remove('active');
-                });
-            });
-
-            // 畫筆大小
-            const brushSizeSlider = document.getElementById('brushSize');
-            const brushSizeDisplay = document.getElementById('brushSizeDisplay');
-            brushSizeSlider.addEventListener('input', () => {
-                currentSize = brushSizeSlider.value;
-                brushSizeDisplay.textContent = currentSize + 'px';
-            });
-
-            // 橡皮擦
-            document.getElementById('eraserMode').addEventListener('click', () => {
-                isEraser = !isEraser;
-                document.getElementById('eraserMode').classList.toggle('active');
-            });
-
-            // 清除畫布
-            document.getElementById('clearCanvas').addEventListener('click', () => {
-                if (confirm('確定要清除所有內容嗎？')) {
-                    ctx.fillStyle = 'white';
-                    ctx.fillRect(0, 0, canvas.width, canvas.height);
-                }
-            });
-
-            // 儲存作品
-            document.getElementById('saveDrawing').addEventListener('click', () => {
-                const link = document.createElement('a');
-                link.download = `麟麟的作品_${new Date().toLocaleDateString()}.png`;
-                link.href = canvas.toDataURL();
-                link.click();
-            });
-
-            // 繪畫功能
-            function startDrawing(e) {
-                isDrawing = true;
-                draw(e);
-            }
-
-            function draw(e) {
-                if (!isDrawing) return;
-
-                const rect = canvas.getBoundingClientRect();
-                const x = e.clientX - rect.left;
-                const y = e.clientY - rect.top;
-
-                ctx.lineWidth = currentSize;
-                ctx.lineCap = 'round';
-                ctx.globalCompositeOperation = isEraser ? 'destination-out' : 'source-over';
-                ctx.strokeStyle = currentColor;
-
-                ctx.lineTo(x, y);
-                ctx.stroke();
-                ctx.beginPath();
-                ctx.moveTo(x, y);
-            }
-
-            function stopDrawing() {
-                if (isDrawing) {
-                    isDrawing = false;
-                    ctx.beginPath();
-                }
-            }
-
-            // 滑鼠事件
-            canvas.addEventListener('mousedown', startDrawing);
-            canvas.addEventListener('mousemove', draw);
-            canvas.addEventListener('mouseup', stopDrawing);
-            canvas.addEventListener('mouseout', stopDrawing);
-
-            // 觸控事件 (手機支援)
-            canvas.addEventListener('touchstart', (e) => {
-                e.preventDefault();
-                const touch = e.touches[0];
-                const mouseEvent = new MouseEvent('mousedown', {
-                    clientX: touch.clientX,
-                    clientY: touch.clientY
-                });
-                canvas.dispatchEvent(mouseEvent);
-            });
-
-            canvas.addEventListener('touchmove', (e) => {
-                e.preventDefault();
-                const touch = e.touches[0];
-                const mouseEvent = new MouseEvent('mousemove', {
-                    clientX: touch.clientX,
-                    clientY: touch.clientY
-                });
-                canvas.dispatchEvent(mouseEvent);
-            });
-
-            canvas.addEventListener('touchend', (e) => {
-                e.preventDefault();
-                const mouseEvent = new MouseEvent('mouseup', {});
-                canvas.dispatchEvent(mouseEvent);
-            });
-        }
-    </script>
+renderCategories();
+renderPosts();
+</script>
 </body>
 </html>
