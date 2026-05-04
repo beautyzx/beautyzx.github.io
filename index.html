@@ -99,6 +99,7 @@
     border-bottom: 0.5px solid rgba(92, 87, 75, 0.1);
     transition: opacity 0.4s ease, padding 0.3s ease, max-height 0.5s ease;
     overflow: hidden;
+    text-decoration: none; color: inherit;
   }
   .post-row:hover { padding-left: 8px; }
   .post-row:hover .post-title { color: #4e6d5e; }
@@ -322,62 +323,9 @@
   </svg>
 </div>
 
+<script src="posts.js"></script>
 <script>
-// ========================================
-// 文章資料 — 妳之後新增文章只要在這裡加一筆
-// ========================================
-const posts = [
-  {
-    date: 'May 04', year: '2026',
-    category: '生活碎片',
-    tag: 'DAILY · WRITING',
-    title: '把生活寫成部落格，像是替混亂做一點排版',
-    excerpt: '有些事情放在腦子裡會發霉，寫下來至少會變成有版面的發霉。人類文明走到今天，終於把碎念部署到 GitHub Pages，科技真是令人沉默。'
-  },
-  {
-    date: 'May 03', year: '2026',
-    category: '貓咪治理學',
-    tag: 'DAILY · CAT',
-    title: '小軟觀察報告:一隻貓如何用毛量治理家庭',
-    excerpt: '小軟的存在證明了柔軟也是一種權力。他不需要發表政策，只要躺在走道中央，整個家的人流動線就會自動重劃。這不是貓，是白色長毛版都市計畫委員會。'
-  },
-  {
-    date: 'May 02', year: '2026',
-    category: 'AI 工具筆記',
-    tag: 'ESSAY · AI',
-    title: 'AI、遊戲與半夜不睡:現代人的精神雜技',
-    excerpt: '一邊研究 OpenClaw，一邊想玩 Diablo，一邊打開 Suno 做歌，一邊看 Garmin 嘲笑自己的 Body Battery。這不是效率工具，是把大腦改裝成夜市攤位。'
-  },
-  {
-    date: 'Apr 28', year: '2026',
-    category: '生活碎片',
-    tag: 'ESSAY · THINKING',
-    title: '看完《進擊的巨人》之後，我想了三天的牆',
-    excerpt: '所謂自由不是逃離一道牆，而是發現自己一直站在另一道更大的牆裡面。艾倫的悲劇不在於他選錯了路，而在於——他從來沒有別的路可以選。'
-  },
-  {
-    date: 'Apr 20', year: '2026',
-    category: 'AI 工具筆記',
-    tag: 'MUSIC · SUNO',
-    title: '替 Tifa 寫一首她不會唱的歌',
-    excerpt: '第一人稱寫她，比第三人稱觀察她更難——你必須假裝知道她到底想不想說。沒有戰鬥、沒有任務，只有一個女人在擦杯子。'
-  },
-  {
-    date: 'Apr 15', year: '2026',
-    category: '遊戲與模組',
-    tag: 'GAME · D2R',
-    title: 'Diablo II Resurrected 第九賽季的私心建議',
-    excerpt: '今季開放符文之語的調整意外地溫柔，新手可以無痛上手。先衝戰士再轉電爪德魯伊，比你想的舒服。'
-  },
-  {
-    date: 'Apr 08', year: '2026',
-    category: '貓咪治理學',
-    tag: 'DAILY · CAT',
-    title: '小軟在沙發上的領土宣示週記',
-    excerpt: '他每天會用屁股在沙發上劃定一個圓形管轄區，半徑不可侵犯。這套主權邏輯比任何國際法都清晰。'
-  }
-];
-
+// posts 變數由 posts.js 提供（build.py 自動產生）
 // ========================================
 // 以下不用動 — 篩選邏輯
 // ========================================
@@ -424,12 +372,13 @@ function renderPosts() {
 
   let html = '';
   filtered.forEach(p => {
-    html += '<div class="post-row">' +
+    const url = 'post/' + p.slug + '.html';
+    html += '<a class="post-row" href="' + url + '">' +
       '<div class="post-date"><div class="post-date-main">' + escapeHtml(p.date) + '</div><div class="post-date-year">' + escapeHtml(p.year) + '</div></div>' +
       '<div><div class="post-tag">' + escapeHtml(p.tag) + '</div>' +
       '<h3 class="post-title">' + escapeHtml(p.title) + '</h3>' +
       '<p class="post-excerpt">' + escapeHtml(p.excerpt) + '</p></div>' +
-      '</div>';
+      '</a>';
   });
   list.innerHTML = html;
 
