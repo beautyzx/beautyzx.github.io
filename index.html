@@ -410,8 +410,33 @@ document.getElementById('search').addEventListener('input', e => {
   renderPosts();
 });
 
+// 從網址 hash 讀取篩選參數（從文章頁點分類/搜尋跳回來時用）
+function applyHashFilter() {
+  const hash = location.hash.slice(1); // 去掉 #
+  if (!hash) return;
+  const params = new URLSearchParams(hash);
+  if (params.has('cat')) {
+    activeCategory = decodeURIComponent(params.get('cat'));
+  }
+  if (params.has('search')) {
+    searchKeyword = decodeURIComponent(params.get('search'));
+    document.getElementById('search').value = searchKeyword;
+  }
+}
+
+applyHashFilter();
 renderCategories();
 renderPosts();
+
+// 網址 hash 改變時重新套用（譬如手動點 #cat=xxx 連結）
+window.addEventListener('hashchange', () => {
+  activeCategory = null;
+  searchKeyword = '';
+  document.getElementById('search').value = '';
+  applyHashFilter();
+  renderCategories();
+  renderPosts();
+});
 </script>
 </body>
 </html>
