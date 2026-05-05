@@ -38,15 +38,69 @@
     z-index: 0;
   }
   .container {
-    position: relative; max-width: 720px;
-    margin: 0 auto; padding: 40px 32px 100px;
+    position: relative;
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 60px 40px 100px;
     z-index: 1;
   }
+  .signature {
+    position: absolute; top: 20px; left: -10px;
+    font-family: 'Brush Script MT', 'Snell Roundhand', cursive;
+    font-size: clamp(60px, 8vw, 96px);
+    color: rgba(111, 139, 122, 0.16);
+    transform: rotate(-5deg);
+    pointer-events: none; user-select: none;
+  }
 
-  /* 麵包屑 / 返回 */
+  /* ===== HEADER（跟首頁一致） ===== */
+  header.site-header {
+    padding: 60px 0 32px;
+    border-bottom: 1px solid rgba(92, 87, 75, 0.14);
+    position: relative;
+  }
+  .eyebrow {
+    color: #4e6d5e; font-size: 13px; letter-spacing: 0.22em;
+    text-transform: uppercase; margin-bottom: 18px;
+  }
+  .site-title {
+    margin: 0;
+    font-size: clamp(34px, 5vw, 48px);
+    line-height: 1.15; font-weight: 500; letter-spacing: 0.02em;
+    color: #4b4a43;
+  }
+  .site-title a {
+    color: inherit; text-decoration: none;
+    transition: color 0.2s ease;
+  }
+  .site-title a:hover { color: #4e6d5e; }
+  .intro {
+    margin-top: 18px; max-width: 580px;
+    color: #8f8a7d; font-size: 15px; line-height: 1.85;
+    font-family: 'Noto Sans TC', sans-serif;
+  }
+  nav.site-nav { display: flex; gap: 10px; margin-top: 24px; flex-wrap: wrap; }
+  .blog-link {
+    color: #4e6d5e; text-decoration: none;
+    border: 1px solid rgba(78, 109, 94, 0.2);
+    border-radius: 999px; padding: 9px 16px;
+    background: rgba(255, 255, 255, 0.4);
+    font-size: 14px; transition: all 0.25s ease; display: inline-block;
+    font-family: 'Noto Serif TC', serif;
+  }
+  .blog-link:hover { background: rgba(111, 139, 122, 0.18); transform: translateY(-2px); }
+
+  /* ===== MAIN GRID（跟首頁一致） ===== */
+  .main-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 280px;
+    gap: 60px; margin-top: 44px;
+  }
+
+  /* ===== 麵包屑 / 返回 ===== */
   .top-nav {
     display: flex; justify-content: space-between; align-items: center;
-    padding-bottom: 30px;
+    margin-bottom: 24px;
     font-family: 'Noto Sans TC', sans-serif;
     font-size: 13px;
   }
@@ -66,24 +120,24 @@
     font-size: 11px; text-transform: uppercase;
   }
 
-  /* 文章 header */
-  article header {
-    padding: 30px 0 36px;
+  /* ===== 文章 header ===== */
+  article > header {
+    padding: 24px 0 30px;
     border-bottom: 0.5px solid rgba(78, 109, 94, 0.25);
-    margin-bottom: 40px;
+    margin-bottom: 36px;
     text-align: left;
   }
   .post-tag {
     font-family: 'Noto Sans TC', sans-serif;
     font-size: 11px; letter-spacing: 0.22em;
     color: #c9a8a0; text-transform: uppercase;
-    margin-bottom: 18px;
+    margin-bottom: 16px;
   }
   h1.post-title {
     font-family: 'Noto Serif TC', 'Songti TC', serif;
-    font-size: clamp(28px, 4vw, 38px);
+    font-size: clamp(26px, 3.4vw, 34px);
     font-weight: 500; line-height: 1.35;
-    margin: 0 0 20px; letter-spacing: 0.02em;
+    margin: 0 0 16px; letter-spacing: 0.02em;
     color: #3d3c36;
   }
   .post-meta {
@@ -102,9 +156,9 @@
     letter-spacing: 0.1em; color: #6f8b7a;
   }
 
-  /* 文章本文 */
+  /* ===== 文章本文 ===== */
   .post-content {
-    font-size: 16.5px; line-height: 2;
+    font-size: 16px; line-height: 2;
     color: #3d3c36;
   }
   .post-content > p:first-of-type::first-letter {
@@ -113,12 +167,10 @@
     line-height: 0.9; margin: 0.1em 0.12em 0 0;
     color: #6f8b7a; font-style: italic;
   }
-  .post-content p {
-    margin: 0 0 1.4em;
-  }
+  .post-content p { margin: 0 0 1.4em; }
   .post-content h2 {
     font-family: 'Noto Serif TC', serif;
-    font-size: 22px; font-weight: 500;
+    font-size: 21px; font-weight: 500;
     margin: 2.4em 0 0.8em;
     padding-left: 14px; position: relative;
     color: #3d3c36;
@@ -195,21 +247,21 @@
   }
   .post-content strong { color: #2d2c27; font-weight: 500; }
 
-  /* 文章底部 */
+  /* ===== 文章底部上下篇 ===== */
   .post-footer {
-    margin-top: 60px; padding-top: 30px;
+    margin-top: 50px; padding-top: 28px;
     border-top: 0.5px solid rgba(78, 109, 94, 0.25);
   }
   .post-nav {
-    display: flex; gap: 20px; margin-top: 30px;
+    display: flex; gap: 16px; margin-top: 20px;
   }
   .post-nav a {
-    flex: 1; padding: 16px 18px;
+    flex: 1; padding: 14px 16px;
     border: 1px solid rgba(92, 87, 75, 0.14);
-    border-radius: 14px;
+    border-radius: 12px;
     background: rgba(255, 255, 255, 0.4);
     text-decoration: none; color: #4b4a43;
-    font-size: 14px; line-height: 1.5;
+    font-size: 13px; line-height: 1.5;
     transition: all 0.25s ease;
     font-family: 'Noto Sans TC', sans-serif;
   }
@@ -220,63 +272,189 @@
   }
   .post-nav .nav-label {
     font-family: 'Cormorant Garamond', serif;
-    font-style: italic; font-size: 12px;
+    font-style: italic; font-size: 11px;
     color: #8f8a7d; display: block;
     margin-bottom: 4px; letter-spacing: 0.05em;
   }
   .post-nav .nav-next { text-align: right; }
 
-  /* footer 印記 */
+  /* ===== Sidebar（跟首頁一致） ===== */
+  aside {
+    position: sticky; top: 28px; align-self: start;
+    padding: 24px;
+    border: 1px solid rgba(92, 87, 75, 0.14);
+    border-radius: 22px;
+    background: rgba(255, 255, 255, 0.45);
+    backdrop-filter: blur(12px);
+  }
+  aside h3 {
+    margin: 0 0 10px;
+    font-size: 15px; font-weight: 500;
+    color: #4b4a43; font-family: 'Noto Sans TC', sans-serif;
+  }
+  .search-input {
+    width: 100%; padding: 8px 12px;
+    border: 0.5px solid rgba(78, 109, 94, 0.25);
+    border-radius: 10px; background: rgba(255, 255, 255, 0.5);
+    font-family: 'Noto Sans TC', sans-serif;
+    font-size: 13px; color: #4b4a43;
+    transition: all 0.2s; box-sizing: border-box;
+    margin-bottom: 22px;
+  }
+  .search-input:focus {
+    outline: none; border-color: rgba(78, 109, 94, 0.5);
+    background: rgba(255, 255, 255, 0.8);
+  }
+  .cat-item {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 8px 12px; margin: 0 -12px;
+    border-radius: 8px; cursor: pointer;
+    transition: all 0.2s ease;
+    color: #8f8a7d; font-size: 13px;
+    font-family: 'Noto Sans TC', sans-serif;
+    text-decoration: none;
+  }
+  .cat-item:hover { background: rgba(111, 139, 122, 0.1); color: #4b4a43; }
+  .cat-item.current {
+    background: rgba(111, 139, 122, 0.18);
+    color: #4e6d5e; font-weight: 500;
+  }
+  .cat-count {
+    font-size: 11px; color: #b8b8b8;
+    font-family: 'Cormorant Garamond', serif; font-style: italic;
+  }
+  .now-block {
+    margin-bottom: 22px; padding: 14px;
+    background: rgba(111, 139, 122, 0.08);
+    border-radius: 14px;
+  }
+  .now-pill {
+    display: inline-block; font-size: 10px;
+    letter-spacing: 0.18em; color: #6f8b7a;
+    text-transform: uppercase;
+    background: rgba(111, 139, 122, 0.12);
+    padding: 3px 10px; border-radius: 999px;
+    margin-bottom: 8px;
+  }
+  .now-list {
+    font-size: 13px; color: #4b4a43; line-height: 1.85;
+    font-family: 'Noto Sans TC', sans-serif;
+  }
+  .now-list div { margin-bottom: 4px; }
+  .find-list { display: flex; flex-direction: column; gap: 6px; font-size: 13px; font-family: 'Noto Sans TC', sans-serif; }
+  .find-list a { color: #4e6d5e; text-decoration: none; }
+  .find-list a:hover { text-decoration: underline; }
+
+  /* ===== Footer ===== */
   footer.site-footer {
-    margin-top: 60px; padding-top: 30px;
+    margin-top: 80px; padding-top: 32px;
     border-top: 1px solid rgba(92, 87, 75, 0.14);
     color: rgba(75, 74, 67, 0.55);
-    font-size: 12px; text-align: center;
+    font-size: 13px; text-align: center;
     font-family: 'Noto Sans TC', sans-serif;
   }
   footer.site-footer svg {
-    display: block; margin: 0 auto 10px;
+    display: block; margin: 0 auto 12px;
   }
 
   @media (max-width: 760px) {
-    .container { padding: 20px 18px 50px; }
-    h1.post-title { font-size: 24px; }
+    .container { padding: 30px 20px 60px; }
+    .main-grid { grid-template-columns: 1fr; gap: 40px; }
+    aside { position: static; }
+    h1.post-title { font-size: 22px; }
     .post-content { font-size: 15.5px; }
     .post-nav { flex-direction: column; gap: 10px; }
     .post-nav .nav-next { text-align: left; }
+    .site-title { font-size: 28px; }
   }
 </style>
 </head>
 <body>
 <div class="container">
+  <div class="signature">Beauty</div>
 
-  <nav class="top-nav">
-    <a class="back-link" href="../index.html">← 回到花園</a>
-    <span class="top-meta">{{CATEGORY}}</span>
-  </nav>
+  <header class="site-header">
+    <div class="eyebrow">quiet notes · soft chaos · personal blog</div>
+    <h2 class="site-title"><a href="../index.html">在溫柔背景裡，<br>寫一點不太溫柔的生活。</a></h2>
+    <p class="intro">這裡放日常、創作、遊戲、AI 工具、貓，以及那些半夜突然覺得「欸這件事其實很荒謬」的腦內筆記。</p>
+    <nav class="site-nav">
+      <a href="../index.html" class="blog-link">文章</a>
+      <a href="../index.html#about" class="blog-link">關於</a>
+      <a href="#" class="blog-link">碎念</a>
+      <a href="https://github.com/" class="blog-link" target="_blank" rel="noopener">GitHub</a>
+    </nav>
+  </header>
 
-  <article>
-    <header>
-      <div class="post-tag">{{TAG}}</div>
-      <h1 class="post-title">{{TITLE}}</h1>
-      <div class="post-meta">
-        <span>{{DATE_DISPLAY}}</span>
-        <span class="dot"></span>
-        <span class="category">{{CATEGORY}}</span>
-      </div>
-    </header>
+  <div class="main-grid">
 
-    <div class="post-content">
-{{CONTENT}}
-    </div>
-
-    <footer class="post-footer">
-      <nav class="post-nav">
-        {{PREV_LINK}}
-        {{NEXT_LINK}}
+    <section>
+      <nav class="top-nav">
+        <a class="back-link" href="../index.html">← 回到花園</a>
+        <span class="top-meta">{{CATEGORY}}</span>
       </nav>
-    </footer>
-  </article>
+
+      <article>
+        <header>
+          <div class="post-tag">{{TAG}}</div>
+          <h1 class="post-title">{{TITLE}}</h1>
+          <div class="post-meta">
+            <span>{{DATE_DISPLAY}}</span>
+            <span class="dot"></span>
+            <span class="category">{{CATEGORY}}</span>
+          </div>
+        </header>
+
+        <div class="post-content">
+{{CONTENT}}
+        </div>
+
+        <footer class="post-footer">
+          <nav class="post-nav">
+            {{PREV_LINK}}
+            {{NEXT_LINK}}
+          </nav>
+        </footer>
+      </article>
+    </section>
+
+    <aside id="about">
+      <svg width="100%" height="60" viewBox="0 0 200 60" style="display:block; margin: -8px 0 12px;">
+        <g stroke="#6f8b7a" stroke-width="0.8" fill="none" stroke-linecap="round">
+          <path d="M100 8 Q100 30 100 52"/>
+          <path d="M100 16 Q86 14 78 22 Q88 26 100 24" fill="#a8bfae" fill-opacity="0.4"/>
+          <path d="M100 16 Q114 14 122 22 Q112 26 100 24" fill="#a8bfae" fill-opacity="0.4"/>
+          <path d="M100 32 Q82 30 72 40 Q86 44 100 42" fill="#9cb5a3" fill-opacity="0.4"/>
+          <path d="M100 32 Q118 30 128 40 Q114 44 100 42" fill="#9cb5a3" fill-opacity="0.4"/>
+        </g>
+        <g fill="#d8c8ba">
+          <circle cx="100" cy="52" r="5" fill-opacity="0.7"/>
+          <circle cx="98" cy="51" r="2.5" fill="#c9b3a4"/>
+        </g>
+      </svg>
+
+      <h3>搜尋</h3>
+      <input type="text" class="search-input" id="sidebar-search" placeholder="輸入關鍵字按 Enter..." />
+
+      <h3>分類</h3>
+      <div id="sidebar-cats" style="margin-bottom: 22px;"></div>
+
+      <div class="now-block">
+        <div class="now-pill">currently</div>
+        <div class="now-list">
+          <div>🎧 Suno · 林月如 demo v3</div>
+          <div>📺 進擊的巨人 二刷</div>
+          <div>🎮 D2R Ladder S9</div>
+        </div>
+      </div>
+
+      <h3>Find me</h3>
+      <div class="find-list">
+        <a href="https://x.com/Beauty2025a" target="_blank" rel="noopener">X · @Beauty2025a</a>
+        <a href="https://steamcommunity.com/id/badbeauty" target="_blank" rel="noopener">Steam · badbeauty</a>
+        <a href="#">RSS</a>
+      </div>
+    </aside>
+  </div>
 
   <footer class="site-footer">
     <svg width="50" height="36" viewBox="0 0 50 36">
@@ -289,7 +467,35 @@
     </svg>
     © 2026 Beauty · 用 HTML + CSS 養的一座小花園
   </footer>
-
 </div>
+
+<script src="../posts.js"></script>
+<script>
+(function(){
+  const currentCategory = "{{CATEGORY}}";
+
+  const counts = {};
+  if (typeof posts !== 'undefined' && Array.isArray(posts)) {
+    posts.forEach(p => { counts[p.category] = (counts[p.category] || 0) + 1; });
+  }
+  const cats = Object.keys(counts).sort();
+
+  const container = document.getElementById('sidebar-cats');
+  let html = '<a class="cat-item" href="../index.html"><span>全部文章</span><span class="cat-count">' + (typeof posts !== 'undefined' ? posts.length : 0) + '</span></a>';
+  cats.forEach(c => {
+    const isCurrent = (c === currentCategory) ? ' current' : '';
+    html += '<a class="cat-item' + isCurrent + '" href="../index.html#cat=' + encodeURIComponent(c) + '"><span>' + c + '</span><span class="cat-count">' + counts[c] + '</span></a>';
+  });
+  container.innerHTML = html;
+
+  const searchInput = document.getElementById('sidebar-search');
+  searchInput.addEventListener('keydown', e => {
+    if (e.key === 'Enter') {
+      const k = e.target.value.trim();
+      if (k) location.href = '../index.html#search=' + encodeURIComponent(k);
+    }
+  });
+})();
+</script>
 </body>
 </html>
