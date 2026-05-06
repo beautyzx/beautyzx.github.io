@@ -202,6 +202,34 @@
     font-family: 'Noto Sans TC', sans-serif;
   }
   .now-list div { margin-bottom: 4px; }
+
+  /* === 小軟今日狀態 === */
+  .ruan-block {
+    margin-bottom: 22px; padding: 16px 14px;
+    background: rgba(216, 200, 186, 0.18);
+    border-radius: 14px;
+    border-left: 2px solid #c9a8a0;
+  }
+  .ruan-pill {
+    display: inline-block; font-size: 10px;
+    letter-spacing: 0.18em; color: #b89a86;
+    text-transform: uppercase;
+    background: rgba(201, 168, 160, 0.15);
+    padding: 3px 10px; border-radius: 999px;
+    margin-bottom: 10px;
+  }
+  .ruan-quote {
+    font-family: 'Cormorant Garamond', 'Noto Serif TC', serif;
+    font-size: 15px; font-style: italic;
+    color: #5d5c54; line-height: 1.6;
+    margin-bottom: 6px;
+  }
+  .ruan-meta {
+    font-size: 11px; color: #b89a86;
+    font-family: 'Noto Sans TC', sans-serif;
+    letter-spacing: 0.05em;
+  }
+
   .find-list { display: flex; flex-direction: column; gap: 6px; font-size: 13px; font-family: 'Noto Sans TC', sans-serif; }
   .find-list a { color: #4e6d5e; text-decoration: none; }
   .find-list a:hover { text-decoration: underline; }
@@ -279,16 +307,22 @@
       <div class="now-block">
         <div class="now-pill">currently</div>
         <div class="now-list">
-          <div>🎧 Suno · 林月如 demo v3</div>
-          <div>📺 進擊的巨人 二刷</div>
-          <div>🎮 D2R Ladder S9</div>
+          <div>🎧 Suno · 製作中</div>
+          <div>🦞 OpenClaw · 養龍蝦中</div>
+          <div>🎮 D2R · 第13賽季</div>
         </div>
+      </div>
+
+      <div class="ruan-block">
+        <div class="ruan-pill">小軟今日狀態</div>
+        <div class="ruan-quote">「今天已被佔領三個位子了」</div>
+        <div class="ruan-meta">— 七公斤元首談話</div>
       </div>
 
       <h3>Find me</h3>
       <div class="find-list">
         <a href="https://x.com/Beauty2025a" target="_blank" rel="noopener">X · @Beauty2025a</a>
-        <a href="https://steamcommunity.com/id/badbeauty" target="_blank" rel="noopener">Steam · badbeauty</a>
+        <a href="#" target="_blank" rel="noopener">YouTube · 待補</a>
         <a href="#">RSS</a>
       </div>
     </aside>
@@ -410,33 +444,8 @@ document.getElementById('search').addEventListener('input', e => {
   renderPosts();
 });
 
-// 從網址 hash 讀取篩選參數（從文章頁點分類/搜尋跳回來時用）
-function applyHashFilter() {
-  const hash = location.hash.slice(1); // 去掉 #
-  if (!hash) return;
-  const params = new URLSearchParams(hash);
-  if (params.has('cat')) {
-    activeCategory = decodeURIComponent(params.get('cat'));
-  }
-  if (params.has('search')) {
-    searchKeyword = decodeURIComponent(params.get('search'));
-    document.getElementById('search').value = searchKeyword;
-  }
-}
-
-applyHashFilter();
 renderCategories();
 renderPosts();
-
-// 網址 hash 改變時重新套用（譬如手動點 #cat=xxx 連結）
-window.addEventListener('hashchange', () => {
-  activeCategory = null;
-  searchKeyword = '';
-  document.getElementById('search').value = '';
-  applyHashFilter();
-  renderCategories();
-  renderPosts();
-});
 </script>
 </body>
 </html>
