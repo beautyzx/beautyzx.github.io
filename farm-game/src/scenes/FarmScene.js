@@ -61,23 +61,27 @@ class FarmScene extends Phaser.Scene {
         // Rows 4–17: action animations — do NOT use for movement
         //
         // Idle = single static frame (first frame of each walk row).
+        // player.png has 6 cols × 18 rows but contains TWO characters:
+        // col 0-2 = character A, col 3-5 = character B (same layout, different skin).
+        // Each animation row: cols 0-2 are character A's 3 frames.
+        // Row stride is 6 frames (full row), so character A's row N starts at frame N*6.
         const dirs = [
-            { dir: 'down',  start:  0 },
-            { dir: 'up',    start:  6 },
-            { dir: 'right', start: 12 },
-            { dir: 'left',  start: 18 },
+            { dir: 'down',  rowStart:  0 },
+            { dir: 'up',    rowStart:  6 },
+            { dir: 'right', rowStart: 12 },
+            { dir: 'left',  rowStart: 18 },
         ];
 
-        for (const { dir, start } of dirs) {
+        for (const { dir, rowStart } of dirs) {
             this.anims.create({
                 key: `walk-${dir}`,
-                frames: this.anims.generateFrameNumbers('player', { start, end: start + 5 }),
+                frames: this.anims.generateFrameNumbers('player', { start: rowStart, end: rowStart + 2 }),
                 frameRate: 8,
                 repeat: -1,
             });
             this.anims.create({
                 key: `idle-${dir}`,
-                frames: this.anims.generateFrameNumbers('player', { start, end: start }),
+                frames: this.anims.generateFrameNumbers('player', { start: rowStart, end: rowStart }),
                 frameRate: 4,
                 repeat: -1,
             });
