@@ -5,6 +5,6 @@ const GAME_CONFIG = {
     MAP_ROWS: 15,
     PLAYER_SPEED: 80,
     // GID in tilemap data = frame index + 1 (0 = empty in Phaser tilemap)
-    // Frame 0 = top-left tile of grass.png (interior grass)
-    GRASS_TILE: 1,
+    // col=0, row=5 (0-indexed) of 11×7 bitmask sheet = frame 55 = GID 56 = plain flat grass
+    GRASS_TILE: 56,
 };

@@ -54,27 +54,31 @@ class FarmScene extends Phaser.Scene {
 
     _buildAnimations() {
         // Player spritesheet layout (6 cols × 18 rows at 64×64):
-        // Row 0: idle-down   (frames  0– 5)   Row 1: walk-down   (frames  6–11)
-        // Row 2: idle-up     (frames 12–17)   Row 3: walk-up     (frames 18–23)
-        // Row 4: idle-right  (frames 24–29)   Row 5: walk-right  (frames 30–35)
-        // Row 6: idle-left   (frames 36–41)   Row 7: walk-left   (frames 42–47)
-        // Rows 8–17: action animations (unused in Phase 1)
-        const defs = [
-            { key: 'idle-down',  start:  0, end:  5, rate: 4 },
-            { key: 'walk-down',  start:  6, end: 11, rate: 8 },
-            { key: 'idle-up',    start: 12, end: 17, rate: 4 },
-            { key: 'walk-up',    start: 18, end: 23, rate: 8 },
-            { key: 'idle-right', start: 24, end: 29, rate: 4 },
-            { key: 'walk-right', start: 30, end: 35, rate: 8 },
-            { key: 'idle-left',  start: 36, end: 41, rate: 4 },
-            { key: 'walk-left',  start: 42, end: 47, rate: 8 },
+        // Row 0 (frames  0– 5): walk-down
+        // Row 1 (frames  6–11): walk-up
+        // Row 2 (frames 12–17): walk-right
+        // Row 3 (frames 18–23): walk-left
+        // Rows 4–17: action animations — do NOT use for movement
+        //
+        // Idle = single static frame (first frame of each walk row).
+        const dirs = [
+            { dir: 'down',  start:  0 },
+            { dir: 'up',    start:  6 },
+            { dir: 'right', start: 12 },
+            { dir: 'left',  start: 18 },
         ];
 
-        for (const { key, start, end, rate } of defs) {
+        for (const { dir, start } of dirs) {
             this.anims.create({
-                key,
-                frames: this.anims.generateFrameNumbers('player', { start, end }),
-                frameRate: rate,
+                key: `walk-${dir}`,
+                frames: this.anims.generateFrameNumbers('player', { start, end: start + 5 }),
+                frameRate: 8,
+                repeat: -1,
+            });
+            this.anims.create({
+                key: `idle-${dir}`,
+                frames: this.anims.generateFrameNumbers('player', { start, end: start }),
+                frameRate: 4,
                 repeat: -1,
             });
         }
