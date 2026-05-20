@@ -34,7 +34,7 @@ my-farm-game/
 
 | File | Size | Grid | Notes |
 |---|---|---|---|
-| `player.png` | 384×1152 | 6 cols × 18 rows of **64×64 frames** | Premium character spritesheet. Multi-direction walk/idle/action animations. |
+| `player.png` | 384×1152 | 12 cols × 24 rows of **32×48 frames** | Premium character spritesheet. Two characters side-by-side (cols 0-5 = char A, cols 6-11 = char B). Multi-direction walk/idle/action animations. |
 | `player_actions.png` | 96×576 | 6 cols × 9 rows of **16×32 frames** | Basic character action animations (chopping, watering, etc). |
 | `tools.png` | 96×96 | 6×6 grid of **16×16** | Tool icons: axe, hoe, watering can, etc. |
 | `watering_effect.png` | 432×144 | Animation frames **48×16** | Visual effect when watering. |
@@ -118,7 +118,7 @@ These use **bitmask layout** — see `assets/reference/bitmask_reference.png` fo
 - Set `scale.zoom = 3` (or use `scale.mode: Phaser.Scale.FIT`) to scale up the 16×16 art
 - Disable image smoothing: `game.canvas.style.imageRendering = 'pixelated'`
 - For spritesheets, use `this.load.spritesheet(key, path, { frameWidth, frameHeight })`
-- For the player (64×64 frames): `frameWidth: 64, frameHeight: 64`
+- For the player (32×48 frames): `frameWidth: 32, frameHeight: 48`
 - For most tiles (16×16): `frameWidth: 16, frameHeight: 16`
 
 ## Development Roadmap (suggested)

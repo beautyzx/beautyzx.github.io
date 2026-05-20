@@ -9,8 +9,8 @@ class BootScene extends Phaser.Scene {
 
         // Player spritesheet: 384×1152, 64×64 per frame (6 cols × 18 rows)
         this.load.spritesheet('player', 'assets/characters/player.png', {
-            frameWidth: 64,
-            frameHeight: 64,
+            frameWidth: 32,
+            frameHeight: 48,
         });
     }
 

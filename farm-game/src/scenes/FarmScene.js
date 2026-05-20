@@ -43,7 +43,7 @@ class FarmScene extends Phaser.Scene {
 
         // Small collision box at the player's feet
         this.player.body.setSize(12, 8);
-        this.player.body.setOffset(26, 52);
+        this.player.body.setOffset(10, 38);
 
         // Keep player inside map
         const mapW = MAP_COLS * TILE_SIZE;
@@ -53,29 +53,24 @@ class FarmScene extends Phaser.Scene {
     }
 
     _buildAnimations() {
-        // Player spritesheet layout (6 cols × 18 rows at 64×64):
-        // Row 0 (frames  0– 5): walk-down
-        // Row 1 (frames  6–11): walk-up
-        // Row 2 (frames 12–17): walk-right
-        // Row 3 (frames 18–23): walk-left
-        // Rows 4–17: action animations — do NOT use for movement
-        //
-        // Idle = single static frame (first frame of each walk row).
-        // player.png has 6 cols × 18 rows but contains TWO characters:
-        // col 0-2 = character A, col 3-5 = character B (same layout, different skin).
-        // Each animation row: cols 0-2 are character A's 3 frames.
-        // Row stride is 6 frames (full row), so character A's row N starts at frame N*6.
+        // player.png: 12 cols × 24 rows at 32×48 per frame (288 frames total).
+        // Two characters side-by-side: char A = cols 0-5, char B = cols 6-11.
+        // Row stride = 12 frames. Char A's frames for row N: N*12 through N*12+5.
+        // Row 0 (frames  0- 5): walk-down
+        // Row 2 (frames 24-29): walk-up
+        // Row 6 (frames 72-77): walk-right
+        // Row 7 (frames 84-89): walk-left
         const dirs = [
             { dir: 'down',  rowStart:  0 },
-            { dir: 'up',    rowStart:  6 },
-            { dir: 'right', rowStart: 12 },
-            { dir: 'left',  rowStart: 18 },
+            { dir: 'up',    rowStart: 24 },
+            { dir: 'right', rowStart: 72 },
+            { dir: 'left',  rowStart: 84 },
         ];
 
         for (const { dir, rowStart } of dirs) {
             this.anims.create({
                 key: `walk-${dir}`,
-                frames: this.anims.generateFrameNumbers('player', { start: rowStart, end: rowStart + 2 }),
+                frames: this.anims.generateFrameNumbers('player', { start: rowStart, end: rowStart + 5 }),
                 frameRate: 8,
                 repeat: -1,
             });
