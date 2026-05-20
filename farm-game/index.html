@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<title>My Farm Game</title>
+<style>
+  body {
+    font-family: -apple-system, sans-serif;
+    background: #2d4a2b;
+    color: #f5e6c8;
+    margin: 0;
+    padding: 24px;
+    line-height: 1.6;
+  }
+  h1 { color: #ffd66e; }
+  .preview {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 16px;
+    margin-top: 24px;
+  }
+  .card {
+    background: #1f3a1d;
+    padding: 12px;
+    border-radius: 6px;
+    text-align: center;
+  }
+  .card img {
+    image-rendering: pixelated;
+    max-width: 100%;
+    background: #444;
+    transform: scale(1);
+  }
+  .card p {
+    margin: 8px 0 0;
+    font-size: 12px;
+    color: #c8d8b8;
+  }
+</style>
+</head>
+<body>
+  <h1>🌱 My Farm Game — 素材檢查頁</h1>
+  <p>這是專案的起點。如果下面這些圖都看得到，代表資料夾結構正確，可以開始接 Phaser 寫遊戲了。</p>
+  <p>下一步：把這個 <code>index.html</code> 換成 Phaser 遊戲入口（叫 Claude Code 做就好）。</p>
+
+  <div class="preview">
+    <div class="card"><img src="assets/characters/player.png" alt="player"><p>player.png</p></div>
+    <div class="card"><img src="assets/tiles/grass.png" alt="grass"><p>tiles/grass.png</p></div>
+    <div class="card"><img src="assets/tiles/water.png" alt="water"><p>tiles/water.png</p></div>
+    <div class="card"><img src="assets/animals/chicken/chicken_white.png" alt="chicken"><p>animals/chicken</p></div>
+    <div class="card"><img src="assets/animals/cow/cow_brown.png" alt="cow"><p>animals/cow</p></div>
+    <div class="card"><img src="assets/objects/trees.png" alt="trees"><p>objects/trees</p></div>
+    <div class="card"><img src="assets/objects/farming_plants.png" alt="crops"><p>farming_plants</p></div>
+    <div class="card"><img src="assets/ui/dialog_box.png" alt="dialog"><p>ui/dialog_box</p></div>
+    <div class="card"><img src="assets/ui/icons.png" alt="icons"><p>ui/icons</p></div>
+    <div class="card"><img src="assets/reference/color_palette.png" alt="palette" style="image-rendering:pixelated; transform:scale(8); transform-origin:left top"><p>color_palette</p></div>
+  </div>
+</body>
+</html>
