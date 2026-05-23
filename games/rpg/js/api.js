@@ -8,3 +8,4 @@ export {startBattle,endBattle,renderBattle,getCurrentBattle} from './battle.js';
 export {showUrge,handleUrge} from './urge.js';
 export {addRomanceScene} from './romance.js';
 export {startFinalBattle,determineEnding} from './ending.js';
+export {showShop,showTavern} from './shop.js';

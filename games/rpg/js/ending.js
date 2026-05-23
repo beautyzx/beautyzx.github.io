@@ -5,7 +5,7 @@ import {startBattle} from './battle.js';
 export function startFinalBattle(){
   const darkBuff=G.darkBuffActive?8:0;
   startBattle(
-    [{name:'黑淵魔君',hp:90,maxHp:90,atk:15+darkBuff,def:5,ac:16,exp:300,
+    [{name:'黑淵魔君',hp:90,maxHp:90,atk:15+darkBuff,def:5,ac:16,exp:300,gold:200,
       loot:{name:'魔君殘魂',qty:1,type:'key',effect:{},desc:'魔君被封印後留下的殘魂結晶'}}],
     ()=>{
       // gotoScene is imported via scenes; call window reference to avoid circular dep
