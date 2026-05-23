@@ -112,9 +112,9 @@ export function updateUI(){
 export function updateAffection(){
   const comps=[
     {key:'yuer',heartId:'hearts-yuer',barId:'aff-bar-yuer',textId:'aff-text-yuer',statusId:'comp-status-yuer',
-     statuses:['尚未相遇','初識於渝州','逐漸熟悉','心生暖意','深厚情誼','情定終身']},
+     statuses:['尚未相遇','初識於渝州','逐漸熟悉','心生暖意','深厚情誼','情定終身'],name:'沈夜涼'},
     {key:'jianmei',heartId:'hearts-jianmei',barId:'aff-bar-jianmei',textId:'aff-text-jianmei',statusId:'comp-status-jianmei',
-     statuses:['尚未相遇','蜀山邂逅','並肩作戰','相互欣賞','生死之交','心意相通']}
+     statuses:['尚未相遇','蜀山邂逅','並肩作戰','相互欣賞','生死之交','心意相通'],name:'裴霜華'}
   ];
   comps.forEach(c=>{
     const aff=G.affection[c.key];
