@@ -23,7 +23,7 @@ export function determineEnding(){
   const isDark=G.origin==='dark';
   const topComp=G.affection.yuer>=G.affection.jianmei?'yuer':'jianmei';
   const topAff=G.affection[topComp];
-  const compName=topComp==='yuer'?'月如':'劍眉';
+  const compName=topComp==='yuer'?'沈夜涼':'裴霜華';
 
   let endingType;
   if(isDark){
@@ -39,16 +39,16 @@ export function determineEnding(){
   let endingName,endingText,endingStory;
   if(endingType==='dark'){
     endingName='黑淵歸墟';
-    endingText='你順從了黑暗。魔君的力量與你融為一體，封印碎裂，黑氣吞噬了古跡，也吞噬了你。月如和劍眉看著你消失在黑霧之中，淚流滿面。\n\n也許，在某個遙遠的地方，你還記得曾經選擇過光明的那個瞬間。';
+    endingText='你順從了黑暗。魔君的力量與你融為一體，封印碎裂，黑氣吞噬了古跡，也吞噬了你。沈夜涼和裴霜華看著你消失在黑霧之中，淚流滿面。\n\n也許，在某個遙遠的地方，你還記得曾經選擇過光明的那個瞬間。';
     endingStory=[
       {t:'封印石台爆裂，黑氣如洪水決堤。',c:'narr'},
       {t:'你站在中央，沒有掙扎，眼中的光芒一點點熄滅。',c:'dark-urge'},
-      {t:'「別——！」月如衝向你，被劍眉死死抱住。「放開我！」',c:'dialogue'},
+      {t:'「別——！」沈夜涼衝向你，被裴霜華死死抱住。「放開我！」',c:'dialogue'},
       {t:'黑霧淹沒了一切。',c:'red'},
     ];
   }else if(endingType==='redemption'){
     endingName='黑暗中的光';
-    endingText='你以血肉之軀，抵抗了三次邪念的侵蝕，最終以自身的意志力，成為了封印新的核心。代價是你永遠無法離開古跡——但封印得以重鑄。\n\n月如每年都會來，在石台前放上一束野花。';
+    endingText='你以血肉之軀，抵抗了三次邪念的侵蝕，最終以自身的意志力，成為了封印新的核心。代價是你永遠無法離開古跡——但封印得以重鑄。\n\n沈夜涼每年都會來，在石台前放上一束野花。';
     endingStory=[
       {t:'你把玉佩壓在胸口，以最後的意志壓制體內的黑暗。',c:'action'},
       {t:'「我……選擇……」聲音沙啞，卻清晰，「留在這裡。」',c:'dialogue'},
@@ -66,11 +66,11 @@ export function determineEnding(){
     ];
   }else{
     endingName='光明之道';
-    endingText='封印以月如的玉佩為核心，重新凝固。黑淵魔君的怨念在蒼白的晨光中消散，如霧散於日出。\n\n渝州的百姓說，那天清晨，蜀山頂上出現了一道金光，照亮了整個天際。';
+    endingText='封印以沈夜涼的玉佩為核心，重新凝固。黑淵魔君的怨念在蒼白的晨光中消散，如霧散於日出。\n\n渝州的百姓說，那天清晨，蜀山頂上出現了一道金光，照亮了整個天際。';
     endingStory=[
-      {t:'月如把玉佩高舉，引動封印之力，金色光柱沖天而起。',c:'action'},
+      {t:'沈夜涼把玉佩高舉，引動封印之力，金色光柱沖天而起。',c:'action'},
       {t:'魔君發出最後的咆哮，被光柱束縛，緩緩沉入深淵。',c:'narr'},
-      {t:'「封印……完成了。」月如虛脫地靠在你身上，輕聲說。',c:'dialogue'},
+      {t:'「封印……完成了。」沈夜涼虛脫地靠在你身上，輕聲說。',c:'dialogue'},
       {t:'天亮了。蜀山上，有鳥鳴聲傳來。',c:'narr'},
     ];
   }
@@ -83,8 +83,8 @@ export function determineEnding(){
     document.getElementById('ending-text').textContent=endingText;
     document.getElementById('ending-stats').innerHTML=`
       <span>等級 ${G.level}</span>
-      <span>月如緣份 ${G.affection.yuer}</span>
-      <span>劍眉緣份 ${G.affection.jianmei}</span>
+      <span>沈夜涼緣份 ${G.affection.yuer}</span>
+      <span>裴霜華緣份 ${G.affection.jianmei}</span>
       ${G.origin==='dark'?`<span>抵抗 ${G.urgeResist} 順從 ${G.urgeEmbrace}</span>`:''}
     `;
   },3000);
