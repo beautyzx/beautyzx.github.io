@@ -218,13 +218,15 @@ function checkBattleEnd(){
   if(!currentBattle)return;
   const allDead=currentBattle.enemies.every(e=>e.hp<=0);
   if(allDead){
-    let totalExp=0;
+    let totalExp=0,totalGold=0;
     currentBattle.enemies.forEach(e=>{
       totalExp+=e.exp||0;
+      totalGold+=e.gold||0;
       if(e.loot){addItem({...e.loot});}
     });
     gainExp(totalExp);
     battleLog(`<span class="blog-hit">獲得 ${totalExp} 經驗值！</span>`);
+    if(totalGold>0){G.gold+=totalGold;battleLog(`<span class="blog-hit">獲得 ${totalGold} 金幣！</span>`);}
     updateUI();
     setTimeout(()=>endBattle(true),800);
   }

@@ -1,19 +1,26 @@
-import {G,setChapterBanner,addStory,addStoryHTML,setChoices,gotoScene,addItem,showNotif,showUrge,loadGame,restartGame} from '../js/api.js';
+import {G,setChapterBanner,clearStory,addStory,addStoryHTML,setChoices,gotoScene,addItem,showNotif,showUrge,loadGame,restartGame} from '../js/api.js';
+import {showShop,showTavern} from '../js/shop.js';
 import {startBattle} from '../js/battle.js';
 
 export const CH1={
   0:function(){
     setChapterBanner(1,'第一章·渝州煙雨');
-    addStory('渝州，古城。','narr');
-    addStory('青石板路被細雨打濕，茶館的燈籠在風中搖曳。街上行人匆匆，眉宇間藏著說不清的不安。','narr');
-    addStory('你踏入城中，空氣中飄著藥草的清香。','');
     setTimeout(()=>{
-      addStory('不遠處，一間小藥鋪的木牌在風中搖晃：「沈夜涼草堂」。','');
-      addStory('鋪前，一個穿著淡青色衣裙的少女正在整理藥草，眉目如畫，神情溫柔。','narr');
-      setChoices([
-        {label:'走向藥鋪，打聲招呼',action:()=>gotoScene(1,1)},
-        {label:'先在街上打探消息',action:()=>gotoScene(1,2)}
-      ]);
+      const hub=()=>{
+        clearStory();
+        addStory('渝州，古城。青石板路被細雨打濕，茶館的燈籠在風中搖曳。不遠處「沈夜涼草堂」的木牌在煙雨中搖晃。','narr');
+        addStory(`持有金幣：${G.gold} 兩`,'dim');
+        setChoices([
+          {label:'沈夜涼草堂（藥材鋪）',action:()=>{
+            if(G.companions.yuer)showShop('herb','沈夜涼草堂',hub);
+            else gotoScene(1,1);
+          }},
+          {label:'渝州武鋪（武器防具）',action:()=>showShop('weapon','渝州武鋪',hub)},
+          {label:'渝州酒館（休息情報）',action:()=>showTavern(hub)},
+          {label:'在街上打探消息',action:()=>gotoScene(1,2)},
+        ]);
+      };
+      hub();
     },800);
   },
   1:function(){
@@ -75,7 +82,7 @@ export const CH1={
       ? '你故意大聲說出惡霸腰牌的秘密，讓他在圍觀百姓前顏面盡失。惡霸惱羞成怒，揮拳而來！'
       : '你擋在老人與沈夜涼身前，冷冷地說：「放開他。」惡霸二話不說，揮拳向你衝來！','action');
     startBattle(
-      [{name:'鬼王寨惡霸',hp:22,maxHp:22,atk:6,def:2,ac:11,exp:40,loot:{name:'銀兩',qty:1,type:'key',effect:{},desc:'一些銀兩'}}],
+      [{name:'鬼王寨惡霸',hp:22,maxHp:22,atk:6,def:2,ac:11,exp:40,gold:20,loot:null}],
       ()=>gotoScene(1,5),
       ()=>gotoScene(1,'death')
     );
