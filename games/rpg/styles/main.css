@@ -227,7 +227,7 @@ body{
 }
 .battle-log::-webkit-scrollbar{width:3px}
 .battle-log::-webkit-scrollbar-thumb{background:var(--border)}
-.blog-hit{color:#f0c040}
+.blog-hit{color:var(--gold2)}
 .blog-miss{color:var(--text3)}
 .blog-skill{color:#5dade2}
 .blog-enemy{color:#e74c3c}
