@@ -8,7 +8,7 @@ export const CH1={
     addStory('青石板路被細雨打濕，茶館的燈籠在風中搖曳。街上行人匆匆，眉宇間藏著說不清的不安。','narr');
     addStory('你踏入城中，空氣中飄著藥草的清香。','');
     setTimeout(()=>{
-      addStory('不遠處，一間小藥鋪的木牌在風中搖晃：「月如草堂」。','');
+      addStory('不遠處，一間小藥鋪的木牌在風中搖晃：「沈夜涼草堂」。','');
       addStory('鋪前，一個穿著淡青色衣裙的少女正在整理藥草，眉目如畫，神情溫柔。','narr');
       setChoices([
         {label:'走向藥鋪，打聲招呼',action:()=>gotoScene(1,1)},
@@ -20,11 +20,11 @@ export const CH1={
     G.companions.yuer=true;
     addStory('你走近藥鋪，少女抬起頭，眼中有幾分訝異，卻很快展露出一個微笑。','narr');
     addStory('「客人是外鄉人吧？渝州最近不太平，你要小心。」她聲音輕柔，如山泉般清澈。','dialogue');
-    addStory('「我叫月如，這是我家的草堂。你若是受了傷，或是需要藥草，儘管說。」','dialogue');
+    addStory('「我叫沈夜涼，這是我家的草堂。你若是受了傷，或是需要藥草，儘管說。」','dialogue');
     addStory('她遞過來一包小小的藥包，說是驅邪的香包，不收錢。','narr');
     G.affection.yuer=Math.min(100,G.affection.yuer+8);
     addItem({name:'辟邪香包',qty:1,type:'consumable',effect:{cure:'all'},desc:'驅除邪穢，消除負面狀態'});
-    showNotif('結識了月如 · 緣份+8');
+    showNotif('結識了沈夜涼 · 緣份+8');
     setTimeout(()=>{
       addStory('你們正說著話，街角突然傳來一陣喧嘩——','narr');
       setChoices([{label:'→ 前往查看',action:()=>gotoScene(1,3)}]);
@@ -42,7 +42,7 @@ export const CH1={
     addStory('圍觀的百姓都低著頭，不敢出聲。老人老淚縱橫，卻無力反抗。','narr');
     if(!G.companions.yuer){
       addStory('這時，一個穿著淡青衣裙的少女從人群中擠出來：「放開他！」','narr');
-      addStory('那是藥鋪的月如，她的聲音雖然顫抖，眼神卻堅定。','narr');
+      addStory('那是藥鋪的沈夜涼，她的聲音雖然顫抖，眼神卻堅定。','narr');
       G.companions.yuer=true;
       G.affection.yuer=Math.min(100,G.affection.yuer+5);
     }
@@ -73,7 +73,7 @@ export const CH1={
   4:function(){
     addStory(G.flags.scoutBully
       ? '你故意大聲說出惡霸腰牌的秘密，讓他在圍觀百姓前顏面盡失。惡霸惱羞成怒，揮拳而來！'
-      : '你擋在老人與月如身前，冷冷地說：「放開他。」惡霸二話不說，揮拳向你衝來！','action');
+      : '你擋在老人與沈夜涼身前，冷冷地說：「放開他。」惡霸二話不說，揮拳向你衝來！','action');
     startBattle(
       [{name:'鬼王寨惡霸',hp:22,maxHp:22,atk:6,def:2,ac:11,exp:40,loot:{name:'銀兩',qty:1,type:'key',effect:{},desc:'一些銀兩'}}],
       ()=>gotoScene(1,5),
@@ -81,16 +81,16 @@ export const CH1={
     );
   },
   5:function(){
-    addStory('惡霸落敗，狼狽逃竄，人群中爆發出掌聲。老人含淚道謝，月如走到你身邊，眼中閃著感激的光。','narr');
+    addStory('惡霸落敗，狼狽逃竄，人群中爆發出掌聲。老人含淚道謝，沈夜涼走到你身邊，眼中閃著感激的光。','narr');
     addStory('「謝謝你。」她的聲音輕得像風，「你……要去哪裡？」','dialogue');
-    addStory('你說起封印的事，月如沉默片刻，從懷中取出一枚玉佩，上面刻著奇異的符文。','narr');
+    addStory('你說起封印的事，沈夜涼沉默片刻，從懷中取出一枚玉佩，上面刻著奇異的符文。','narr');
     addStory('「這是我娘留下的，她說和封印有關。我……我想跟你一起去。」','dialogue');
     G.affection.yuer=Math.min(100,G.affection.yuer+12);
-    showNotif('月如加入同行 · 緣份+12');
+    showNotif('沈夜涼加入同行 · 緣份+12');
     setTimeout(()=>{
-      addStory('夜幕降臨，渝州城中升起裊裊炊煙。你和月如在茶館中相對而坐，談起各自的往事。','narr');
+      addStory('夜幕降臨，渝州城中升起裊裊炊煙。你和沈夜涼在茶館中相對而坐，談起各自的往事。','narr');
       if(G.affection.yuer>=20){
-        addStoryHTML('月如的眼睛在燈火下閃著溫柔的光芒，她說：「你和我見過的人都不一樣——你的眼神裡有一種很深的東西。」','romance');
+        addStoryHTML('沈夜涼的眼睛在燈火下閃著溫柔的光芒，她說：「你和我見過的人都不一樣——你的眼神裡有一種很深的東西。」','romance');
       }
       if(G.origin==='dark'){
         addStory('你幾乎要告訴她關於夢魘的事——但那股黑暗的低語提醒你：有些秘密，不該說出口。','dark-urge');
