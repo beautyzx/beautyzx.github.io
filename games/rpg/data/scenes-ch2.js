@@ -29,7 +29,7 @@ export const CH2={
   1:function(){
     addStory('你拔出武器，加入戰鬥！刺客見勢不妙，倉皇撤退。','action');
     startBattle(
-      [{name:'蒙面刺客',hp:30,maxHp:30,atk:8,def:3,ac:13,exp:60,loot:{name:'毒刃匕首',qty:1,type:'weapon',effect:{},desc:'塗有毒藥的匕首'}}],
+      [{name:'蒙面刺客',hp:30,maxHp:30,atk:8,def:3,ac:13,exp:60,gold:35,loot:{name:'毒刃匕首',qty:1,type:'weapon',effect:{},desc:'塗有毒藥的匕首'}}],
       ()=>gotoScene(2,2),
       ()=>gotoScene(1,'death')
     );
@@ -138,8 +138,8 @@ export const CH2={
     addStory('你們與鬼王寨的先鋒交戰，沈夜涼在後方施術，裴霜華劍法淩厲，你衝殺在前！','action');
     startBattle(
       [
-        {name:'鬼王寨先鋒甲',hp:35,maxHp:35,atk:9,def:3,ac:12,exp:50,loot:null},
-        {name:'鬼王寨先鋒乙',hp:28,maxHp:28,atk:7,def:2,ac:11,exp:40,loot:{name:'精鐵護腕',qty:1,type:'armor',effect:{},desc:'增加防禦的護腕'}}
+        {name:'鬼王寨先鋒甲',hp:35,maxHp:35,atk:9,def:3,ac:12,exp:50,gold:30,loot:null},
+        {name:'鬼王寨先鋒乙',hp:28,maxHp:28,atk:7,def:2,ac:11,exp:40,gold:25,loot:{name:'精鐵護腕',qty:1,type:'armor',effect:{},desc:'增加防禦的護腕'}}
       ],
       ()=>{
         G.armor={name:'精鐵護腕',def:G.armor.def+2};

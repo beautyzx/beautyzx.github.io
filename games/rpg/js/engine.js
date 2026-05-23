@@ -23,6 +23,7 @@ export let G={
   urgeResist:0,
   urgeEmbrace:0,
   darkBuffActive:false,
+  gold:0,
   choices:{},
   flags:{}
 };
@@ -57,6 +58,7 @@ export function startGame(){
   G.companions={yuer:false,jianmei:false};
   G.urgeResist=0;G.urgeEmbrace=0;
   G.darkBuffActive=false;
+  G.gold=30;
   G.choices={};G.flags={};
   document.getElementById('title-screen').style.display='none';
   if(G.origin==='dark')document.getElementById('dark-urge-tracker').style.display='block';
@@ -77,6 +79,7 @@ export function updateUI(){
   document.getElementById('char-name').textContent=G.name;
   document.getElementById('char-origin').textContent=ORIGINS[G.origin]?.nameEn||'';
   document.getElementById('stat-level').textContent=G.level;
+  document.getElementById('stat-gold').textContent=G.gold;
   document.getElementById('stat-hp').textContent=G.hp+'/'+G.maxHp;
   document.getElementById('stat-mp').textContent=G.mp+'/'+G.maxMp;
   const expNext=EXP_TABLE[Math.min(G.level,9)];
