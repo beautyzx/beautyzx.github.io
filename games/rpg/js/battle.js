@@ -5,6 +5,63 @@ import {rollD20,getModifier} from './dice.js';
 let currentBattle=null;
 export function getCurrentBattle(){return currentBattle;}
 
+function getActiveAllies(){
+  const allies=[];
+  if(G.companions.yuer)allies.push('yuer');
+  if(G.companions.jianmei)allies.push('jianmei');
+  return allies;
+}
+
+function alliesAct(){
+  const allies=getActiveAllies();
+  if(!currentBattle||allies.length===0)return;
+  const aliveEnemies=currentBattle.enemies.filter(e=>e.hp>0);
+  if(aliveEnemies.length===0)return;
+  allies.forEach(key=>{
+    if(key==='yuer')yuerAction(aliveEnemies);
+    else if(key==='jianmei')jianmeiAction(aliveEnemies);
+  });
+}
+
+function yuerAction(aliveEnemies){
+  const hpRatio=G.hp/G.maxHp;
+  if(hpRatio<0.25){
+    const heal=18+Math.floor(Math.random()*8);
+    G.hp=Math.min(G.maxHp,G.hp+heal);
+    battleLog(`<span class="blog-heal">沈夜涼：「快撐住——」施展春回大地，回復 ${heal} HP</span>`);
+  }else if(hpRatio<0.5){
+    const heal=10+Math.floor(Math.random()*6);
+    G.hp=Math.min(G.maxHp,G.hp+heal);
+    battleLog(`<span class="blog-heal">沈夜涼施展靈術，回復 ${heal} HP</span>`);
+  }else{
+    const target=aliveEnemies[0];
+    const dmg=6+Math.floor(Math.random()*5);
+    target.hp=Math.max(0,target.hp-dmg);
+    if(!target.statusEffects)target.statusEffects=[];
+    if(!target.statusEffects.includes('poison')){
+      target.statusEffects.push('poison');
+      battleLog(`<span class="blog-skill">沈夜涼丟出毒草，${target.name} 受 ${dmg} 傷害並中毒</span>`);
+    }else{
+      battleLog(`<span class="blog-skill">沈夜涼丟出毒草，${target.name} 受 ${dmg} 傷害</span>`);
+    }
+    if(target.hp<=0)battleLog(`<span class="blog-hit">${target.name} 已倒下！</span>`);
+  }
+}
+
+function jianmeiAction(aliveEnemies){
+  const target=aliveEnemies.reduce((a,b)=>b.hp>a.hp?b:a,aliveEnemies[0]);
+  const roll=Math.floor(Math.random()*20)+1;
+  const atkBonus=5;
+  if(roll+atkBonus>=target.ac){
+    const dmg=8+Math.floor(Math.random()*6);
+    target.hp=Math.max(0,target.hp-dmg);
+    battleLog(`<span class="blog-skill">裴霜華劍光一閃，${target.name} 受 ${dmg} 傷害</span>`);
+    if(target.hp<=0)battleLog(`<span class="blog-hit">${target.name} 已倒下！</span>`);
+  }else{
+    battleLog(`<span class="blog-miss">裴霜華的劍被 ${target.name} 擋下</span>`);
+  }
+}
+
 export function startBattle(enemies,onWin,onLose){
   currentBattle={
     enemies:enemies.map(e=>({...e})),
@@ -18,6 +75,9 @@ export function startBattle(enemies,onWin,onLose){
   document.getElementById('story-box').style.display='none';
   renderBattle();
   battleLog('<span class="blog-enemy">⚔ 戰鬥開始！</span>');
+  const allies=getActiveAllies();
+  if(allies.includes('yuer'))battleLog('<span class="blog-skill">沈夜涼握緊藥囊，站到你身後</span>');
+  if(allies.includes('jianmei'))battleLog('<span class="blog-skill">裴霜華拔劍出鞘，與你並肩</span>');
 }
 
 export function endBattle(won){
@@ -101,6 +161,8 @@ function playerAttack(){
   }else{
     battleLog(`<span class="blog-miss">攻擊落空。擲出 ${roll}+${atkMod}=${total} < AC${target.ac}</span>`);
   }
+  alliesAct();
+  if(checkBattleEndSilent())return;
   enemyTurn();
 }
 
@@ -140,6 +202,8 @@ function playerSkill(idx){
     battleLog(`<span class="blog-skill">${sk.name}：護身符啟動，防禦提升！</span>`);
   }
   updateUI();
+  alliesAct();
+  if(checkBattleEndSilent())return;
   enemyTurn();
 }
 
@@ -149,6 +213,8 @@ function playerItem(item){
   if(idx<0)return;
   applyItemEffect(item,idx);
   battleLog(`<span class="blog-heal">使用 ${item.name}</span>`);
+  alliesAct();
+  if(checkBattleEndSilent())return;
   enemyTurn();
 }
 
@@ -161,6 +227,8 @@ function playerFlee(){
     endBattle(false);
   }else{
     battleLog('<span class="blog-enemy">逃跑失敗！</span>');
+    alliesAct();
+    if(checkBattleEndSilent())return;
     enemyTurn();
   }
 }
@@ -214,20 +282,27 @@ function enemyTurn(){
   setTimeout(nextEnemy,400);
 }
 
-function checkBattleEnd(){
-  if(!currentBattle)return;
+function finishBattleWin(){
+  let totalExp=0,totalGold=0;
+  currentBattle.enemies.forEach(e=>{
+    totalExp+=e.exp||0;
+    totalGold+=e.gold||0;
+    if(e.loot){addItem({...e.loot});}
+  });
+  gainExp(totalExp);
+  battleLog(`<span class="blog-hit">獲得 ${totalExp} 經驗值！</span>`);
+  if(totalGold>0){G.gold+=totalGold;battleLog(`<span class="blog-hit">獲得 ${totalGold} 金幣！</span>`);}
+  updateUI();
+  setTimeout(()=>endBattle(true),800);
+}
+
+function checkBattleEndSilent(){
+  if(!currentBattle)return true;
   const allDead=currentBattle.enemies.every(e=>e.hp<=0);
-  if(allDead){
-    let totalExp=0,totalGold=0;
-    currentBattle.enemies.forEach(e=>{
-      totalExp+=e.exp||0;
-      totalGold+=e.gold||0;
-      if(e.loot){addItem({...e.loot});}
-    });
-    gainExp(totalExp);
-    battleLog(`<span class="blog-hit">獲得 ${totalExp} 經驗值！</span>`);
-    if(totalGold>0){G.gold+=totalGold;battleLog(`<span class="blog-hit">獲得 ${totalGold} 金幣！</span>`);}
-    updateUI();
-    setTimeout(()=>endBattle(true),800);
-  }
+  if(allDead){finishBattleWin();return true;}
+  return false;
+}
+
+function checkBattleEnd(){
+  checkBattleEndSilent();
 }
