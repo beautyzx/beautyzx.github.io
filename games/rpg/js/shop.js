@@ -1,6 +1,7 @@
 "use strict";
-import {G,clearStory,addStory,setChoices,showNotif,updateUI,addItem} from './engine.js';
+import {G,clearStory,addStory,setChoices,showNotif,updateUI,addItem,setTime} from './engine.js';
 import {showUrge} from './urge.js';
+import {diceCheck} from './dice.js';
 
 export const SHOP_ITEMS={
   herb:[
@@ -100,33 +101,70 @@ export function showShop(shopKey,shopName,onClose){
 }
 
 export function showTavern(onClose){
-  const render=()=>{
+  const renderDay=()=>{
     clearStory();
-    addStory('【渝州酒館】','narr');
+    addStory('【渝州酒館 · 白日】','narr');
     addStory('酒館中瀰漫著酒香，幾個旅人低聲交談。老闆是個圓臉胖子，笑著招呼：「客官，要喝點什麼？」','narr');
     addStory(`持有金幣：${G.gold} 兩`,'dim');
     setChoices([
-      {label:'休息一夜（20兩）— 完全回復HP',action:()=>{
+      {label:'休息一夜（20兩）— 完全回復HP，入夜',action:()=>{
         if(G.gold<20){showNotif('金幣不足！');return;}
         G.gold-=20;G.hp=G.maxHp;
+        setTime('night');
+        addStory('你在酒館客房中沉沉睡去，醒來時窗外已是夜色。','narr');
         showNotif('安睡一夜，體力完全恢復');
-        updateUI();render();
+        updateUI();renderNight();
       }},
       {label:'飲茶靜氣（5兩）— 回復15MP',action:()=>{
         if(G.gold<5){showNotif('金幣不足！');return;}
         G.gold-=5;G.mp=Math.min(G.maxMp,G.mp+15);
         showNotif('清茶入喉，靈力漸復');
-        updateUI();render();
+        updateUI();renderDay();
       }},
       {label:'打聽消息（10兩）— 獲取情報',action:()=>{
         if(G.gold<10){showNotif('金幣不足！');return;}
         G.gold-=10;updateUI();
         addStory('老闆壓低聲音：「聽說鬼王寨近來動作頻繁，山裡的黑霧越來越重……你若要出城，小心為上。」','dialogue');
         showNotif('獲得情報');
-        setChoices([{label:'← 回去',action:render}]);
+        setChoices([{label:'← 回去',action:renderDay}]);
       }},
       {label:'← 離開酒館',action:onClose}
     ]);
   };
-  render();
+
+  const renderNight=()=>{
+    clearStory();
+    addStory('【渝州酒館 · 深夜】','narr');
+    addStory('酒館的燈火轉暗，幾桌晚客壓低嗓音說話。空氣裡有酒味、潮氣、與一絲不安。','narr');
+    addStory(`持有金幣：${G.gold} 兩`,'dim');
+    const choices=[];
+    if(!G.timeFlags.heardTavernSecret){
+      choices.push({label:'湊近角落那桌偷聽（DC12 智慧）',dc:12,stat:'wis',
+        onSuccess:()=>{
+          G.timeFlags.heardTavernSecret=true;
+          G.flags.knowGhostKingPlan=true;
+          addStory('你壓低呼吸湊近——那是兩名鬼王寨的探子。','narr');
+          addStory('「……封魔古跡的封印正在鬆動，主上要我們在蜀山外圍堵截閒雜人等。」','dialogue');
+          addStory('「那姓蕭的小子呢？」「上頭說，遇到先放，看他往哪走。」','dialogue');
+          addStory('（你獲得情報：鬼王寨正在監視蜀山周邊。）','dim');
+          showNotif('獲得情報 · 鬼王寨計畫');
+          setChoices([{label:'← 回到座位',action:renderNight}]);
+        },
+        onFail:()=>{
+          addStory('你才剛湊過去，那桌人立刻噤聲、抬眼瞪你。你乾笑兩聲退回座位。','narr');
+          setChoices([{label:'← 回到座位',action:renderNight}]);
+        }
+      });
+    }
+    choices.push({label:'等到天亮',action:()=>{
+      setTime('day');
+      addStory('你回到客房等候，天光從窗縫滲進來。','narr');
+      updateUI();renderDay();
+    }});
+    choices.push({label:'← 離開酒館（走入夜色）',action:onClose});
+    setChoices(choices);
+  };
+
+  if(G.timeOfDay==='night')renderNight();
+  else renderDay();
 }

@@ -24,6 +24,8 @@ export let G={
   urgeEmbrace:0,
   darkBuffActive:false,
   gold:0,
+  timeOfDay:'day',
+  timeFlags:{heardTavernSecret:false,heardDarkWhisper:false},
   choices:{},
   flags:{}
 };
@@ -59,6 +61,8 @@ export function startGame(){
   G.urgeResist=0;G.urgeEmbrace=0;
   G.darkBuffActive=false;
   G.gold=30;
+  G.timeOfDay='day';
+  G.timeFlags={heardTavernSecret:false,heardDarkWhisper:false};
   G.choices={};G.flags={};
   document.getElementById('title-screen').style.display='none';
   if(G.origin==='dark')document.getElementById('dark-urge-tracker').style.display='block';
@@ -223,6 +227,16 @@ export function setChapterBanner(chap,name){
   const titles=['PROLOGUE','CHAPTER ONE','CHAPTER TWO','CHAPTER THREE','EPILOGUE'];
   document.getElementById('chapter-title').textContent=titles[chap]||'';
   document.getElementById('chapter-name').textContent=name;
+  updateTimeUI();
+}
+
+export function setTime(t){G.timeOfDay=t;updateTimeUI();}
+export function advanceTime(){G.timeOfDay=(G.timeOfDay==='day')?'night':'day';updateTimeUI();}
+export function updateTimeUI(){
+  const el=document.getElementById('time-indicator');
+  if(!el)return;
+  if(G.timeOfDay==='day'){el.textContent='☀ 白日';el.className='time-indicator time-day';}
+  else{el.textContent='☾ 夜晚';el.className='time-indicator time-night';}
 }
 
 export function checkLevelGate(requiredLevel,chapterName){
@@ -319,6 +333,8 @@ export function loadGame(){
     if(!data){showNotif('沒有存檔');return;}
     const saved=JSON.parse(data);
     Object.assign(G,saved);
+    if(typeof G.timeOfDay==='undefined')G.timeOfDay='day';
+    if(!G.timeFlags)G.timeFlags={heardTavernSecret:false,heardDarkWhisper:false};
     document.getElementById('title-screen').style.display='none';
     document.getElementById('ending-screen').style.display='none';
     if(G.origin==='dark')document.getElementById('dark-urge-tracker').style.display='block';

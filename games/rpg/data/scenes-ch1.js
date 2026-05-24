@@ -1,4 +1,4 @@
-import {G,setChapterBanner,clearStory,addStory,addStoryHTML,setChoices,gotoScene,addItem,showNotif,showUrge,loadGame,restartGame,showShop,showTavern,showVillagers,showCommissionBoard,checkLevelGate} from '../js/api.js';
+import {G,setChapterBanner,clearStory,addStory,addStoryHTML,setChoices,gotoScene,addItem,showNotif,showUrge,loadGame,restartGame,showShop,showTavern,showVillagers,showCommissionBoard,checkLevelGate,setTime} from '../js/api.js';
 import {startBattle} from '../js/battle.js';
 
 export const CH1={
@@ -9,7 +9,7 @@ export const CH1={
         clearStory();
         addStory('渝州，古城。青石板路被細雨打濕，茶館的燈籠在風中搖曳。不遠處「沈夜涼草堂」的木牌在煙雨中搖晃。','narr');
         addStory(`持有金幣：${G.gold} 兩`,'dim');
-        setChoices([
+        const choices=[
           {label:'沈夜涼草堂（藥材鋪）',action:()=>{
             if(G.companions.yuer)showShop('herb','沈夜涼草堂',hub);
             else gotoScene(1,1);
@@ -20,7 +20,17 @@ export const CH1={
           {label:'查看委託板',action:()=>showCommissionBoard('yuzhou',hub)},
           {label:'在街上打探消息',action:()=>gotoScene(1,2)},
           {label:'前往城郊歷練（重複刷怪）',action:()=>gotoScene(1,'grind')},
-        ]);
+        ];
+        if(G.origin==='dark'&&G.timeOfDay==='night'&&!G.timeFlags.heardDarkWhisper){
+          choices.push({label:'※ 街角的影子裡，似乎有什麼在喚你……',dark:true,action:()=>{
+            G.timeFlags.heardDarkWhisper=true;
+            showUrge(
+              '你拐進一條無人小巷，街燈將熄。那個聲音又來了——不是耳裡，是顱骨裡面。\n\n「他們睡得真沉。你聞到了嗎？人在沒有防備時的味道。一刀，乾淨，沒人會知道是你。你會覺得，前所未有地清醒。」',
+              ()=>hub()
+            );
+          }});
+        }
+        setChoices(choices);
       };
       hub();
     },800);
