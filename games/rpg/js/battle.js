@@ -12,6 +12,11 @@ function getActiveAllies(){
   return allies;
 }
 
+function addBond(amount){
+  if(!currentBattle)return;
+  currentBattle.bondMeter=Math.min(currentBattle.bondMax,currentBattle.bondMeter+amount);
+}
+
 function alliesAct(){
   const allies=getActiveAllies();
   if(!currentBattle||allies.length===0)return;
@@ -20,6 +25,7 @@ function alliesAct(){
   allies.forEach(key=>{
     if(key==='yuer')yuerAction(aliveEnemies);
     else if(key==='jianmei')jianmeiAction(aliveEnemies);
+    addBond(3);
   });
 }
 
@@ -68,7 +74,9 @@ export function startBattle(enemies,onWin,onLose){
     turn:'player',
     onWin,onLose,
     log:[],
-    turnCount:0
+    turnCount:0,
+    bondMeter:0,
+    bondMax:50
   };
   setBattleActive(true);
   document.getElementById('battle-area').classList.add('show');
@@ -100,6 +108,15 @@ export function renderBattle(){
     </div>
   `).join('');
 
+  const bondDiv=document.getElementById('bond-meter');
+  if(bondDiv){
+    const pct=Math.min(100,(currentBattle.bondMeter/currentBattle.bondMax)*100);
+    bondDiv.innerHTML=`
+      <div class="bond-label">羈絆 ${currentBattle.bondMeter}/${currentBattle.bondMax}</div>
+      <div class="bond-bar-wrap"><div class="bond-bar-fill" style="width:${pct}%"></div></div>
+    `;
+  }
+
   const actDiv=document.getElementById('battle-actions');
   actDiv.innerHTML='';
 
@@ -115,6 +132,14 @@ export function renderBattle(){
     addBattleBtn(actDiv,`◈ ${item.name}×${item.qty}`,'item-btn',()=>playerItem(item));
   });
   addBattleBtn(actDiv,'↩ 逃跑','',()=>playerFlee());
+  if(currentBattle.bondMeter>=currentBattle.bondMax){
+    if(G.companions.yuer&&G.affection.yuer>=40){
+      addBattleBtn(actDiv,'✦✦ 並蒂蓮（沈夜涼合擊）','skill-btn bond-btn',()=>playerBondSkill('yuer'));
+    }
+    if(G.companions.jianmei&&G.affection.jianmei>=40){
+      addBattleBtn(actDiv,'✦✦ 斷空（裴霜華合擊）','skill-btn bond-btn',()=>playerBondSkill('jianmei'));
+    }
+  }
 }
 
 function addBattleBtn(parent,text,extra,onclick){
@@ -161,6 +186,7 @@ function playerAttack(){
   }else{
     battleLog(`<span class="blog-miss">攻擊落空。擲出 ${roll}+${atkMod}=${total} < AC${target.ac}</span>`);
   }
+  addBond(5);
   alliesAct();
   if(checkBattleEndSilent())return;
   enemyTurn();
@@ -202,9 +228,41 @@ function playerSkill(idx){
     battleLog(`<span class="blog-skill">${sk.name}：護身符啟動，防禦提升！</span>`);
   }
   updateUI();
+  addBond(5);
   alliesAct();
   if(checkBattleEndSilent())return;
   enemyTurn();
+}
+
+function playerBondSkill(ally){
+  if(!currentBattle||currentBattle.turn!=='player')return;
+  if(currentBattle.bondMeter<currentBattle.bondMax)return;
+  currentBattle.bondMeter=0;
+
+  if(ally==='yuer'){
+    const heal=35+Math.floor(Math.random()*10);
+    G.hp=Math.min(G.maxHp,G.hp+heal);
+    G.statusEffects=G.statusEffects.filter(s=>s==='shield'||s==='buff');
+    battleLog(`<span class="blog-heal">✦ 並蒂蓮 ✦ 沈夜涼與你共振，回復 ${heal} HP，淨化所有負面狀態</span>`);
+    addStoryLine('「我們一起。」沈夜涼握住你的手，靈氣從她掌心湧入你體內。');
+  }else if(ally==='jianmei'){
+    const aliveEnemies=currentBattle.enemies.filter(e=>e.hp>0);
+    aliveEnemies.forEach(target=>{
+      const dmg=25+Math.floor(Math.random()*10);
+      target.hp=Math.max(0,target.hp-dmg);
+      battleLog(`<span class="blog-hit">✦ 斷空 ✦ ${target.name} 被劍光斬中，受 ${dmg} 傷害（破甲）</span>`);
+      if(target.hp<=0)battleLog(`<span class="blog-hit">${target.name} 已倒下！</span>`);
+    });
+    addStoryLine('「跟上！」裴霜華翻身躍起，劍光與你的攻擊交織成一道斷空之光。');
+  }
+
+  updateUI();
+  if(checkBattleEndSilent())return;
+  enemyTurn();
+}
+
+function addStoryLine(text){
+  battleLog(`<span style="color:#f0a0b8;font-style:italic">${text}</span>`);
 }
 
 function playerItem(item){
@@ -270,6 +328,7 @@ function enemyTurn(){
       let dmg=Math.max(1,e.atk+Math.floor(Math.random()*4)-def);
       G.hp=Math.max(0,G.hp-dmg);
       battleLog(`<span class="blog-enemy">${e.name} 攻擊！擲出${roll}，造成 ${dmg} 傷害</span>`);
+      addBond(8);
       if(Math.random()<0.15&&e.status){
         G.statusEffects.push(e.status);
         battleLog(`<span class="blog-status">你陷入${e.status}狀態！</span>`);

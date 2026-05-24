@@ -227,6 +227,46 @@ body{
 }
 .battle-log::-webkit-scrollbar{width:3px}
 .battle-log::-webkit-scrollbar-thumb{background:var(--border)}
+.bond-meter-wrap{
+  margin-bottom:8px;
+  padding:4px 8px;
+  background:rgba(200,80,120,.06);
+  border:1px solid rgba(200,80,120,.25);
+  border-radius:3px;
+}
+.bond-label{
+  font-size:10px;
+  color:#f0a0b8;
+  letter-spacing:2px;
+  margin-bottom:3px;
+  text-align:center;
+}
+.bond-bar-wrap{
+  height:5px;
+  background:#2a1a20;
+  border-radius:2px;
+  overflow:hidden;
+}
+.bond-bar-fill{
+  height:100%;
+  background:linear-gradient(90deg,#c8497a,#f0a0b8);
+  transition:width .4s;
+  box-shadow:0 0 8px rgba(240,160,184,.4);
+}
+.battle-btn.bond-btn{
+  border:1px solid rgba(240,160,184,.6);
+  color:#f0a0b8;
+  background:rgba(200,80,120,.08);
+  animation:bond-glow 1.8s ease-in-out infinite;
+}
+.battle-btn.bond-btn:hover{
+  background:rgba(200,80,120,.18);
+  border-color:#f0a0b8;
+}
+@keyframes bond-glow{
+  0%,100%{box-shadow:0 0 4px rgba(240,160,184,.3);}
+  50%{box-shadow:0 0 14px rgba(240,160,184,.6);}
+}
 .blog-hit{color:var(--gold2)}
 .blog-miss{color:var(--text3)}
 .blog-skill{color:#5dade2}
