@@ -139,11 +139,11 @@ export const CH2={
     startBattle(
       [
         {name:'鬼王寨先鋒甲',hp:35,maxHp:35,atk:9,def:3,ac:12,exp:50,gold:30,loot:null},
-        {name:'鬼王寨先鋒乙',hp:28,maxHp:28,atk:7,def:2,ac:11,exp:40,gold:25,loot:{name:'精鐵護腕',qty:1,type:'armor',effect:{},desc:'增加防禦的護腕'}}
+        {name:'鬼王寨先鋒乙',hp:28,maxHp:28,atk:7,def:2,ac:11,exp:40,gold:25,loot:null}
       ],
       ()=>{
-        G.armor={name:'精鐵護腕',def:G.armor.def+2};
-        showNotif('獲得精鐵護腕，防禦提升！');
+        addItem({name:'精鐵護腕',qty:1,type:'armor',def:5,desc:'鬼王寨先鋒留下的護腕，防禦+5'});
+        showNotif('獲得精鐵護腕（在背包中可裝備）');
         gotoScene(3,0);
       },
       ()=>gotoScene(1,'death')

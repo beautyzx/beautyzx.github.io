@@ -150,7 +150,41 @@ export function useItemFromInv(idx){
   if(_battleActive)return;
   const item=G.inventory[idx];
   if(!item||item.qty<1)return;
-  if(item.type==='consumable')applyItemEffect(item,idx);
+  if(item.type==='consumable'){
+    applyItemEffect(item,idx);
+  }else if(item.type==='weapon'||item.type==='armor'||item.type==='accessory'){
+    equipFromInv(item,idx);
+  }
+}
+
+function equipFromInv(item,idx){
+  const slot=item.type;
+  const current=G[slot];
+  const currentName=current?.name||'無';
+  clearStory();
+  addStory(`是否裝備【${item.name}】？`,'narr');
+  addStory(`目前裝備：${currentName}`,'dim');
+  if(item.atk)addStory(`新裝備攻擊：${item.atk}`,'dim');
+  if(item.def)addStory(`新裝備防禦：${item.def}`,'dim');
+  if(item.effect&&typeof item.effect==='string')addStory(`效果：${item.effect}`,'dim');
+  setChoices([
+    {label:'換上新裝備（舊裝備丟棄）',action:()=>{
+      const newEquip={name:item.name};
+      if(item.atk)newEquip.atk=item.atk;
+      if(item.def)newEquip.def=item.def;
+      if(item.weaponType)newEquip.type=item.weaponType;
+      if(item.effect&&typeof item.effect==='string')newEquip.effect=item.effect;
+      G[slot]=newEquip;
+      G.inventory[idx].qty--;
+      if(G.inventory[idx].qty<=0)G.inventory.splice(idx,1);
+      showNotif(`已裝備 ${item.name}`);
+      updateUI();
+      gotoScene(G.chapter,G.scene);
+    }},
+    {label:'保留目前裝備',action:()=>{
+      gotoScene(G.chapter,G.scene);
+    }}
+  ]);
 }
 
 export function applyItemEffect(item,idx){
