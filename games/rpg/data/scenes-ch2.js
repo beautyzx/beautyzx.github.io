@@ -1,4 +1,4 @@
-import {G,setChapterBanner,addStory,addStoryHTML,setChoices,gotoScene,addItem,showNotif,showUrge} from '../js/api.js';
+import {G,setChapterBanner,clearStory,addStory,addStoryHTML,setChoices,gotoScene,addItem,showNotif,showUrge,checkLevelGate} from '../js/api.js';
 import {startBattle} from '../js/battle.js';
 import {addRomanceScene} from '../js/romance.js';
 
@@ -118,13 +118,25 @@ export const CH2={
       addStory('「那塊玉佩……是指引我們的嗎？」你問。','');
       addStory('沈夜涼點頭：「娘說，玉佩能感應封印的位置。它越來越熱了……」','dialogue');
       addStory('突然，前方山道上出現了十幾個黑影——鬼王寨的人！','narr');
+      const goToGrindOrMsg=()=>{
+        setChoices([
+          {label:'前往山林歷練',action:()=>gotoScene(2,'grind')},
+          {label:'← 回到山道休整',action:()=>gotoScene(2,6)}
+        ]);
+      };
       setChoices([
-        {label:'正面突破！',action:()=>gotoScene(2,7)},
+        {label:'正面突破！',action:()=>{
+          if(checkLevelGate(6,'封魔古跡深處'))gotoScene(2,7);
+          else goToGrindOrMsg();
+        }},
         {label:'[敏捷DC13] 繞行小路，避開伏擊',dc:13,stat:'dex',
           onSuccess:()=>{
             addStory('你帶著眾人悄悄繞過伏擊，毫髮無傷地抵達古跡入口。','action');
             G.exp=Math.min(G.exp+30,999);
-            setTimeout(()=>gotoScene(3,0),600);
+            setTimeout(()=>{
+              if(checkLevelGate(6,'封魔古跡深處'))gotoScene(3,0);
+              else goToGrindOrMsg();
+            },600);
           },
           onFail:()=>{
             addStory('你未能找到繞行路線，只好正面迎戰！','action');
@@ -144,9 +156,41 @@ export const CH2={
       ()=>{
         addItem({name:'精鐵護腕',qty:1,type:'armor',def:5,desc:'鬼王寨先鋒留下的護腕，防禦+5'});
         showNotif('獲得精鐵護腕（在背包中可裝備）');
-        gotoScene(3,0);
+        if(checkLevelGate(6,'封魔古跡深處')){
+          gotoScene(3,0);
+        }else{
+          setChoices([
+            {label:'前往山林歷練',action:()=>gotoScene(2,'grind')},
+            {label:'← 回到山道休整',action:()=>gotoScene(2,6)}
+          ]);
+        }
       },
       ()=>gotoScene(1,'death')
     );
+  },
+  grind:function(){
+    clearStory();
+    addStory('【蜀山山林】','narr');
+    addStory('蜀山深處，山間靈氣濃郁，常有妖獸出沒。這裡的對手比渝州凶險得多。','narr');
+    setChoices([
+      {label:'狩獵山妖（戰鬥）',action:()=>{
+        const loot=Math.random()<0.25?{name:'妖骨',qty:1,type:'consumable',effect:{mp:12},desc:'蘊含妖力的骨頭 (+12MP)'}:null;
+        const enemies=[
+          {name:'山妖',hp:30+G.level*3,maxHp:30+G.level*3,atk:8+G.level,def:2,ac:13,exp:50,gold:15,loot}
+        ];
+        if(Math.random()<0.3){
+          enemies.push({name:'山妖幼崽',hp:15+G.level*2,maxHp:15+G.level*2,atk:6,def:1,ac:11,exp:25,gold:8,loot:null});
+        }
+        startBattle(enemies,()=>gotoScene(2,'grind'),()=>gotoScene(1,'death'));
+      }},
+      {label:'狩獵鬼王寨小隊（戰鬥）',action:()=>{
+        const loot=Math.random()<0.2?{name:'鬼王寨腰牌',qty:1,type:'key',effect:{},desc:'鬼王寨成員的身份證明'}:null;
+        startBattle(
+          [{name:'鬼王寨遊兵',hp:35+G.level*3,maxHp:35+G.level*3,atk:9+G.level,def:3,ac:13,exp:60,gold:20,loot}],
+          ()=>gotoScene(2,'grind'),()=>gotoScene(1,'death')
+        );
+      }},
+      {label:'← 回到山道',action:()=>gotoScene(2,6)}
+    ]);
   }
 };

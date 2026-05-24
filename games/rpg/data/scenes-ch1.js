@@ -1,4 +1,4 @@
-import {G,setChapterBanner,clearStory,addStory,addStoryHTML,setChoices,gotoScene,addItem,showNotif,showUrge,loadGame,restartGame,showShop,showTavern,showVillagers,showCommissionBoard} from '../js/api.js';
+import {G,setChapterBanner,clearStory,addStory,addStoryHTML,setChoices,gotoScene,addItem,showNotif,showUrge,loadGame,restartGame,showShop,showTavern,showVillagers,showCommissionBoard,checkLevelGate} from '../js/api.js';
 import {startBattle} from '../js/battle.js';
 
 export const CH1={
@@ -19,6 +19,7 @@ export const CH1={
           {label:'與村民閒聊',action:()=>showVillagers('yuzhou',hub)},
           {label:'查看委託板',action:()=>showCommissionBoard('yuzhou',hub)},
           {label:'在街上打探消息',action:()=>gotoScene(1,2)},
+          {label:'前往城郊歷練（重複刷怪）',action:()=>gotoScene(1,'grind')},
         ]);
       };
       hub();
@@ -103,8 +104,38 @@ export const CH1={
       if(G.origin==='dark'){
         addStory('你幾乎要告訴她關於夢魘的事——但那股黑暗的低語提醒你：有些秘密，不該說出口。','dark-urge');
       }
-      setChoices([{label:'→ 次日，啟程前往蜀山',action:()=>gotoScene(2,0)}]);
+      setChoices([{label:'→ 次日，啟程前往蜀山',action:()=>{
+        if(checkLevelGate(3,'蜀山')){
+          gotoScene(2,0);
+        }else{
+          setChoices([{label:'← 回渝州準備',action:()=>gotoScene(1,0)}]);
+        }
+      }}]);
     },700);
+  },
+  grind:function(){
+    clearStory();
+    addStory('【城郊小徑】','narr');
+    addStory('渝州城郊雜草叢生，常有山賊與野獸出沒。這裡是練手的好地方。','narr');
+    setChoices([
+      {label:'狩獵山賊（戰鬥）',action:()=>{
+        const enemies=[
+          {name:'落草山賊',hp:18+G.level*2,maxHp:18+G.level*2,atk:5+G.level,def:1,ac:11,exp:25,gold:8,loot:null}
+        ];
+        if(Math.random()<0.4){
+          enemies.push({name:'山賊嘍囉',hp:12+G.level,maxHp:12+G.level,atk:4,def:0,ac:10,exp:15,gold:5,loot:null});
+        }
+        startBattle(enemies,()=>gotoScene(1,'grind'),()=>gotoScene(1,'death'));
+      }},
+      {label:'狩獵野獸（戰鬥）',action:()=>{
+        const loot=Math.random()<0.3?{name:'狼皮',qty:1,type:'consumable',effect:{hp:5},desc:'粗糙的狼皮，勉強能止血 (+5HP)'}:null;
+        startBattle(
+          [{name:'山林惡狼',hp:22+G.level*2,maxHp:22+G.level*2,atk:6+G.level,def:1,ac:12,exp:30,gold:5,loot}],
+          ()=>gotoScene(1,'grind'),()=>gotoScene(1,'death')
+        );
+      }},
+      {label:'← 回渝州城內',action:()=>gotoScene(1,0)}
+    ]);
   },
   death:function(){
     addStory('你力竭倒地，意識在黑暗中消散……','red');

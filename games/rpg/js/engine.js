@@ -225,6 +225,16 @@ export function setChapterBanner(chap,name){
   document.getElementById('chapter-name').textContent=name;
 }
 
+export function checkLevelGate(requiredLevel,chapterName){
+  if(G.level>=requiredLevel)return true;
+  clearStory();
+  addStory('【尚未準備好】','narr');
+  addStory(`你感到實力仍有不足，貿然進入${chapterName}恐怕凶多吉少。`,'narr');
+  addStory(`需要等級：${requiredLevel}（目前 Lv${G.level}）`,'dim');
+  addStory('回去多歷練幾場再來吧。','dim');
+  return false;
+}
+
 export function clearStory(){
   document.getElementById('story-box').innerHTML='';
   document.getElementById('choices').innerHTML='';
