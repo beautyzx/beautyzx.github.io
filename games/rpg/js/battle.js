@@ -31,24 +31,24 @@ function alliesAct(){
 
 function yuerAction(aliveEnemies){
   const hpRatio=G.hp/G.maxHp;
-  if(hpRatio<0.25){
-    const heal=18+Math.floor(Math.random()*8);
+  if(hpRatio<0.20){
+    const heal=14+Math.floor(Math.random()*6);
     G.hp=Math.min(G.maxHp,G.hp+heal);
-    battleLog(`<span class="blog-heal">沈夜涼：「快撐住——」施展春回大地，回復 ${heal} HP</span>`);
-  }else if(hpRatio<0.5){
-    const heal=10+Math.floor(Math.random()*6);
+    battleLog(`<span class="blog-heal">沈夜涼：「快撐住——」回復 ${heal} HP</span>`);
+  }else if(hpRatio<0.40&&Math.random()<0.6){
+    const heal=7+Math.floor(Math.random()*4);
     G.hp=Math.min(G.maxHp,G.hp+heal);
     battleLog(`<span class="blog-heal">沈夜涼施展靈術，回復 ${heal} HP</span>`);
   }else{
     const target=aliveEnemies[0];
-    const dmg=6+Math.floor(Math.random()*5);
+    const dmg=3+Math.floor(Math.random()*4);
     target.hp=Math.max(0,target.hp-dmg);
     if(!target.statusEffects)target.statusEffects=[];
     if(!target.statusEffects.includes('poison')){
       target.statusEffects.push('poison');
       battleLog(`<span class="blog-skill">沈夜涼丟出毒草，${target.name} 受 ${dmg} 傷害並中毒</span>`);
     }else{
-      battleLog(`<span class="blog-skill">沈夜涼丟出毒草，${target.name} 受 ${dmg} 傷害</span>`);
+      battleLog(`<span class="blog-skill">沈夜涼補刀，${target.name} 受 ${dmg} 傷害</span>`);
     }
     if(target.hp<=0)battleLog(`<span class="blog-hit">${target.name} 已倒下！</span>`);
   }
@@ -57,9 +57,9 @@ function yuerAction(aliveEnemies){
 function jianmeiAction(aliveEnemies){
   const target=aliveEnemies.reduce((a,b)=>b.hp>a.hp?b:a,aliveEnemies[0]);
   const roll=Math.floor(Math.random()*20)+1;
-  const atkBonus=5;
+  const atkBonus=3;
   if(roll+atkBonus>=target.ac){
-    const dmg=8+Math.floor(Math.random()*6);
+    const dmg=4+Math.floor(Math.random()*4);
     target.hp=Math.max(0,target.hp-dmg);
     battleLog(`<span class="blog-skill">裴霜華劍光一閃，${target.name} 受 ${dmg} 傷害</span>`);
     if(target.hp<=0)battleLog(`<span class="blog-hit">${target.name} 已倒下！</span>`);
@@ -240,7 +240,7 @@ function playerBondSkill(ally){
   currentBattle.bondMeter=0;
 
   if(ally==='yuer'){
-    const heal=35+Math.floor(Math.random()*10);
+    const heal=22+Math.floor(Math.random()*8);
     G.hp=Math.min(G.maxHp,G.hp+heal);
     G.statusEffects=G.statusEffects.filter(s=>s==='shield'||s==='buff');
     battleLog(`<span class="blog-heal">✦ 並蒂蓮 ✦ 沈夜涼與你共振，回復 ${heal} HP，淨化所有負面狀態</span>`);
@@ -248,7 +248,7 @@ function playerBondSkill(ally){
   }else if(ally==='jianmei'){
     const aliveEnemies=currentBattle.enemies.filter(e=>e.hp>0);
     aliveEnemies.forEach(target=>{
-      const dmg=25+Math.floor(Math.random()*10);
+      const dmg=15+Math.floor(Math.random()*6);
       target.hp=Math.max(0,target.hp-dmg);
       battleLog(`<span class="blog-hit">✦ 斷空 ✦ ${target.name} 被劍光斬中，受 ${dmg} 傷害（破甲）</span>`);
       if(target.hp<=0)battleLog(`<span class="blog-hit">${target.name} 已倒下！</span>`);

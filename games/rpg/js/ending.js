@@ -5,7 +5,7 @@ import {startBattle} from './battle.js';
 export function startFinalBattle(){
   const darkBuff=G.darkBuffActive?8:0;
   startBattle(
-    [{name:'黑淵魔君',hp:90,maxHp:90,atk:15+darkBuff,def:5,ac:16,exp:300,gold:200,
+    [{name:'黑淵魔君',hp:130,maxHp:130,atk:18+darkBuff,def:5,ac:16,exp:300,gold:200,
       loot:{name:'魔君殘魂',qty:1,type:'key',effect:{},desc:'魔君被封印後留下的殘魂結晶'}}],
     ()=>{
       // gotoScene is imported via scenes; call window reference to avoid circular dep
@@ -28,7 +28,7 @@ export function determineEnding(){
   let endingType;
   if(isDark){
     if(G.urgeEmbrace>=2)endingType='dark';
-    else if(G.urgeResist>=2)endingType='redemption';
+    else if(G.urgeResist>=3)endingType='redemption';
     else endingType='true';
   }else{
     if(topAff>=70)endingType='true';

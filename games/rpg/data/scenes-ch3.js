@@ -71,7 +71,7 @@ export const CH3={
         ()=>{
           addStory('決戰開始！','action');
           startBattle(
-            [{name:'鬼王獨孤殤·半魔化',hp:55,maxHp:55,atk:12,def:4,ac:14,exp:120,
+            [{name:'鬼王獨孤殤·半魔化',hp:75,maxHp:75,atk:14,def:4,ac:14,exp:120,
               gold:80,loot:{name:'悔恨之劍',qty:1,type:'weapon',effect:{},desc:'獨孤殤最後留下的劍，蘊含悔意'}}],
             ()=>gotoScene(3,3),
             ()=>gotoScene(1,'death')
@@ -81,7 +81,7 @@ export const CH3={
     }else{
       addStory('決戰開始！','action');
       startBattle(
-        [{name:'鬼王獨孤殤·半魔化',hp:55,maxHp:55,atk:12,def:4,ac:14,exp:120,
+        [{name:'鬼王獨孤殤·半魔化',hp:75,maxHp:75,atk:14,def:4,ac:14,exp:120,
           gold:80,loot:{name:'悔恨之劍',qty:1,type:'weapon',effect:{},desc:'獨孤殤最後留下的劍，蘊含悔意'}}],
         ()=>gotoScene(3,3),
         ()=>gotoScene(1,'death')
