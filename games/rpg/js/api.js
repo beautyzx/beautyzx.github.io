@@ -9,3 +9,4 @@ export {showUrge,handleUrge} from './urge.js';
 export {addRomanceScene} from './romance.js';
 export {startFinalBattle,determineEnding} from './ending.js';
 export {showShop,showTavern} from './shop.js';
+export {showVillagers,showCommissionBoard} from './village.js';

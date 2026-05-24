@@ -1,5 +1,4 @@
-import {G,setChapterBanner,clearStory,addStory,addStoryHTML,setChoices,gotoScene,addItem,showNotif,showUrge,loadGame,restartGame} from '../js/api.js';
-import {showShop,showTavern} from '../js/shop.js';
+import {G,setChapterBanner,clearStory,addStory,addStoryHTML,setChoices,gotoScene,addItem,showNotif,showUrge,loadGame,restartGame,showShop,showTavern,showVillagers,showCommissionBoard} from '../js/api.js';
 import {startBattle} from '../js/battle.js';
 
 export const CH1={
@@ -17,6 +16,8 @@ export const CH1={
           }},
           {label:'渝州武鋪（武器防具）',action:()=>showShop('weapon','渝州武鋪',hub)},
           {label:'渝州酒館（休息情報）',action:()=>showTavern(hub)},
+          {label:'與村民閒聊',action:()=>showVillagers('yuzhou',hub)},
+          {label:'查看委託板',action:()=>showCommissionBoard('yuzhou',hub)},
           {label:'在街上打探消息',action:()=>gotoScene(1,2)},
         ]);
       };

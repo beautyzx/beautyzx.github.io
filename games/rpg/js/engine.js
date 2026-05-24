@@ -292,3 +292,12 @@ export function showNotif(text){
   notif.appendChild(div);
   setTimeout(()=>div.remove(),2100);
 }
+
+export function addQuest(id,title,desc){
+  if(!G.flags.quests)G.flags.quests={};
+  G.flags.quests[id]={title,desc,status:'active'};
+}
+
+export function completeQuest(id){
+  if(G.flags.quests&&G.flags.quests[id])G.flags.quests[id].status='done';
+}
