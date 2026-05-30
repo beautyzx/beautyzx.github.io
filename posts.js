@@ -1,6 +1,15 @@
 // 此檔由 build.py 自動產生，不要手動修改
 const posts = [
   {
+    "slug": "2026-05-03-ai-studio-solo",
+    "date": "May 03",
+    "year": "2026",
+    "category": "日常",
+    "tag": "雜念",
+    "title": "我一個人開了間工作室，員工全是 AI，沒有一個會準時",
+    "excerpt": "管理一群不會累的同事，最後累的是發薪水的那個。"
+  },
+  {
     "slug": "2026-05-02-two-ai-wuxia-worlds",
     "date": "May 02",
     "year": "2026",
