@@ -86,7 +86,8 @@ const player = {
   x:80, y:GROUND-46, w:30, h:46, vx:0, vy:0,
   speed:3.4, jump:-11, onGround:false, jumps:0, face:1,
   hp:100, maxhp:100, lv:1, exp:0, expNeed:5,
-  atkT:0, invT:0
+  atkT:0, invT:0,
+  coins: parseInt(localStorage.getItem('ssc_coins')||'0')
 };
 
 // ---------- 平台（楓之谷式：到處踩） ----------
@@ -196,7 +197,7 @@ function update(){
     // 被砍
     if(slash && s.hurtT<=0 && rectHit(slash,s)){
       s.hp--; s.hurtT=10; popText(s.x+s.w/2, s.y-6, '1', '#ff5a5a');
-      if(s.hp<=0){ s.dead=true; gainExp(2); popText(s.x+s.w/2, s.y-18, '+2 EXP', '#ffe066'); }
+      if(s.hp<=0){ s.dead=true; gainExp(2); gainCoins(1); popText(s.x+s.w/2, s.y-18, '+2 EXP', '#ffe066'); popText(s.x+s.w/2, s.y-32, '+1 金幣', '#ffd700'); }
     }
     // 撞到玩家
     if(player.invT<=0 && rectHit(player,s)){
@@ -219,6 +220,10 @@ function update(){
   camX = Math.max(0, Math.min(WORLD-W, camX));
 }
 
+function gainCoins(n){
+  player.coins+=n;
+  localStorage.setItem('ssc_coins', player.coins);
+}
 function gainExp(n){
   player.exp+=n;
   while(player.exp>=player.expNeed){
@@ -290,16 +295,23 @@ function drawPlayer(){
 }
 
 function ui(){
-  // 等級膠囊
-  ctx.fillStyle='rgba(0,0,0,.4)'; roundRect(12,12,170,46,10); ctx.fill();
+  // 等級膠囊（加高一排放金幣）
+  ctx.fillStyle='rgba(0,0,0,.4)'; roundRect(12,12,190,62,10); ctx.fill();
   ctx.fillStyle='#fff'; ctx.font='bold 14px system-ui';
   ctx.fillText('Lv. '+player.lv, 22, 30);
   // HP
-  ctx.fillStyle='#3a2530'; roundRect(60,20,110,9,4); ctx.fill();
-  ctx.fillStyle='#ff5a5a'; roundRect(60,20,110*Math.max(0,player.hp/player.maxhp),9,4); ctx.fill();
+  ctx.fillStyle='#3a2530'; roundRect(60,20,130,9,4); ctx.fill();
+  ctx.fillStyle='#ff5a5a'; roundRect(60,20,130*Math.max(0,player.hp/player.maxhp),9,4); ctx.fill();
   // EXP
-  ctx.fillStyle='#23323a'; roundRect(22,40,148,8,4); ctx.fill();
-  ctx.fillStyle='#ffe066'; roundRect(22,40,148*(player.exp/player.expNeed),8,4); ctx.fill();
+  ctx.fillStyle='#23323a'; roundRect(22,40,168,8,4); ctx.fill();
+  ctx.fillStyle='#ffe066'; roundRect(22,40,168*(player.exp/player.expNeed),8,4); ctx.fill();
+  // 金幣列
+  ctx.fillStyle='#ffd700';
+  ctx.beginPath(); ctx.arc(28,59,7,0,7); ctx.fill();
+  ctx.fillStyle='#b8860b'; ctx.font='bold 9px system-ui'; ctx.textAlign='center';
+  ctx.fillText('$', 28, 62);
+  ctx.fillStyle='#ffe88a'; ctx.font='bold 13px system-ui'; ctx.textAlign='left';
+  ctx.fillText(player.coins.toLocaleString(), 42, 63);
   // 進度
   ctx.fillStyle='rgba(255,255,255,.7)'; ctx.font='11px system-ui'; ctx.textAlign='right';
   ctx.fillText(Math.round(player.x/WORLD*100)+'%', W-14, 24); ctx.textAlign='left';
