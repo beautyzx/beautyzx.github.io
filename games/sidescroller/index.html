@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>橫版小遊戲 · Beauty's Quiet Garden</title>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+  html,body { height:100%; background:#1b2330; overflow:hidden; font-family:system-ui,"Noto Sans TC",sans-serif; }
+  #wrap { position:relative; width:100vw; height:100vh; display:flex; align-items:center; justify-content:center; }
+  canvas { background:#bfe3f0; image-rendering:pixelated; max-width:100%; max-height:100%; touch-action:none; }
+  #hint { position:absolute; top:10px; left:50%; transform:translateX(-50%); color:#fff; font-size:13px;
+          background:rgba(0,0,0,.35); padding:6px 14px; border-radius:20px; letter-spacing:1px; pointer-events:none;
+          transition:opacity .6s; }
+  /* 觸控按鈕 */
+  .pad { position:absolute; bottom:24px; display:none; gap:14px; }
+  .pad.left { left:20px; }
+  .pad.right { right:20px; }
+  .btn { width:62px; height:62px; border-radius:50%; background:rgba(255,255,255,.22);
+         border:2px solid rgba(255,255,255,.5); color:#fff; font-size:22px; font-weight:700;
+         display:flex; align-items:center; justify-content:center; user-select:none; backdrop-filter:blur(2px); }
+  .btn:active { background:rgba(255,255,255,.45); transform:scale(.94); }
+  body.touch .pad { display:flex; }
+  #back { position:absolute; top:10px; right:14px; color:rgba(255,255,255,.7); font-size:12px;
+          text-decoration:none; background:rgba(0,0,0,.3); padding:5px 12px; border-radius:20px; }
+  #back:hover { color:#fff; }
+</style>
+</head>
+<body>
+<div id="wrap">
+  <canvas id="game" width="800" height="450"></canvas>
+  <div id="hint">← → 移動 · ↑ / 空白 跳（可二段跳） · Z 攻擊</div>
+  <a id="back" href="/">← 回首頁</a>
+  <div class="pad left">
+    <div class="btn" data-k="left">◀</div>
+    <div class="btn" data-k="right">▶</div>
+  </div>
+  <div class="pad right">
+    <div class="btn" data-k="atk">擊</div>
+    <div class="btn" data-k="jump">跳</div>
+  </div>
+</div>
+
+<script>
+const cvs = document.getElementById('game');
+const ctx = cvs.getContext('2d');
+const W = cvs.width, H = cvs.height;
+const WORLD = 3400;          // 地圖總寬，比畫面寬很多 → 才需要捲軸
+const GROUND = H - 60;       // 地面 y
+
+// ---------- 輸入 ----------
+const keys = {};
+const setKey = (k,v)=>{ keys[k]=v; };
+addEventListener('keydown', e=>{
+  if(['ArrowLeft','ArrowRight','ArrowUp',' '].includes(e.key)) e.preventDefault();
+  if(e.key==='ArrowLeft') setKey('left',true);
+  if(e.key==='ArrowRight') setKey('right',true);
+  if(e.key==='ArrowUp'||e.key===' ') press('jump');
+  if(e.key==='z'||e.key==='Z') press('atk');
+});
+addEventListener('keyup', e=>{
+  if(e.key==='ArrowLeft') setKey('left',false);
+  if(e.key==='ArrowRight') setKey('right',false);
+});
+// 觸控
+if('ontouchstart' in window) document.body.classList.add('touch');
+document.querySelectorAll('.btn').forEach(b=>{
+  const k=b.dataset.k;
+  const on=e=>{ e.preventDefault(); if(k==='jump'||k==='atk') press(k); else setKey(k,true); };
+  const off=e=>{ e.preventDefault(); if(k==='left'||k==='right') setKey(k,false); };
+  b.addEventListener('touchstart',on); b.addEventListener('mousedown',on);
+  b.addEventListener('touchend',off); b.addEventListener('mouseup',off); b.addEventListener('touchcancel',off);
+});
+const pressed = {};
+function press(k){ if(!pressed[k]){ pressed[k]=true; queue[k]=true; } }
+// 放開偵測（鍵盤）
+addEventListener('keyup', e=>{ if(e.key==='ArrowUp'||e.key===' ') pressed.jump=false; if(e.key==='z'||e.key==='Z') pressed.atk=false; });
+document.querySelectorAll('.btn').forEach(b=>{
+  const off=()=>{ if(b.dataset.k==='jump') pressed.jump=false; if(b.dataset.k==='atk') pressed.atk=false; };
+  b.addEventListener('touchend',off); b.addEventListener('mouseup',off);
+});
+const queue = {};
+
+// ---------- 玩家 ----------
+const player = {
+  x:80, y:GROUND-46, w:30, h:46, vx:0, vy:0,
+  speed:3.4, jump:-11, onGround:false, jumps:0, face:1,
+  hp:100, maxhp:100, lv:1, exp:0, expNeed:5,
+  atkT:0, invT:0
+};
+
+// ---------- 平台（楓之谷式：到處踩） ----------
+const platforms = [
+  {x:240,y:GROUND-90,w:140},
+  {x:430,y:GROUND-160,w:120},
+  {x:650,y:GROUND-110,w:160},
+  {x:980,y:GROUND-90,w:130},
+  {x:1180,y:GROUND-170,w:120},
+  {x:1380,y:GROUND-100,w:150},
+  {x:1700,y:GROUND-150,w:140},
+  {x:1950,y:GROUND-90,w:120},
+  {x:2200,y:GROUND-180,w:130},
+  {x:2420,y:GROUND-110,w:160},
+  {x:2750,y:GROUND-140,w:140},
+  {x:3000,y:GROUND-90,w:160},
+];
+
+// ---------- 怪物（軟綿綿的史萊姆，致敬小軟） ----------
+function makeSlime(x,y,patrol){ return {x,y,w:34,h:26,vx:(Math.random()<.5?-1:1)*.7,base:y,
+  patrolL:x-patrol, patrolR:x+patrol, hp:2, dead:false, hurtT:0, hop:Math.random()*6}; }
+let slimes = [
+  makeSlime(360,GROUND-26,90), makeSlime(720,GROUND-26,120),
+  makeSlime(1060,GROUND-26,80), makeSlime(1450,GROUND-26,140),
+  makeSlime(1820,GROUND-26,100), makeSlime(2280,GROUND-26,120),
+  makeSlime(2600,GROUND-26,110), makeSlime(2950,GROUND-26,130),
+  makeSlime(3200,GROUND-26,90),
+];
+
+// ---------- 飄字 ----------
+let floats = [];
+function popText(x,y,txt,col){ floats.push({x,y,txt,col,t:50}); }
+
+let camX = 0;
+let cleared = false;
+
+function rectHit(a,b){ return a.x<b.x+b.w && a.x+a.w>b.x && a.y<b.y+b.h && a.y+a.h>b.y; }
+
+function update(){
+  // 水平移動
+  if(keys.left){ player.vx=-player.speed; player.face=-1; }
+  else if(keys.right){ player.vx=player.speed; player.face=1; }
+  else player.vx*=0.7;
+
+  // 跳 / 二段跳
+  if(queue.jump){
+    if(player.onGround){ player.vy=player.jump; player.onGround=false; player.jumps=1; }
+    else if(player.jumps<2){ player.vy=player.jump*0.9; player.jumps=2; }
+    queue.jump=false;
+  }
+  // 攻擊
+  if(queue.atk && player.atkT<=0){ player.atkT=14; queue.atk=false; }
+  if(player.atkT>0) player.atkT--;
+  if(player.invT>0) player.invT--;
+
+  // 重力
+  player.vy += 0.55;
+  if(player.vy>14) player.vy=14;
+  player.x += player.vx;
+  player.y += player.vy;
+
+  // 邊界
+  if(player.x<0) player.x=0;
+  if(player.x+player.w>WORLD) player.x=WORLD-player.w;
+
+  // 地面
+  player.onGround=false;
+  if(player.y+player.h>=GROUND){ player.y=GROUND-player.h; player.vy=0; player.onGround=true; player.jumps=0; }
+
+  // 平台（只在往下踩時吃碰撞）
+  for(const p of platforms){
+    if(player.vy>=0 &&
+       player.x+player.w>p.x && player.x<p.x+p.w &&
+       player.y+player.h>=p.y && player.y+player.h<=p.y+18+player.vy){
+      player.y=p.y-player.h; player.vy=0; player.onGround=true; player.jumps=0;
+    }
+  }
+
+  // 攻擊判定框
+  let slash=null;
+  if(player.atkT>6){
+    slash={ x: player.face>0?player.x+player.w:player.x-46, y:player.y-4, w:46, h:player.h+8 };
+  }
+
+  // 怪物
+  for(const s of slimes){
+    if(s.dead) continue;
+    s.hop+=0.12;
+    s.x += s.vx;
+    if(s.x<s.patrolL){ s.x=s.patrolL; s.vx*=-1; }
+    if(s.x>s.patrolR){ s.x=s.patrolR; s.vx*=-1; }
+    s.y = s.base - Math.abs(Math.sin(s.hop))*8;   // 一彈一彈
+    if(s.hurtT>0) s.hurtT--;
+
+    // 被砍
+    if(slash && s.hurtT<=0 && rectHit(slash,s)){
+      s.hp--; s.hurtT=10; popText(s.x+s.w/2, s.y-6, '1', '#ff5a5a');
+      if(s.hp<=0){ s.dead=true; gainExp(2); popText(s.x+s.w/2, s.y-18, '+2 EXP', '#ffe066'); }
+    }
+    // 撞到玩家
+    if(player.invT<=0 && rectHit(player,s)){
+      player.hp-=8; player.invT=50;
+      player.vx = player.x<s.x ? -5 : 5; player.vy=-5;
+      popText(player.x+player.w/2, player.y-6, '-8', '#ff8c42');
+      if(player.hp<=0) respawn();
+    }
+  }
+
+  // 終點
+  if(player.x>WORLD-90 && !cleared){ cleared=true; popText(player.x, player.y-30,'過關！再走回去吧','#7bdc8a'); }
+
+  // 飄字
+  floats.forEach(f=>{ f.y-=0.8; f.t--; });
+  floats = floats.filter(f=>f.t>0);
+
+  // 攝影機跟隨（夾住邊界）
+  camX = player.x - W/2 + player.w/2;
+  camX = Math.max(0, Math.min(WORLD-W, camX));
+}
+
+function gainExp(n){
+  player.exp+=n;
+  while(player.exp>=player.expNeed){
+    player.exp-=player.expNeed; player.lv++; player.expNeed=Math.round(player.expNeed*1.6);
+    player.maxhp+=20; player.hp=player.maxhp;
+    popText(player.x+player.w/2, player.y-26,'LEVEL UP！','#7bdc8a');
+  }
+}
+function respawn(){ player.hp=player.maxhp; player.x=80; player.y=GROUND-player.h; player.vy=0; player.invT=60;
+  popText(player.x, player.y-20,'復活','#9ad0ff'); }
+
+// ---------- 繪圖 ----------
+function bg(){
+  // 天空漸層
+  const g=ctx.createLinearGradient(0,0,0,H);
+  g.addColorStop(0,'#bfe3f0'); g.addColorStop(1,'#e9f6ee');
+  ctx.fillStyle=g; ctx.fillRect(0,0,W,H);
+  // 遠景雲（視差，慢）
+  ctx.fillStyle='rgba(255,255,255,.65)';
+  for(let i=0;i<8;i++){
+    const cx=((i*520 - camX*0.3)%(WORLD)+WORLD)%(WORLD+520)-200;
+    cloud(cx, 60+(i%3)*34);
+  }
+  // 中景山丘（視差，中）
+  ctx.fillStyle='#a8d5b5';
+  for(let i=0;i<10;i++){
+    const hx=((i*420 - camX*0.6)%(WORLD)+WORLD)%(WORLD+420)-200;
+    ctx.beginPath(); ctx.arc(hx,GROUND+40,150,Math.PI,0); ctx.fill();
+  }
+}
+function cloud(x,y){ ctx.beginPath();
+  ctx.arc(x,y,22,0,7); ctx.arc(x+24,y+6,18,0,7); ctx.arc(x-22,y+8,16,0,7); ctx.fill(); }
+
+function drawSlime(s){
+  const sx=s.x-camX, sy=s.y;
+  if(s.hurtT>0) ctx.globalAlpha=0.6;
+  // 身體（小軟同款奶油毛色）
+  ctx.fillStyle='#f3e3c8';
+  ctx.beginPath(); ctx.ellipse(sx+s.w/2, sy+s.h/2, s.w/2, s.h/2, 0,0,7); ctx.fill();
+  ctx.fillStyle='#e6cfa3';
+  ctx.beginPath(); ctx.ellipse(sx+s.w/2, sy+s.h*0.72, s.w/2.4, s.h/3.5, 0,0,7); ctx.fill();
+  // 藍眼睛（致敬藍眼布偶）
+  ctx.fillStyle='#3a6ea5';
+  ctx.beginPath(); ctx.arc(sx+s.w*0.34, sy+s.h*0.42, 2.6,0,7); ctx.arc(sx+s.w*0.66, sy+s.h*0.42, 2.6,0,7); ctx.fill();
+  ctx.fillStyle='#000'; ctx.fillRect(sx+s.w*0.46, sy+s.h*0.62, 5,1.5);
+  ctx.globalAlpha=1;
+}
+
+function drawPlayer(){
+  const px=player.x-camX, py=player.y;
+  // 閃爍無敵
+  if(player.invT>0 && Math.floor(player.invT/4)%2===0) ctx.globalAlpha=0.4;
+  // 身體
+  ctx.fillStyle='#5a7d9a'; ctx.fillRect(px+6, py+18, player.w-12, player.h-18);
+  // 頭
+  ctx.fillStyle='#ffe0bd'; ctx.beginPath(); ctx.arc(px+player.w/2, py+12, 11,0,7); ctx.fill();
+  // 頭髮
+  ctx.fillStyle='#3b3b4f'; ctx.beginPath(); ctx.arc(px+player.w/2, py+9, 11, Math.PI, 0); ctx.fill();
+  // 眼睛（看方向）
+  ctx.fillStyle='#000';
+  ctx.fillRect(px+player.w/2 + player.face*3 -1, py+11, 2.5,3);
+  // 攻擊揮砍
+  if(player.atkT>6){
+    ctx.strokeStyle='rgba(255,255,255,.85)'; ctx.lineWidth=4;
+    const cx=player.face>0?px+player.w:px;
+    ctx.beginPath(); ctx.arc(cx, py+player.h/2, 30, -1, 1); ctx.stroke();
+  }
+  ctx.globalAlpha=1;
+}
+
+function ui(){
+  // 等級膠囊
+  ctx.fillStyle='rgba(0,0,0,.4)'; roundRect(12,12,170,46,10); ctx.fill();
+  ctx.fillStyle='#fff'; ctx.font='bold 14px system-ui';
+  ctx.fillText('Lv. '+player.lv, 22, 30);
+  // HP
+  ctx.fillStyle='#3a2530'; roundRect(60,20,110,9,4); ctx.fill();
+  ctx.fillStyle='#ff5a5a'; roundRect(60,20,110*Math.max(0,player.hp/player.maxhp),9,4); ctx.fill();
+  // EXP
+  ctx.fillStyle='#23323a'; roundRect(22,40,148,8,4); ctx.fill();
+  ctx.fillStyle='#ffe066'; roundRect(22,40,148*(player.exp/player.expNeed),8,4); ctx.fill();
+  // 進度
+  ctx.fillStyle='rgba(255,255,255,.7)'; ctx.font='11px system-ui'; ctx.textAlign='right';
+  ctx.fillText(Math.round(player.x/WORLD*100)+'%', W-14, 24); ctx.textAlign='left';
+}
+function roundRect(x,y,w,h,r){ ctx.beginPath();
+  ctx.moveTo(x+r,y); ctx.arcTo(x+w,y,x+w,y+h,r); ctx.arcTo(x+w,y+h,x,y+h,r);
+  ctx.arcTo(x,y+h,x,y,r); ctx.arcTo(x,y,x+w,y,r); ctx.closePath(); }
+
+function draw(){
+  bg();
+  // 地面
+  ctx.fillStyle='#8bbf6e'; ctx.fillRect(0,GROUND,W,H-GROUND);
+  ctx.fillStyle='#6fa356'; ctx.fillRect(0,GROUND,W,6);
+  // 平台
+  for(const p of platforms){
+    const x=p.x-camX;
+    if(x>W||x+p.w<0) continue;
+    ctx.fillStyle='#caa46a'; roundRect(x,p.y,p.w,12,6); ctx.fill();
+    ctx.fillStyle='#8bbf6e'; ctx.fillRect(x,p.y,p.w,4);
+  }
+  // 終點旗
+  const fx=WORLD-50-camX;
+  ctx.fillStyle='#7a5a3a'; ctx.fillRect(fx,GROUND-90,4,90);
+  ctx.fillStyle=cleared?'#7bdc8a':'#ff8fa3'; ctx.beginPath();
+  ctx.moveTo(fx+4,GROUND-90); ctx.lineTo(fx+34,GROUND-78); ctx.lineTo(fx+4,GROUND-66); ctx.fill();
+
+  for(const s of slimes) if(!s.dead) drawSlime(s);
+  drawPlayer();
+  // 飄字
+  ctx.font='bold 13px system-ui'; ctx.textAlign='center';
+  floats.forEach(f=>{ ctx.globalAlpha=Math.min(1,f.t/20); ctx.fillStyle=f.col;
+    ctx.fillText(f.txt, f.x-camX, f.y); });
+  ctx.globalAlpha=1; ctx.textAlign='left';
+  ui();
+}
+
+let hintFade=0;
+function loop(){
+  update(); draw();
+  // 5 秒後淡出提示
+  hintFade++; if(hintFade===300){ const h=document.getElementById('hint'); h.style.opacity=0; }
+  requestAnimationFrame(loop);
+}
+loop();
+</script>
+</body>
+</html>
