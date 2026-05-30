@@ -106,8 +106,9 @@ const platforms = [
 ];
 
 // ---------- 怪物（軟綿綿的史萊姆，致敬小軟） ----------
-function makeSlime(x,y,patrol){ return {x,y,w:34,h:26,vx:(Math.random()<.5?-1:1)*.7,base:y,
-  patrolL:x-patrol, patrolR:x+patrol, hp:2, dead:false, hurtT:0, hop:Math.random()*6}; }
+function makeSlime(x,y,patrol){ return {x,y,w:34,h:26,vx:(Math.random()<.5?-1:1)*.7,base:y,vy:0,onGround:true,
+  patrolL:x-patrol, patrolR:x+patrol, hp:2, dead:false, hurtT:0,
+  jumpT:Math.floor(Math.random()*120+60)}; }
 let slimes = [
   makeSlime(360,GROUND-26,90), makeSlime(720,GROUND-26,120),
   makeSlime(1060,GROUND-26,80), makeSlime(1450,GROUND-26,140),
@@ -174,11 +175,22 @@ function update(){
   // 怪物
   for(const s of slimes){
     if(s.dead) continue;
-    s.hop+=0.12;
-    s.x += s.vx;
+    // 跳躍計時
+    if(s.onGround){ s.jumpT--; if(s.jumpT<=0){ s.vy=-8.5; s.onGround=false; s.jumpT=Math.floor(Math.random()*120+60); } }
+    // 重力
+    s.vy+=0.55; if(s.vy>14) s.vy=14;
+    s.x+=s.vx; s.y+=s.vy;
     if(s.x<s.patrolL){ s.x=s.patrolL; s.vx*=-1; }
     if(s.x>s.patrolR){ s.x=s.patrolR; s.vx*=-1; }
-    s.y = s.base - Math.abs(Math.sin(s.hop))*8;   // 一彈一彈
+    // 地面落地
+    s.onGround=false;
+    if(s.y+s.h>=GROUND){ s.y=GROUND-s.h; s.vy=0; s.onGround=true; }
+    // 平台落地
+    for(const p of platforms){
+      if(s.vy>=0 && s.x+s.w>p.x && s.x<p.x+p.w && s.y+s.h>=p.y && s.y+s.h<=p.y+18+s.vy){
+        s.y=p.y-s.h; s.vy=0; s.onGround=true;
+      }
+    }
     if(s.hurtT>0) s.hurtT--;
 
     // 被砍
