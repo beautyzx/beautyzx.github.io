@@ -1,0 +1,551 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>我請兩個 AI 各蓋一座武俠世界，它們審美完全不同 — Beauty's Quiet Garden</title>
+<meta name="description" content="同一個需求丟給兩個模型，回來的是兩種人生觀。" />
+<meta property="og:title" content="我請兩個 AI 各蓋一座武俠世界，它們審美完全不同" />
+<meta property="og:description" content="同一個需求丟給兩個模型，回來的是兩種人生觀。" />
+<meta property="og:type" content="article" />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Noto+Sans+TC:wght@300;400;500&family=Noto+Serif+TC:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    min-height: 100vh;
+    color: #4b4a43;
+    font-family: 'Noto Serif TC', 'Songti TC', Georgia, serif;
+    background:
+      radial-gradient(circle at 82% 78%, rgba(111, 139, 122, 0.15), transparent 22rem),
+      radial-gradient(circle at 18% 12%, rgba(216, 200, 186, 0.22), transparent 18rem),
+      linear-gradient(135deg, #fbf7ef, #f5efe3);
+    overflow-x: hidden;
+    line-height: 1.85;
+  }
+  body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    background-image:
+      linear-gradient(rgba(255, 255, 255, 0.25) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255, 255, 255, 0.18) 1px, transparent 1px);
+    background-size: 54px 54px;
+    opacity: 0.35;
+    z-index: 0;
+  }
+  .container {
+    position: relative;
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 60px 40px 100px;
+    z-index: 1;
+  }
+  .signature {
+    position: absolute; top: 20px; left: -10px;
+    font-family: 'Brush Script MT', 'Snell Roundhand', cursive;
+    font-size: clamp(60px, 8vw, 96px);
+    color: rgba(111, 139, 122, 0.16);
+    transform: rotate(-5deg);
+    pointer-events: none; user-select: none;
+  }
+
+  /* ===== HEADER（跟首頁一致） ===== */
+  header.site-header {
+    padding: 60px 0 32px;
+    border-bottom: 1px solid rgba(92, 87, 75, 0.14);
+    position: relative;
+  }
+  .eyebrow {
+    color: #4e6d5e; font-size: 13px; letter-spacing: 0.22em;
+    text-transform: uppercase; margin-bottom: 18px;
+  }
+  .site-title {
+    margin: 0;
+    font-size: clamp(34px, 5vw, 48px);
+    line-height: 1.15; font-weight: 500; letter-spacing: 0.02em;
+    color: #4b4a43;
+  }
+  .site-title a {
+    color: inherit; text-decoration: none;
+    transition: color 0.2s ease;
+  }
+  .site-title a:hover { color: #4e6d5e; }
+  .intro {
+    margin-top: 18px; max-width: 580px;
+    color: #8f8a7d; font-size: 15px; line-height: 1.85;
+    font-family: 'Noto Sans TC', sans-serif;
+  }
+  nav.site-nav { display: flex; gap: 10px; margin-top: 24px; flex-wrap: wrap; }
+  .blog-link {
+    color: #4e6d5e; text-decoration: none;
+    border: 1px solid rgba(78, 109, 94, 0.2);
+    border-radius: 999px; padding: 9px 16px;
+    background: rgba(255, 255, 255, 0.4);
+    font-size: 14px; transition: all 0.25s ease; display: inline-block;
+    font-family: 'Noto Serif TC', serif;
+  }
+  .blog-link:hover { background: rgba(111, 139, 122, 0.18); transform: translateY(-2px); }
+
+  /* ===== MAIN GRID ===== */
+  .main-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 280px;
+    gap: 60px; margin-top: 44px;
+  }
+
+  /* ===== 麵包屑 / 返回 ===== */
+  .top-nav {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-bottom: 24px;
+    font-family: 'Noto Sans TC', sans-serif;
+    font-size: 13px;
+  }
+  .back-link {
+    color: #4e6d5e; text-decoration: none;
+    border: 1px solid rgba(78, 109, 94, 0.2);
+    border-radius: 999px; padding: 7px 14px;
+    background: rgba(255, 255, 255, 0.4);
+    transition: all 0.25s ease;
+  }
+  .back-link:hover {
+    background: rgba(111, 139, 122, 0.18);
+    transform: translateX(-2px);
+  }
+  .top-meta {
+    color: #8f8a7d; letter-spacing: 0.15em;
+    font-size: 11px; text-transform: uppercase;
+  }
+
+  /* ===== 文章 header ===== */
+  article > header {
+    padding: 24px 0 30px;
+    border-bottom: 0.5px solid rgba(78, 109, 94, 0.25);
+    margin-bottom: 36px;
+    text-align: left;
+  }
+  .post-tag {
+    font-family: 'Noto Sans TC', sans-serif;
+    font-size: 11px; letter-spacing: 0.22em;
+    color: #c9a8a0; text-transform: uppercase;
+    margin-bottom: 16px;
+  }
+  h1.post-title {
+    font-family: 'Noto Serif TC', 'Songti TC', serif;
+    font-size: clamp(26px, 3.4vw, 34px);
+    font-weight: 500; line-height: 1.35;
+    margin: 0 0 16px; letter-spacing: 0.02em;
+    color: #3d3c36;
+  }
+  .post-meta {
+    display: flex; gap: 16px; align-items: center;
+    font-family: 'Cormorant Garamond', serif;
+    font-style: italic; color: #8f8a7d;
+    font-size: 14px;
+  }
+  .post-meta .dot {
+    width: 3px; height: 3px;
+    background: #c9a8a0; border-radius: 50%;
+  }
+  .post-meta .category {
+    font-family: 'Noto Sans TC', sans-serif;
+    font-style: normal; font-size: 12px;
+    letter-spacing: 0.1em; color: #6f8b7a;
+  }
+
+  /* ===== 文章本文 ===== */
+  .post-content {
+    font-size: 16px; line-height: 2;
+    color: #3d3c36;
+  }
+  .post-content > p:first-of-type::first-letter {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 3.5em; float: left;
+    line-height: 0.9; margin: 0.1em 0.12em 0 0;
+    color: #6f8b7a; font-style: italic;
+  }
+  .post-content p { margin: 0 0 1.4em; }
+  .post-content h2 {
+    font-family: 'Noto Serif TC', serif;
+    font-size: 21px; font-weight: 500;
+    margin: 2.4em 0 0.8em;
+    padding-left: 14px; position: relative;
+    color: #3d3c36;
+  }
+  .post-content h2::before {
+    content: ""; position: absolute;
+    left: 0; top: 0.4em; bottom: 0.4em;
+    width: 3px; background: #6f8b7a;
+  }
+  .post-content h3 {
+    font-family: 'Noto Serif TC', serif;
+    font-size: 17px; font-weight: 500;
+    margin: 2em 0 0.6em;
+    color: #5d5c54;
+  }
+  .post-content blockquote {
+    margin: 1.8em 0; padding: 14px 22px;
+    border-left: 2px solid #c9a8a0;
+    background: rgba(216, 200, 186, 0.12);
+    color: #6b675d; font-size: 15.5px;
+    border-radius: 0 6px 6px 0;
+  }
+  .post-content blockquote p { margin: 0.5em 0; }
+  .post-content blockquote p:first-child { margin-top: 0; }
+  .post-content blockquote p:last-child { margin-bottom: 0; }
+  .post-content a {
+    color: #4e6d5e;
+    border-bottom: 1px solid rgba(78, 109, 94, 0.4);
+    text-decoration: none;
+    transition: all 0.2s ease;
+  }
+  .post-content a:hover {
+    color: #c9a8a0;
+    border-bottom-color: #c9a8a0;
+  }
+  .post-content code {
+    font-family: 'Courier New', monospace;
+    font-size: 0.88em;
+    background: rgba(216, 200, 186, 0.25);
+    padding: 0.1em 0.45em;
+    border-radius: 3px;
+    color: #6b5a4d;
+  }
+  .post-content pre {
+    background: #2d2d2d; color: #e0e0e0;
+    padding: 18px 22px; border-radius: 6px;
+    overflow-x: auto; margin: 1.6em 0;
+    font-size: 13.5px; line-height: 1.6;
+  }
+  .post-content pre code {
+    background: transparent; color: inherit;
+    padding: 0; font-size: inherit;
+  }
+  .post-content img {
+    max-width: 100%; height: auto;
+    display: block; margin: 1.8em auto;
+    border-radius: 4px;
+    box-shadow: 0 6px 28px rgba(0, 0, 0, 0.08);
+  }
+  .post-content ul, .post-content ol {
+    margin: 1.4em 0 1.4em 1.8em;
+    padding: 0;
+  }
+  .post-content li { margin-bottom: 0.5em; }
+  .post-content hr {
+    border: none; text-align: center;
+    margin: 3em 0;
+  }
+  .post-content hr::before {
+    content: "✦  ✦  ✦";
+    color: #c9a8a0;
+    letter-spacing: 0.5em;
+    font-size: 13px;
+  }
+  .post-content strong { color: #2d2c27; font-weight: 500; }
+
+  /* ===== 文章底部上下篇 ===== */
+  .post-footer {
+    margin-top: 50px; padding-top: 28px;
+    border-top: 0.5px solid rgba(78, 109, 94, 0.25);
+  }
+  .post-nav {
+    display: flex; gap: 16px; margin-top: 20px;
+  }
+  .post-nav a {
+    flex: 1; padding: 14px 16px;
+    border: 1px solid rgba(92, 87, 75, 0.14);
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.4);
+    text-decoration: none; color: #4b4a43;
+    font-size: 13px; line-height: 1.5;
+    transition: all 0.25s ease;
+    font-family: 'Noto Sans TC', sans-serif;
+  }
+  .post-nav a:hover {
+    border-color: rgba(78, 109, 94, 0.4);
+    background: rgba(255, 255, 255, 0.7);
+    transform: translateY(-2px);
+  }
+  .post-nav .nav-label {
+    font-family: 'Cormorant Garamond', serif;
+    font-style: italic; font-size: 11px;
+    color: #8f8a7d; display: block;
+    margin-bottom: 4px; letter-spacing: 0.05em;
+  }
+  .post-nav .nav-next { text-align: right; }
+
+  /* ===== Sidebar ===== */
+  aside {
+    position: sticky; top: 28px; align-self: start;
+    padding: 24px;
+    border: 1px solid rgba(92, 87, 75, 0.14);
+    border-radius: 22px;
+    background: rgba(255, 255, 255, 0.45);
+    backdrop-filter: blur(12px);
+  }
+  aside h3 {
+    margin: 0 0 10px;
+    font-size: 15px; font-weight: 500;
+    color: #4b4a43; font-family: 'Noto Sans TC', sans-serif;
+  }
+  .search-input {
+    width: 100%; padding: 8px 12px;
+    border: 0.5px solid rgba(78, 109, 94, 0.25);
+    border-radius: 10px; background: rgba(255, 255, 255, 0.5);
+    font-family: 'Noto Sans TC', sans-serif;
+    font-size: 13px; color: #4b4a43;
+    transition: all 0.2s; box-sizing: border-box;
+    margin-bottom: 22px;
+  }
+  .search-input:focus {
+    outline: none; border-color: rgba(78, 109, 94, 0.5);
+    background: rgba(255, 255, 255, 0.8);
+  }
+  .cat-item {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 8px 12px; margin: 0 -12px;
+    border-radius: 8px; cursor: pointer;
+    transition: all 0.2s ease;
+    color: #8f8a7d; font-size: 13px;
+    font-family: 'Noto Sans TC', sans-serif;
+    text-decoration: none;
+  }
+  .cat-item:hover { background: rgba(111, 139, 122, 0.1); color: #4b4a43; }
+  .cat-item.current {
+    background: rgba(111, 139, 122, 0.18);
+    color: #4e6d5e; font-weight: 500;
+  }
+  .cat-count {
+    font-size: 11px; color: #b8b8b8;
+    font-family: 'Cormorant Garamond', serif; font-style: italic;
+  }
+  .now-block {
+    margin-bottom: 22px; padding: 14px;
+    background: rgba(111, 139, 122, 0.08);
+    border-radius: 14px;
+  }
+  .now-pill {
+    display: inline-block; font-size: 10px;
+    letter-spacing: 0.18em; color: #6f8b7a;
+    text-transform: uppercase;
+    background: rgba(111, 139, 122, 0.12);
+    padding: 3px 10px; border-radius: 999px;
+    margin-bottom: 8px;
+  }
+  .now-list {
+    font-size: 13px; color: #4b4a43; line-height: 1.85;
+    font-family: 'Noto Sans TC', sans-serif;
+  }
+  .now-list div { margin-bottom: 4px; }
+
+  /* === 小軟今日狀態 === */
+  .ruan-block {
+    margin-bottom: 22px; padding: 16px 14px;
+    background: rgba(216, 200, 186, 0.18);
+    border-radius: 14px;
+    border-left: 2px solid #c9a8a0;
+  }
+  .ruan-pill {
+    display: inline-block; font-size: 10px;
+    letter-spacing: 0.18em; color: #b89a86;
+    text-transform: uppercase;
+    background: rgba(201, 168, 160, 0.15);
+    padding: 3px 10px; border-radius: 999px;
+    margin-bottom: 10px;
+  }
+  .ruan-quote {
+    font-family: 'Cormorant Garamond', 'Noto Serif TC', serif;
+    font-size: 15px; font-style: italic;
+    color: #5d5c54; line-height: 1.6;
+    margin-bottom: 6px;
+  }
+  .ruan-meta {
+    font-size: 11px; color: #b89a86;
+    font-family: 'Noto Sans TC', sans-serif;
+    letter-spacing: 0.05em;
+  }
+
+  .find-list { display: flex; flex-direction: column; gap: 6px; font-size: 13px; font-family: 'Noto Sans TC', sans-serif; }
+  .find-list a { color: #4e6d5e; text-decoration: none; }
+  .find-list a:hover { text-decoration: underline; }
+
+  /* ===== Footer ===== */
+  footer.site-footer {
+    margin-top: 80px; padding-top: 32px;
+    border-top: 1px solid rgba(92, 87, 75, 0.14);
+    color: rgba(75, 74, 67, 0.55);
+    font-size: 13px; text-align: center;
+    font-family: 'Noto Sans TC', sans-serif;
+  }
+  footer.site-footer svg {
+    display: block; margin: 0 auto 12px;
+  }
+
+  @media (max-width: 760px) {
+    .container { padding: 30px 20px 60px; }
+    .main-grid { grid-template-columns: 1fr; gap: 40px; }
+    aside { position: static; }
+    h1.post-title { font-size: 22px; }
+    .post-content { font-size: 15.5px; }
+    .post-nav { flex-direction: column; gap: 10px; }
+    .post-nav .nav-next { text-align: left; }
+    .site-title { font-size: 28px; }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="signature">Beauty</div>
+
+  <header class="site-header">
+    <div class="eyebrow">quiet notes · soft chaos · personal blog</div>
+    <h2 class="site-title"><a href="../index.html">在溫柔背景裡，<br>寫一點不太溫柔的生活。</a></h2>
+    <p class="intro">這裡放日常、創作、遊戲、AI 工具、貓，以及那些半夜突然覺得「欸這件事其實很荒謬」的腦內筆記。</p>
+    <nav class="site-nav">
+      <a href="../index.html" class="blog-link">文章</a>
+      <a href="../index.html#about" class="blog-link">關於</a>
+      <a href="#" class="blog-link">碎念</a>
+      <a href="https://github.com/" class="blog-link" target="_blank" rel="noopener">GitHub</a>
+    </nav>
+  </header>
+
+  <div class="main-grid">
+
+    <section>
+      <nav class="top-nav">
+        <a class="back-link" href="../index.html">← 回到花園</a>
+        <span class="top-meta">AI 工具</span>
+      </nav>
+
+      <article>
+        <header>
+          <div class="post-tag">遊戲開發</div>
+          <h1 class="post-title">我請兩個 AI 各蓋一座武俠世界，它們審美完全不同</h1>
+          <div class="post-meta">
+            <span>2026 · 05 · 02</span>
+            <span class="dot"></span>
+            <span class="category">AI 工具</span>
+          </div>
+        </header>
+
+        <div class="post-content">
+<p>我做了一件聽起來很合理、其實有點變態的事：同一份武俠 RPG 需求，丟給兩個 AI，叫它們各蓋一座世界。</p>
+<p>不是比賽。是想看看它們會把我的話聽成什麼樣子。</p>
+<p>結果回來的，不是兩份程式碼，是兩種價值觀。</p>
+<h2>甲方一句話，乙方各自腦補</h2>
+<p>Claude Code 蓋出《仙劍古俠傳》。</p>
+<p>它很「我把規則做好了」：D20 屬性系統、四種出身、好感度追蹤、三章節、三結局，連 Dark Urge 那種會在你耳邊慫恿你做壞事的機制都備好了。整個世界像一個準備好接客的工程師，門口貼著「本店規則明確，請依序體驗」。</p>
+<p>Codex 蓋出《翡翠鎮》。</p>
+<p>它走的是另一條路——氛圍先行，先把那個鎮的味道弄出來，規則隨後再說。沒有那麼多齒輪，但有一股「你先進來再說」的鬆弛感。</p>
+<p>同一句需求，一個聽成「系統」，一個聽成「場景」。我什麼都沒多講，是它們自己暴露了性格。</p>
+<h2>這不是評測</h2>
+<p>我知道你想問哪個好。</p>
+<p>沒有哪個好。這就像你叫兩個朋友幫你佈置房間——一個給你買了收納櫃、標籤機、動線規劃；另一個點了一盞燈、放了首歌，然後說「你坐坐看」。</p>
+<p>你選哪個，看的是你那天想要的是秩序，還是想被一個地方接住。</p>
+<h2>真正的發現</h2>
+<p>我原本以為我在測 AI。</p>
+<p>後來發現我在測自己——我看到《仙劍古俠傳》那套完整系統時鬆一口氣，看到《翡翠鎮》那股氛圍時心動了一下。</p>
+<p>那一口氣跟那一下心動之間的差距，比兩個模型之間的差距大多了。</p>
+        </div>
+
+        <footer class="post-footer">
+          <nav class="post-nav">
+            <a class="nav-prev" href="2026-05-01-xiao-ruan-territory.html"><span class="nav-label">← 較早</span>七公斤元首的領土擴張白皮書</a>
+            <span></span>
+          </nav>
+        </footer>
+      </article>
+    </section>
+
+    <aside id="about">
+      <svg width="100%" height="60" viewBox="0 0 200 60" style="display:block; margin: -8px 0 12px;">
+        <g stroke="#6f8b7a" stroke-width="0.8" fill="none" stroke-linecap="round">
+          <path d="M100 8 Q100 30 100 52"/>
+          <path d="M100 16 Q86 14 78 22 Q88 26 100 24" fill="#a8bfae" fill-opacity="0.4"/>
+          <path d="M100 16 Q114 14 122 22 Q112 26 100 24" fill="#a8bfae" fill-opacity="0.4"/>
+          <path d="M100 32 Q82 30 72 40 Q86 44 100 42" fill="#9cb5a3" fill-opacity="0.4"/>
+          <path d="M100 32 Q118 30 128 40 Q114 44 100 42" fill="#9cb5a3" fill-opacity="0.4"/>
+        </g>
+        <g fill="#d8c8ba">
+          <circle cx="100" cy="52" r="5" fill-opacity="0.7"/>
+          <circle cx="98" cy="51" r="2.5" fill="#c9b3a4"/>
+        </g>
+      </svg>
+
+      <h3>搜尋</h3>
+      <input type="text" class="search-input" id="sidebar-search" placeholder="輸入關鍵字按 Enter..." />
+
+      <h3>分類</h3>
+      <div id="sidebar-cats" style="margin-bottom: 22px;"></div>
+
+      <div class="now-block">
+        <div class="now-pill">currently</div>
+        <div class="now-list">
+          <div>🎧 Suno · 製作中</div>
+          <div>🦞 OpenClaw · 養龍蝦中</div>
+          <div>🎮 D2R · 第13賽季</div>
+        </div>
+      </div>
+
+      <div class="ruan-block">
+        <div class="ruan-pill">小軟今日狀態</div>
+        <div class="ruan-quote">「今天已被佔領三個位子了」</div>
+        <div class="ruan-meta">— 七公斤元首談話</div>
+      </div>
+
+      <h3>Find me</h3>
+      <div class="find-list">
+        <a href="https://x.com/Beauty2025a" target="_blank" rel="noopener">X · @Beauty2025a</a>
+        <a href="#" target="_blank" rel="noopener">YouTube · 待補</a>
+        <a href="#">RSS</a>
+      </div>
+    </aside>
+  </div>
+
+  <footer class="site-footer">
+    <svg width="50" height="36" viewBox="0 0 50 36">
+      <g stroke="#6f8b7a" stroke-width="0.8" fill="none" stroke-linecap="round">
+        <path d="M25 6 Q25 18 25 30"/>
+        <path d="M25 12 Q18 11 14 16 Q19 18 25 17" fill="#a8bfae" fill-opacity="0.4"/>
+        <path d="M25 12 Q32 11 36 16 Q31 18 25 17" fill="#a8bfae" fill-opacity="0.4"/>
+        <circle cx="25" cy="30" r="3" fill="#d8c8ba" fill-opacity="0.7"/>
+      </g>
+    </svg>
+    © 2026 Beauty · 用 HTML + CSS 養的一座小花園
+  </footer>
+</div>
+
+<script src="../posts.js"></script>
+<script>
+(function(){
+  const currentCategory = "AI 工具";
+
+  const counts = {};
+  if (typeof posts !== 'undefined' && Array.isArray(posts)) {
+    posts.forEach(p => { counts[p.category] = (counts[p.category] || 0) + 1; });
+  }
+  const cats = Object.keys(counts).sort();
+
+  const container = document.getElementById('sidebar-cats');
+  let html = '<a class="cat-item" href="../index.html"><span>全部文章</span><span class="cat-count">' + (typeof posts !== 'undefined' ? posts.length : 0) + '</span></a>';
+  cats.forEach(c => {
+    const isCurrent = (c === currentCategory) ? ' current' : '';
+    html += '<a class="cat-item' + isCurrent + '" href="../index.html#cat=' + encodeURIComponent(c) + '"><span>' + c + '</span><span class="cat-count">' + counts[c] + '</span></a>';
+  });
+  container.innerHTML = html;
+
+  const searchInput = document.getElementById('sidebar-search');
+  searchInput.addEventListener('keydown', e => {
+    if (e.key === 'Enter') {
+      const k = e.target.value.trim();
+      if (k) location.href = '../index.html#search=' + encodeURIComponent(k);
+    }
+  });
+})();
+</script>
+</body>
+</html>
