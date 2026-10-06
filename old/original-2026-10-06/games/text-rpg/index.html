@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>星核殘響 — 文字冒險 RPG · 序章</title>
+<meta name="description" content="一場關於星球、邪念與轉生的文字冒險。序章：星髓之流。" />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;1,400&family=Noto+Sans+TC:wght@300;400;500&family=Noto+Serif+TC:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<div class="wrap">
+  <div class="topbar">
+    <a class="back-link" href="/">← 回花園</a>
+    <div class="game-title">Echoes of the Starcore · 序章</div>
+  </div>
+
+  <!-- 標題畫面 -->
+  <div class="panel title-screen" id="screen-title">
+    <div class="title-eyebrow">TEXT ADVENTURE RPG</div>
+    <h1 class="big-title">星核殘響</h1>
+    <div class="sub-title">Echoes of the Starcore — Prologue</div>
+    <p class="title-quote">星球的血液被抽進鋼鐵的城市，<br>而在星髓之流的最深處，有什麼東西睜開了眼睛。<br>那也許是你。也許，是你心裡的邪念。</p>
+    <div>
+      <button class="start-btn" id="btn-new">開始旅程</button>
+      <button class="start-btn secondary" id="btn-continue" style="display:none;">繼續上次</button>
+    </div>
+  </div>
+
+  <!-- 建立角色 -->
+  <div class="panel title-screen creation" id="screen-create" style="display:none;">
+    <div class="title-eyebrow">CHARACTER CREATION</div>
+    <h2>你曾經，是什麼樣的人？</h2>
+    <div class="name-row">
+      <input class="name-input" id="name-input" maxlength="10" placeholder="輸入你的名字" />
+      <div class="name-hint">— 這個名字，將在轉生之後被遺忘，又被重新記起 —</div>
+    </div>
+    <div class="origin-grid" id="origin-grid"></div>
+  </div>
+
+  <!-- 遊戲主畫面 -->
+  <div class="layout" id="screen-game" style="display:none;">
+    <div class="panel stage">
+      <div id="enemy-box">
+        <div class="bar-label"><span id="enemy-name">敵人</span><span id="enemy-hp-text"></span></div>
+        <div class="bar"><i id="enemy-fill" style="width:100%"></i></div>
+      </div>
+      <div id="scene-area">
+        <div id="log"></div>
+        <div id="choices"></div>
+      </div>
+    </div>
+    <div class="panel sidebar">
+      <h3>WANDERER</h3>
+      <div id="char-name">—</div>
+      <div id="char-origin">—</div>
+      <div class="bar-label"><span>HP 生命</span><span id="hp-text"></span></div>
+      <div class="bar"><i id="hp-fill" style="width:100%"></i></div>
+      <div class="bar-label"><span>MP 魔素</span><span id="mp-text"></span></div>
+      <div class="bar"><i id="mp-fill" style="width:100%"></i></div>
+      <div class="stats-grid">
+        <div class="stat-cell">力量 <b id="st-str">0</b></div>
+        <div class="stat-cell">敏捷 <b id="st-agi">0</b></div>
+        <div class="stat-cell">智力 <b id="st-int">0</b></div>
+        <div class="stat-cell">魅力 <b id="st-cha">0</b></div>
+      </div>
+      <h3>EQUIPMENT</h3>
+      <div id="equip-box"></div>
+      <h3>INVENTORY</h3>
+      <div class="bag-hint">點擊道具使用 · 點擊武器裝備</div>
+      <div class="bag-list" id="bag-list"></div>
+      <h3>SKILLS</h3>
+      <div class="skill-list" id="skill-list"></div>
+      <hr class="side-divider" />
+      <button class="history-btn" id="btn-history">📜 回顧冒險紀錄</button>
+      <button class="restart-btn" id="btn-restart">⟲ 重新開始序章</button>
+    </div>
+  </div>
+</div>
+
+<!-- 回顧 -->
+<div id="history-overlay">
+  <div class="history-box">
+    <div class="history-head">
+      <span>冒 險 紀 錄</span>
+      <button class="history-close" id="btn-history-close">✕</button>
+    </div>
+    <div id="history-body"></div>
+  </div>
+</div>
+
+<!-- 擲骰 -->
+<div id="dice-overlay">
+  <div class="dice-box">
+    <div class="dice-check-name" id="dice-name">檢定</div>
+    <div class="d20" id="d20">
+      <svg viewBox="0 0 100 100"><polygon points="50,4 93,28 93,72 50,96 7,72 7,28" fill="rgba(122,224,178,.07)" stroke="#7ae0b2" stroke-width="1.4"/><polygon points="50,18 80,34 80,66 50,82 20,66 20,34" fill="none" stroke="rgba(122,224,178,.4)" stroke-width="0.8"/></svg>
+      <div class="d20-num" id="d20-num">20</div>
+    </div>
+    <div class="dice-result" id="dice-result"></div>
+  </div>
+</div>
+
+<script type="module" src="js/main.js"></script>
+</body>
+</html>
