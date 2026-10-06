@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>仙劍古俠傳 — 封魔之路</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@300;400;500;600;700&family=Cinzel:wght@400;600;700&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="./styles/main.css"/>
+</head>
+<body>
+
+<a href="/" id="back-link">← 回部落格</a>
+
+<!-- TITLE SCREEN -->
+<div id="title-screen">
+  <div class="title-main">ANCIENT SWORD & FAIRY</div>
+  <div class="title-zh">仙劍古俠傳</div>
+  <div class="title-sub">封魔之路</div>
+  <div class="origin-grid" id="origin-grid">
+    <div class="origin-card" data-origin="swordsman" onclick="selectOrigin(this)">
+      <div class="oc-name">蒼雲劍客</div>
+      <div class="oc-class">AZURE SWORDSMAN</div>
+      <div class="oc-desc">行走江湖的遊俠，一柄蒼雲劍縱橫天下。以劍意悟道，力壓群邪。</div>
+      <div class="oc-stats"><span>力量 +3</span><span>感知 +1</span><span>起始HP 28</span></div>
+    </div>
+    <div class="origin-card" data-origin="herbalist" onclick="selectOrigin(this)">
+      <div class="oc-name">藥鋪學徒</div>
+      <div class="oc-class">HERB APPRENTICE</div>
+      <div class="oc-desc">師承藥王谷，精通本草之學。以醫術濟世，以靈藥救人，仁心見天地。</div>
+      <div class="oc-stats"><span>智慧 +3</span><span>魅力 +1</span><span>起始HP 22</span></div>
+    </div>
+    <div class="origin-card" data-origin="taoist" onclick="selectOrigin(this)">
+      <div class="oc-name">道門弟子</div>
+      <div class="oc-class">TAOIST DISCIPLE</div>
+      <div class="oc-desc">出身仙山道門，精研符籙術法。五行之力隨心驅使，一張靈符定乾坤。</div>
+      <div class="oc-stats"><span>智力 +3</span><span>感知 +2</span><span>起始HP 20</span></div>
+    </div>
+    <div class="origin-card dark-origin" data-origin="dark" onclick="selectOrigin(this)">
+      <div class="oc-name" style="color:#be7ddc">邪念者</div>
+      <div class="oc-class" style="color:#9b59b6">DARK URGE</div>
+      <div class="oc-desc" style="color:#a888c0">身懷不明之邪力，記憶殘缺。黑暗在心底低語，是順從還是抵抗？命運由你書寫。</div>
+      <div class="oc-stats" style="color:#7a5a8a"><span>力量 +2</span><span>魅力 +2</span><span>邪念 ×3</span></div>
+    </div>
+  </div>
+  <button class="start-btn" id="start-btn" onclick="startGame()" disabled>選擇起源以開始</button>
+</div>
+
+<!-- ENDING SCREEN -->
+<div id="ending-screen">
+  <div class="ending-title">EPILOGUE</div>
+  <div class="ending-name" id="ending-name">光明之道</div>
+  <div class="ending-text" id="ending-text"></div>
+  <div class="ending-stats" id="ending-stats"></div>
+  <button class="restart-btn" onclick="restartGame()">再次輪迴</button>
+</div>
+
+<!-- DICE OVERLAY -->
+<div id="dice-overlay">
+  <div id="dice-box">
+    <div class="dice-label">SKILL CHECK — D20</div>
+    <div class="dice-num" id="dice-num">20</div>
+    <div class="dice-result" id="dice-result"></div>
+  </div>
+</div>
+
+<!-- DARK URGE OVERLAY -->
+<div id="urge-overlay">
+  <div id="urge-box">
+    <div class="urge-title">⬡ 邪念湧現</div>
+    <div class="urge-text" id="urge-text"></div>
+    <div class="urge-actions">
+      <button class="urge-btn urge-resist" onclick="handleUrge('resist')">抵抗邪念<br><span style="font-size:10px;color:var(--text3)">失去 5 HP，獲得自制</span></button>
+      <button class="urge-btn urge-embrace" onclick="handleUrge('embrace')">順從本能<br><span style="font-size:10px;color:var(--text3)">獲得力量，失去信任</span></button>
+    </div>
+  </div>
+</div>
+
+<!-- NOTIFICATION -->
+<div id="notif"></div>
+
+<!-- MAIN GAME -->
+<div id="game-root">
+  <!-- LEFT: CHARACTER -->
+  <div class="panel" id="panel-char">
+    <div class="panel-title">人物</div>
+    <div class="char-name" id="char-name">—</div>
+    <div class="char-origin" id="char-origin">—</div>
+    <hr class="divider"/>
+    <div class="stat-row"><span class="stat-label">等級</span><span class="stat-val" id="stat-level">1</span></div>
+    <div class="stat-row"><span class="stat-label">金幣</span><span class="stat-val" id="stat-gold" style="color:var(--gold2)">0</span></div>
+    <div>
+      <div class="stat-row"><span class="stat-label">生命</span><span class="stat-val" id="stat-hp">—</span></div>
+      <div class="bar-wrap"><div class="bar-fill bar-hp" id="bar-hp" style="width:100%"></div></div>
+    </div>
+    <div>
+      <div class="stat-row"><span class="stat-label">靈力</span><span class="stat-val" id="stat-mp">—</span></div>
+      <div class="bar-wrap"><div class="bar-fill bar-mp" id="bar-mp" style="width:100%"></div></div>
+    </div>
+    <div>
+      <div class="stat-row"><span class="stat-label">經驗</span><span class="stat-val" id="stat-exp">0/100</span></div>
+      <div class="bar-wrap"><div class="bar-fill bar-exp" id="bar-exp" style="width:0%"></div></div>
+    </div>
+    <hr class="divider"/>
+    <div class="stat-section">
+      <div style="font-size:10px;color:var(--gold);margin-bottom:5px">屬性</div>
+      <div class="stat-grid" id="stat-grid"></div>
+    </div>
+    <hr class="divider"/>
+    <div style="font-size:10px;color:var(--gold);margin-bottom:4px">裝備</div>
+    <div id="equip-slots"></div>
+    <hr class="divider"/>
+    <div style="font-size:10px;color:var(--gold);margin-bottom:4px">狀態</div>
+    <div class="status-effects" id="status-effects"></div>
+    <hr class="divider"/>
+    <div class="save-load-row">
+      <button class="sl-btn" onclick="saveGame()">儲存</button>
+      <button class="sl-btn" onclick="loadGame()">讀取</button>
+    </div>
+  </div>
+
+  <!-- CENTER: STORY -->
+  <div class="panel" id="panel-main">
+    <div class="chapter-banner">
+      <div class="chapter-title" id="chapter-title">PROLOGUE</div>
+      <div class="chapter-name" id="chapter-name">序章</div>
+      <span id="time-indicator" class="time-indicator time-day">☀ 白日</span>
+    </div>
+    <div id="story-box" style="flex:1"></div>
+    <div id="battle-area">
+      <div class="battle-enemies" id="battle-enemies"></div>
+      <div id="bond-meter" class="bond-meter-wrap"></div>
+      <div class="battle-log" id="battle-log"></div>
+      <div class="battle-actions" id="battle-actions"></div>
+    </div>
+    <div id="choices"></div>
+  </div>
+
+  <!-- RIGHT: COMPANIONS + INVENTORY -->
+  <div class="panel" id="panel-right">
+    <div class="panel-title">隨行</div>
+    <div class="companion-card" id="comp-yuer">
+      <div class="comp-name">沈夜涼</div>
+      <div class="comp-role">藥谷靈女 · 治癒者</div>
+      <div class="comp-hearts" id="hearts-yuer">♡♡♡♡♡</div>
+      <div class="comp-aff-bar"><div class="comp-aff-fill" id="aff-bar-yuer" style="width:0%"></div></div>
+      <div class="comp-aff-text" id="aff-text-yuer">緣份 0/100</div>
+      <div class="comp-status" id="comp-status-yuer">尚未相遇</div>
+    </div>
+    <div class="companion-card" id="comp-jianmei">
+      <div class="comp-name">裴霜華</div>
+      <div class="comp-role">流浪劍客 · 護衛</div>
+      <div class="comp-hearts" id="hearts-jianmei">♡♡♡♡♡</div>
+      <div class="comp-aff-bar"><div class="comp-aff-fill" id="aff-bar-jianmei" style="width:0%"></div></div>
+      <div class="comp-aff-text" id="aff-text-jianmei">緣份 0/100</div>
+      <div class="comp-status" id="comp-status-jianmei">尚未相遇</div>
+    </div>
+    <div id="dark-urge-tracker" style="display:none;background:rgba(155,89,182,.08);border:1px solid rgba(155,89,182,.25);border-radius:3px;padding:8px;font-size:11px;color:#be7ddc">
+      <div style="font-size:10px;color:#9b59b6;margin-bottom:4px">邪念記錄</div>
+      <div id="urge-track-text">抵抗: 0 | 順從: 0</div>
+    </div>
+    <hr class="divider"/>
+    <div class="panel-title">道具</div>
+    <div id="inventory-list"></div>
+  </div>
+</div>
+
+<script type="module" src="./js/main.js"></script>
+</body>
+</html>

@@ -25,7 +25,7 @@ from datetime import datetime
 ROOT = Path(__file__).parent
 POSTS_DIR = ROOT / "posts"
 OUTPUT_POST_DIR = ROOT / "post"
-TEMPLATE_FILE = ROOT / "assets" / "post-template.html"
+TEMPLATE_FILE = ROOT / "assets" / "article-template.html"
 POSTS_JS_FILE = ROOT / "posts.js"
 
 MONTHS_EN = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
@@ -253,6 +253,7 @@ def build():
     md_files = sorted(POSTS_DIR.glob('*.md'), reverse=True)
     if not md_files:
         print('⚠️  posts/ 是空的，沒文章可建。')
+        POSTS_JS_FILE.write_text('const posts = [];\n', encoding='utf-8')
         return
 
     posts_data = []
