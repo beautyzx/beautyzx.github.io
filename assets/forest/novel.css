@@ -12,3 +12,9 @@
 .reader-body .pov-intro p:first-child{margin-top:0}
 .reader-body .pov-intro p:last-child{margin-bottom:0}
 @media(max-width:1000px){.pov-opening{display:flex;flex-direction:column;gap:20px}.reader-body .pov-opening>.pov-title{align-self:auto}.pov-art{width:100%}.pov-intro{width:100%}}
+
+/* Reflowing text-size controls */
+.reader-settings{display:flex;align-items:center;flex-wrap:wrap;gap:8px;margin-top:20px;font:13px var(--sans);color:var(--muted)}
+.reader-settings button{font:inherit;color:var(--green);background:#fcf8ef;border:1px solid var(--line);border-radius:6px;min-height:44px;min-width:44px;padding:8px 12px;cursor:pointer;touch-action:manipulation}
+.reader-settings button:disabled{opacity:.4;cursor:default}.reader-settings button:focus-visible{outline:2px solid var(--green);outline-offset:3px}.reader-font-status{min-width:42px}
+.reader-body{min-width:0;overflow-wrap:anywhere}.reader-body p{max-width:100%;white-space:normal}.reader-body.reader-large .pov-opening{display:flex;flex-direction:column;gap:20px}.reader-body.reader-large .pov-title{align-self:auto}.reader-body.reader-large .pov-art,.reader-body.reader-large .pov-intro{width:100%}
