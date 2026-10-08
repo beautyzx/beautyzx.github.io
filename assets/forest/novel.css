@@ -1,3 +1,14 @@
 .pov-nav{display:flex;flex-wrap:wrap;gap:10px;margin-top:25px}.pov-nav a{font:12px var(--sans);padding:7px 13px;border:1px solid var(--line);border-radius:20px;color:var(--green)}.pov-nav a:hover{background:#eee8dc}.reader-body .pov-title{scroll-margin-top:95px;margin:2.2em 0 1.6em;font-size:23px}.pov-title span{display:block;font:10px var(--sans);letter-spacing:.18em;color:var(--muted);margin-bottom:9px}.reader-body>hr:first-child{display:none}.volume-title{font-size:20px;font-weight:500}.nav-next{color:var(--muted)}a.book-card{display:block;text-decoration:none}@media(max-width:480px){.reader-paper{padding:28px 20px}.reader-body{font-size:17px;line-height:2.15}.pov-nav{gap:7px}.pov-nav a{padding:7px 11px}}
 /* Comfortable novel reading size */
 .reader-body{font-size:20px;line-height:2}.reader-body .pov-title{font-size:25px}@media(max-width:760px){.reader-body{font-size:19px;line-height:2}}
+
+/* Illustrated POV openings, preserving the full reading size */
+.pov-opening{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);column-gap:28px;row-gap:18px;margin:2.6em 0 1.5em;align-items:start}
+.reader-body .pov-opening>.pov-title{grid-column:2;grid-row:1;margin:0;align-self:end}
+.pov-art{display:block;grid-column:1;grid-row:1 / span 2;min-width:0;align-self:start}
+.pov-art img{display:block;width:100%;height:auto}
+.pov-art:focus-visible{outline:2px solid var(--green);outline-offset:5px}
+.pov-intro{grid-column:2;grid-row:2;min-width:0}
+.reader-body .pov-intro p:first-child{margin-top:0}
+.reader-body .pov-intro p:last-child{margin-bottom:0}
+@media(max-width:1000px){.pov-opening{display:flex;flex-direction:column;gap:20px}.reader-body .pov-opening>.pov-title{align-self:auto}.pov-art{width:100%}.pov-intro{width:100%}}
