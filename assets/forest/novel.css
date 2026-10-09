@@ -26,3 +26,16 @@
 .reader-body[data-typeface="round"]{font-family:var(--round)}
 .reader-body[data-typeface="sans"]{font-family:"Noto Sans TC","Microsoft JhengHei",sans-serif}
 .reader-body[data-typeface="serif"]{font-family:var(--serif)}
+
+/* Match the enlarged reader interface and keep text reflowing */
+.volume-title{font-size:24px}
+.pov-nav a{font-size:15px}
+.pov-title span{font-size:13px}
+.reader-settings,.reader-typefaces{font-size:15px}
+.reader-body{font-size:22px}
+.reader-body .pov-title{font-size:28px}
+@media(max-width:760px){
+.volume-title{font-size:22px}
+.reader-body{font-size:21px}
+.reader-body .pov-title{font-size:26px}
+}

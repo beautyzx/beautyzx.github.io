@@ -1,2 +1,24 @@
 .forest-banner{height:185px;overflow:hidden;border-bottom:1px solid var(--line);position:relative;background:#eeeadf}.forest-banner img{width:100%;height:100%;object-fit:cover;object-position:center 47%}.forest-banner:after{content:"";position:absolute;inset:0;background:linear-gradient(0deg,#f8f3e840,transparent 60%)}.small-paw{font:17px var(--serif);color:#8b6741}.reader-shell{max-width:900px;margin:0 auto;padding:30px 28px 65px}.breadcrumb{display:flex;gap:10px;align-items:center;font:11px var(--sans);color:var(--muted);line-height:1.8;padding:0 5px 22px}.breadcrumb a:hover{text-decoration:underline}.reader-paper{background:#fcf8ef;border:1px solid var(--line);border-radius:5px;padding:52px 64px;box-shadow:0 8px 30px #65513308}.reader-heading{padding-bottom:32px;border-bottom:1px solid var(--line);margin-bottom:36px}.reader-heading h1{font-size:clamp(26px,4vw,38px);font-weight:500;line-height:1.65;letter-spacing:.03em;margin:16px 0 18px}.reader-meta{font:11px var(--sans);color:var(--muted);line-height:1.8}.reader-heading>p:last-child:not(.reader-meta){font-size:13px;line-height:2}.reader-body{font-size:17px;line-height:2.15;overflow-wrap:anywhere}.reader-body p{margin:0 0 1.5em;color:var(--ink)}.reader-body h2{font-size:23px;font-weight:500;line-height:1.8;letter-spacing:.03em;margin:2em 0 .8em}.reader-body h3{font-size:20px;margin:1.5em 0 .8em}.reader-body img{margin:24px auto;max-width:100%;height:auto;border-radius:3px}.reader-body a{text-decoration:underline}.reader-body blockquote{border-left:2px solid #b6a17e;padding-left:22px;margin:28px 0}.reader-body pre{overflow:auto;background:#eee8dc;padding:20px;font-size:13px;line-height:1.8}.reader-body code{font-size:.85em;background:#eee8dc;padding:2px 4px}.reader-body pre code{padding:0}.reader-body ul,.reader-body ol{padding-left:1.5em}.reader-body hr{border:0;border-top:1px solid var(--line);margin:36px 0}.post-nav{display:grid;grid-template-columns:1fr 1fr;gap:30px;margin-top:45px;padding-top:28px;border-top:1px solid var(--line);font-size:13px;line-height:1.9}.nav-label{display:block;font:10px var(--sans);line-height:1.8;color:var(--muted);margin-bottom:7px}.nav-next{text-align:right}.reader-back{display:inline-block;margin-top:30px;font:12px var(--sans);line-height:1.8;color:var(--green)}.reader-back:hover{text-decoration:underline}.archive-list{display:flex;flex-direction:column}.archive-item{display:grid;grid-template-columns:1fr auto;align-items:center;gap:7px 25px;padding:22px 0;border-bottom:1px solid var(--line)}.archive-item>.reader-meta{grid-column:1}.archive-item h2{font-size:19px;letter-spacing:0;line-height:1.8}.archive-item>span:last-child{grid-row:1/3;grid-column:2}.archive-item:hover h2{color:var(--green)}
 @media(max-width:760px){.forest-banner{height:140px}.forest-banner img{object-position:73% 43%}.reader-shell{padding:23px 18px 42px}.reader-paper{padding:30px 23px}.reader-heading{padding-bottom:24px;margin-bottom:27px}.reader-heading h1{font-size:27px}.reader-body{font-size:16px;line-height:2.15}.reader-body h2{font-size:21px}.post-nav{gap:18px;font-size:12px}.archive-item h2{font-size:17px}.breadcrumb{font-size:10px;flex-wrap:wrap}}
+
+/* Larger, consistent type across introductions, notices and chapter lists */
+.reader-paper{font-size:18px;overflow-wrap:anywhere}
+.reader-heading h1{font-size:clamp(30px,4.4vw,42px)}
+.reader-heading>.eyebrow{font-size:12px}
+.reader-heading>p:not(.eyebrow):not(.reader-meta){font-size:18px;line-height:2}
+.reader-meta{font-size:16px;line-height:1.9}
+.breadcrumb{font-size:14px;flex-wrap:wrap}
+.archive-item h2{font-size:23px}
+.archive-item{grid-template-columns:minmax(0,1fr) auto}
+.reader-body{font-size:19px}
+.post-nav{font-size:16px;grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
+.nav-label{font-size:13px}
+.reader-back{font-size:15px}
+@media(max-width:760px){
+.reader-heading h1{font-size:30px}
+.reader-meta{font-size:15px}
+.archive-item h2{font-size:21px}
+.breadcrumb{font-size:13px}
+.reader-body{font-size:18px}
+.post-nav{font-size:15px}
+}
