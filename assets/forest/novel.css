@@ -18,3 +18,11 @@
 .reader-settings button{font:inherit;color:var(--green);background:#fcf8ef;border:1px solid var(--line);border-radius:6px;min-height:44px;min-width:44px;padding:8px 12px;cursor:pointer;touch-action:manipulation}
 .reader-settings button:disabled{opacity:.4;cursor:default}.reader-settings button:focus-visible{outline:2px solid var(--green);outline-offset:3px}.reader-font-status{min-width:42px}
 .reader-body{min-width:0;overflow-wrap:anywhere}.reader-body p{max-width:100%;white-space:normal}.reader-body.reader-large .pov-opening{display:flex;flex-direction:column;gap:20px}.reader-body.reader-large .pov-title{align-self:auto}.reader-body.reader-large .pov-art,.reader-body.reader-large .pov-intro{width:100%}
+
+/* Reader typeface choices */
+.reader-typefaces{display:flex;align-items:center;flex-wrap:wrap;gap:8px;margin-top:12px;font:13px var(--sans);color:var(--muted)}
+.reader-typefaces button{font:inherit;min-height:44px;padding:8px 14px;border:1px solid var(--line);border-radius:6px;background:#fcf8ef;color:var(--green);cursor:pointer}
+.reader-typefaces button[aria-pressed="true"]{background:var(--green);border-color:var(--green);color:#fffdf4}
+.reader-body[data-typeface="round"]{font-family:var(--round)}
+.reader-body[data-typeface="sans"]{font-family:"Noto Sans TC","Microsoft JhengHei",sans-serif}
+.reader-body[data-typeface="serif"]{font-family:var(--serif)}
