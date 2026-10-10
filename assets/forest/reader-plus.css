@@ -1,0 +1,70 @@
+/* 小說閱讀頁加強：四個敘事者的顏色、換場記號、插圖放大、閱讀進度、續讀提示、背景模式 */
+:root{--pov-lu:#56677d;--pov-jiang:#9a6a2c;--pov-lin:#a35d66;--pov-wen:#3f7f7a;--plus-sheet:#fcf8ef;--plus-chip:#eee8dc;--plus-veil:rgba(30,24,18,.86)}
+
+/* 四個人的顏色 */
+.pov-nav a{display:inline-flex;align-items:center;gap:7px;border-color:currentColor}
+.pov-nav a:before{content:"";width:8px;height:8px;border-radius:50%;background:currentColor}
+.pov-nav a.c-lu{color:var(--pov-lu)}.pov-nav a.c-jiang{color:var(--pov-jiang)}.pov-nav a.c-lin{color:var(--pov-lin)}.pov-nav a.c-wen{color:var(--pov-wen)}
+.reader-body .pov{--c:var(--green);position:relative;padding-left:22px;margin-top:3em}
+.reader-body .pov:first-child{margin-top:0}
+.reader-body .pov:before{content:"";position:absolute;left:0;top:.4em;bottom:.6em;width:2px;border-radius:2px;background:var(--c);opacity:.55}
+.reader-body .pov-lu{--c:var(--pov-lu)}.reader-body .pov-jiang{--c:var(--pov-jiang)}.reader-body .pov-lin{--c:var(--pov-lin)}.reader-body .pov-wen{--c:var(--pov-wen)}
+.reader-body .pov .pov-title{color:var(--c)}
+.reader-body .pov .pov-opening{margin-top:0}
+
+/* 插圖底下的小字 */
+.pov-art{cursor:zoom-in;text-decoration:none!important}
+.pov-cap{display:block;margin-top:8px;padding-left:10px;border-left:2px solid var(--c,var(--green));font:13px/1.7 var(--round);color:var(--muted)}
+
+/* 同一人換場 */
+.scene-break{display:flex;align-items:center;gap:14px;margin:2.2em auto;max-width:220px;color:var(--c,var(--green))}
+.scene-break span{flex:1;height:1px;background:var(--line)}
+.scene-break i{font-style:normal;font-size:13px;opacity:.8}
+
+/* 閱讀進度 */
+.plus-progress{position:fixed;top:0;left:0;right:0;height:3px;z-index:40;pointer-events:none}
+.plus-progress i{display:block;height:3px;width:0;background:var(--cur,var(--green));transition:width .15s linear,background .4s}
+
+/* 現在是誰 */
+.plus-now{position:fixed;right:16px;bottom:calc(16px + env(safe-area-inset-bottom,0px));z-index:30;display:flex;align-items:center;gap:8px;padding:9px 14px;border-radius:22px;background:var(--plus-sheet);border:1px solid var(--line);font:13px var(--round);color:var(--muted);box-shadow:0 6px 20px rgba(60,40,20,.12)}
+.plus-now:before{content:"";width:8px;height:8px;border-radius:50%;background:var(--cur,var(--green))}
+.plus-now b{font-weight:500;color:var(--cur,var(--green))}
+
+/* 續讀 */
+.plus-resume{display:flex;flex-wrap:wrap;align-items:center;gap:10px 16px;margin-top:18px;padding:12px 16px;border:1px dashed var(--line);border-radius:6px;font:14px var(--round);color:var(--muted)}
+.plus-resume button{min-height:40px;padding:6px 14px;border-radius:6px;border:1px solid var(--green);background:none;color:var(--green);cursor:pointer;font:inherit}
+.plus-resume button.x{border-color:var(--line);color:var(--muted)}
+
+/* 背景選擇，沿用字體按鈕的樣子 */
+.plus-modes{display:flex;align-items:center;flex-wrap:wrap;gap:8px;margin-top:12px;font:15px var(--sans);color:var(--muted)}
+.plus-modes button{font:inherit;min-height:44px;padding:8px 14px;border:1px solid var(--line);border-radius:6px;background:var(--plus-sheet);color:var(--green);cursor:pointer}
+.plus-modes button[aria-pressed="true"]{background:var(--green);border-color:var(--green);color:var(--plus-sheet)}
+
+/* 插圖放大 */
+.plus-lightbox[hidden],.plus-now[hidden]{display:none!important}
+.plus-lightbox{position:fixed;inset:0;z-index:60;background:var(--plus-veil);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;padding:20px 16px;cursor:zoom-out}
+.plus-lightbox img{max-width:min(1400px,100%);max-height:82vh;width:auto;height:auto;border-radius:4px}
+.plus-lightbox p{margin:0;font:14px var(--round);color:#efe4d2;text-align:center}
+.plus-lightbox button{position:absolute;top:14px;right:16px;width:44px;height:44px;border-radius:50%;border:1px solid #efe4d2;background:none;color:#efe4d2;font-size:20px;cursor:pointer}
+
+/* 夜間木色 */
+html[data-mode="night"]{--paper:#17120d;--ink:#e8dbc4;--muted:#b3a38b;--green:#a9bb98;--line:#3a2f24;--plus-sheet:#1f1812;--plus-chip:#2a211a;--pov-lu:#9fb1c9;--pov-jiang:#e0ac62;--pov-lin:#e29aa3;--pov-wen:#86c6bf;--plus-veil:rgba(0,0,0,.9);color-scheme:dark}
+/* 星空黑 */
+html[data-mode="star"]{--paper:#060914;--ink:#f6eed8;--muted:#c3b796;--green:#d9c58e;--line:#252d46;--plus-sheet:rgba(12,16,30,.93);--plus-chip:#1a2138;--pov-lu:#a9bde2;--pov-jiang:#e9bb6f;--pov-lin:#eda6b3;--pov-wen:#91d6ce;--plus-veil:rgba(2,4,12,.92);color-scheme:dark}
+html[data-mode] body{background:var(--paper);color:var(--ink);transition:background .4s,color .4s}
+html[data-mode="star"] body{background:transparent}
+html[data-mode] .reader-paper{background:var(--plus-sheet);border-color:var(--line);box-shadow:none}
+html[data-mode] .site-header{background:var(--paper)}
+html[data-mode="star"] .site-header{background:rgba(6,9,20,.7)}
+html[data-mode] .reader-body p,html[data-mode] .reader-heading h1{color:var(--ink)}
+html[data-mode] .reader-settings button,html[data-mode] .reader-typefaces button{background:var(--plus-sheet);color:var(--green);border-color:var(--line)}
+html[data-mode] .reader-typefaces button[aria-pressed="true"]{background:var(--green);border-color:var(--green);color:var(--paper)}
+html[data-mode] .pov-nav a:hover{background:var(--plus-chip)}
+html[data-mode] .forest-banner{background:var(--paper)}
+html[data-mode] .forest-banner:after{background:linear-gradient(0deg,var(--paper),transparent 70%);opacity:.5}
+html[data-mode="star"] .forest-banner img{opacity:.55}
+.plus-sky{position:fixed;inset:0;width:100%;height:100%;z-index:-1;pointer-events:none;display:none}
+html[data-mode="star"] .plus-sky{display:block}
+
+@media(max-width:480px){.reader-body .pov{padding-left:14px}}
+@media(prefers-reduced-motion:reduce){.plus-progress i,html[data-mode] body{transition:none}}
