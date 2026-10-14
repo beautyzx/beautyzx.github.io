@@ -68,3 +68,6 @@ html[data-mode="star"] .plus-sky{display:block}
 
 @media(max-width:480px){.reader-body .pov{padding-left:14px}}
 @media(prefers-reduced-motion:reduce){.plus-progress i,html[data-mode] body{transition:none}}
+
+/* 水彩暈邊：新圖不畫框，由遮罩讓四邊暈進背景 */
+.pov-art img.soft-edge{-webkit-mask-image:url(soft-edge-mask.png);mask-image:url(soft-edge-mask.png);-webkit-mask-size:100% 100%;mask-size:100% 100%;-webkit-mask-repeat:no-repeat;mask-repeat:no-repeat}
